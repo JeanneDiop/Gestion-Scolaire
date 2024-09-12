@@ -126,6 +126,28 @@ public function login()
         return response()->json(['error' => 'Votre compte est inactif, vous ne pouvez pas vous connecter'], 403);
     }
 }
+public function refresh()
+{
+    // Assurez-vous que l'utilisateur est authentifié avec le garde 'api'
+    if (auth('api')->check()) {
+        // Rafraîchissez le token de l'utilisateur authentifié
+        $nouveauToken = auth('api')->refresh();
+
+        // Retournez la réponse avec le nouveau token
+        return response()->json([
+            "status" => true,
+            "message" => "Votre nouveau token",
+            "token" => $nouveauToken
+        ], 200);
+    } else {
+        // Retournez une réponse d'erreur si l'utilisateur n'est pas authentifié
+        return response()->json([
+            "status" => false,
+            "message" => "Utilisateur non authentifié"
+        ], 401);
+    }
+}
+
 
 }
 
