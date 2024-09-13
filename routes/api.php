@@ -25,5 +25,7 @@ Route::group(['middleware' => 'api'], function ($router) {
 });
 
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::put('directeur/edit/{user}', [AuthController::class, 'update']);
