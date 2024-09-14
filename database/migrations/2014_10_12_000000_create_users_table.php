@@ -20,9 +20,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('genre',['homme','femme']);
             $table->enum('etat', ['actif', 'inactif'])->default('actif');
             $table->string('adresse');
-            $table->foreignIdFor(Role::class)->constrained()->onDelete('cascade');
+            //$table->foreignIdFor(Role::class)->constrained()->onDelete('cascade');
+            $table->string('role_nom');
             $table->rememberToken();
             $table->timestamps();
         });

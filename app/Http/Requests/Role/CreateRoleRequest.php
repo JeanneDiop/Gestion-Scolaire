@@ -6,23 +6,25 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreateRoleRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;  // Assure que l'utilisateur est autorisé à faire cette demande
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'nom' => ['required', 'string', 'max:20', 'alpha', 'min:3']
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'nom.required' => 'Le champ nom est requis.',
+            'nom.max' => 'Le nom ne peut pas dépasser 20 caractères.',
+            'nom.alpha' => 'Le nom doit contenir uniquement des lettres.',
+            'nom.min' => 'Le nom doit comporter au moins 3 caractères.'
         ];
     }
 }

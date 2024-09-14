@@ -22,7 +22,8 @@ class User extends Authenticatable implements JWTSubject
         'telephone',
         'etat',
         'adresse',
-        'role_id'
+        'genre',
+        'role_nom',
     ];
     // Rest omitted for brevity
 
@@ -48,6 +49,10 @@ class User extends Authenticatable implements JWTSubject
 
      public function role(){
         return $this->belongsTo(Role::class);
+    }
+    public function ParentA()
+    {
+        return $this->hasOne(ParentA::class);
     }
 
 

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
+
 use App\Http\Requests\User\EditUserRequest;
-use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\CreateParentRequest;
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
@@ -19,82 +20,136 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','register','refresh']
+        $this->middleware('auth:api', ['except' => ['login','registerParent','refresh']
     ]);
     }
 
-
-    ///public function login(LogUserRequest $request)
-    ///{
-        //$token = auth('admin')->attempt($request->only('email', 'password'));
-        //$user = auth('admin')->user();
-        //$typeUser = "admin";
-        //if (empty($token)) {
-            ///$token = auth('api')->attempt($request->only('email', 'password'));
-           /// $user = auth('api')->user();
-            //$typeUser = "utilisateur";
-        //}
-        //if (!empty($user->etat) &&  $user->etat !== "actif") {
-           // auth('api')->logout();
-            //return response()->json([
-                //"status" => false,
-                //"message" => "Votre compte a été $user->etat par l'administrateur",
-                //"motif" => $user->motif
-            //], 401);
-        ///if (!empty($token)) {
-
-            ///return response()->json([
-                ///"status" => true,
-                ///"message" => "Bienvenue dans votre espace personnelle, vous êtes connecté en tant admin ",
-                ///"user" => $user,
-                ///"token" => $token,
-             /// "expires_in" => "3600 seconds"
-          /// ], 200);
-      /// }
-        ///return response()->json([
-           ///"status" => false,
-          /// "message" => "Les informations fournis sont incorrect"
-       ///], 401);
- ///}
-
- public function login()
-{
+ ///public function login()
+///{
     // Valider les données de la requête
-    $credentials = request()->validate([
-        'email' => 'required|email',
-        'password' => 'required'
-    ]);
+    ///$credentials = request()->validate([
+        ///'email' => 'required|email',
+        ///'password' => 'required'
+    ///]);
 
     // Chercher l'utilisateur par email
-    $user = User::where('email', $credentials['email'])->first();
+    ///$user = User::where('email', $credentials['email'])->first();
 
     // Déboguer pour voir la valeur de $user
     // dd($user);
 
     // Vérifier si l'utilisateur existe
-    if ($user) {
+    ///if ($user) {
         // Vérifier si l'utilisateur est actif
-        if ($user->etat === 'actif') {
+        ///if ($user->etat === 'actif') {
             // Authentifier l'utilisateur et obtenir le token
-            if (!$token = auth()->attempt($credentials)) {
+            ///if (!$token = auth()->attempt($credentials)) {
                 // Retourner une réponse 401 si les informations d'identification sont incorrectes
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
+               /// return response()->json(['error' => 'Unauthorized'], 401);
+           /// }
 
             // Retourner les informations de l'utilisateur et le token en cas de succès
-            return response()->json([
-                'message' => 'Connexion réussie',
-                'user' => $user,
-                'token' => $token
-            ]);
-        } else {
+            ///return response()->json([
+                ///'message' => 'Connexion réussie',
+                ///'user' => $user,
+                ///'token' => $token
+            ///]);
+        ///} else {
             // Retourner une réponse 403 si l'utilisateur est inactif
-            return response()->json(['error' => 'Votre compte est inactif, vous ne pouvez pas vous connecter'], 403);
-        }
-    } else {
+            ///return response()->json(['error' => 'Votre compte est inactif, vous ne pouvez pas vous connecter'], 403);
+       /// }
+    ///} else {
         // Retourner une réponse 404 si l'utilisateur n'existe pas
-        return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+        ///return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+    ///}
+///}
+
+public function login(LogUserRequest $request)
+{
+    $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
+    $credentials = $request->only('email', 'password');
+    $token = Auth::attempt($credentials);
+    
+    if (!$token) {
+        return response()->json([
+            'status'=>401,
+            'message' => 'Connexion échouée',
+        ]);
+    }else{
+        $user = Auth::user();
+        if($user->etat==='inactif'){
+            return response()->json([
+                'status'=>405,
+                'message' => 'Compte n\'existe pas',
+            ]);
+        }
+        if($user->role_nom ==='employé' && $user->etat ==='actif'){
+            return response()->json([
+                'status'=>200,
+                'message' => 'Salut employe',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+
+        }elseif($user->role_nom==='apprenant' && $user->etat ==='actif'){
+            return response()->json([
+                'status'=>200,
+                'message' => 'Salut apprenant',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+        } elseif ($user->role_nom === 'enseignant' && $user->etat === 'actif') {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Salut enseignant',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+        } elseif ($user->role_nom === 'parent' && $user->etat === 'actif') {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Salut parent',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+        } elseif ($user->role_nom === 'directeur' && $user->etat === 'actif') {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Salut directeur',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'status'=>200,
+                'message' => 'Salut Admin',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'role' => 'bearer',
+                ]
+            ]);
+        }    
     }
+
 }
 
 
@@ -110,26 +165,26 @@ class AuthController extends Controller
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
-public function register(CreateUserRequest $request)
-{
-    try {
-    Role::FindOrFail($request->role_id);
-      $user = new User();
-      $user->nom = $request->nom;
-      $user->prenom = $request->prenom;
-      $user->email = $request->email;
-      $user->password = Hash::make($request->password);
-      $user->telephone = $request->telephone;
-      $user->etat = $request->etat;
-      $user->adresse = $request->adresse;
-      $user->role_id = $request->role_id;
-      $user->save();
+///public function register(CreateUserRequest $request)
+///{
+    ///try {
+    //Role::FindOrFail($request->role_id);
+      ///$user = new User();
+      ///$user->nom = $request->nom;
+      ///$user->prenom = $request->prenom;
+      ///$user->email = $request->email;
+      ///$user->password = Hash::make($request->password);
+      ///$user->telephone = $request->telephone;
+      ///$user->etat = $request->etat;
+      ///$user->adresse = $request->adresse;
+      ///$user->role_id = $request->role_id;
+      ///$user->save();
 
-      return response()->json([
-        'status_code' => 200,
-        'status_message' => 'user a été ajouté',
-        'data' => $user
-      ]);
+      ///return response()->json([
+        ///'status_code' => 200,
+        ///'status_message' => 'user a été ajouté',
+        ///'data' => $user
+      ///]);
 
   // }else {
   //         // Un utilisateur avec un role_id différent de 1 n'a pas le droit de modifier
@@ -138,9 +193,30 @@ public function register(CreateUserRequest $request)
   //             'status_message' => "Vous n'avez pas la permission d'ajouter cet utilisateur",
   //         ]);
   //     }
-    } catch (Exception $e) {
-      return response()->json($e);
-    }
+   /// } catch (Exception $e) {
+     /// return response()->json($e);
+   /// }
+///}
+public function registerParent(CreateParentRequest $request){
+      $user =User::create([
+      $user->nom = $request->nom;
+      $user->prenom = $request->prenom;
+      $user->email = $request->email;
+      $user->password = Hash::make($request->password);
+      $user->telephone = $request->telephone;
+      $user->adresse = $request->adresse;
+      $user->role_nom = "parent"
+    ]);
+
+    $ParentA = $user->ParentA()->create([
+        'profession'=>$request->profession,
+    ]);
+
+    return response()->json([
+        'status'=>200,
+        'message' => 'Utilisateur créer avec succes',
+        'user' => $user
+    ]);
 }
 
 

@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\RoleController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +28,21 @@ Route::group(['middleware' => 'api'], function ($router) {
 
 
 Route::post('login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+
 
 Route::put('directeur/edit/{user}', [AuthController::class, 'update']);
+
+//----------Gestion Role----------------
+//ajouter role
+Route::post('ajouter/role', [RoleController::class, 'store']);
+//modifier role
+Route::put('role/edit/{id}', [RoleController::class, 'update']);
+//supprimer un role
+Route::delete('role/{role}', [RoleController::class, 'destroy']);
+//lister les roles
+Route::get('role/lister', [RoleController::class, 'index']);
+//recuper un role specifique
+Route::get('role/{id}', [RoleController::class, 'show']);
+
+//-----------gestion Utilisateur----------------
+Route::post('ajouter/parent', [AuthController::class, 'registerParent']);
