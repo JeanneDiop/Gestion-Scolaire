@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Requests\User\EditUserRequest;
-use App\Http\Requests\User\CreateParentRequest;
+use App\Http\Requests\Tuteur\CreateTuteurRequest;
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
@@ -20,8 +20,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','registerParent','refresh']
-    ]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','refresh']]);
     }
 
  ///public function login()
@@ -66,13 +65,13 @@ class AuthController extends Controller
 
 public function login(LogUserRequest $request)
 {
-    $request->validate([
-        'email' => 'required|string|email',
-        'password' => 'required|string',
-    ]);
+    //$request->validate([
+        //'email' => 'required|string|email',
+        //'password' => 'required|string',
+    //]);
     $credentials = $request->only('email', 'password');
     $token = Auth::attempt($credentials);
-    
+
     if (!$token) {
         return response()->json([
             'status'=>401,
@@ -93,7 +92,7 @@ public function login(LogUserRequest $request)
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
 
@@ -104,7 +103,7 @@ public function login(LogUserRequest $request)
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
         } elseif ($user->role_nom === 'enseignant' && $user->etat === 'actif') {
@@ -114,17 +113,17 @@ public function login(LogUserRequest $request)
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
-        } elseif ($user->role_nom === 'parent' && $user->etat === 'actif') {
+        } elseif ($user->role_nom === 'tuteur' && $user->etat === 'actif') {
             return response()->json([
                 'status' => 200,
                 'message' => 'Salut parent',
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
         } elseif ($user->role_nom === 'directeur' && $user->etat === 'actif') {
@@ -134,7 +133,7 @@ public function login(LogUserRequest $request)
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
         }else{
@@ -144,14 +143,13 @@ public function login(LogUserRequest $request)
                 'user' => $user,
                 'authorization' => [
                     'token' => $token,
-                    'role' => 'bearer',
+                    'type' => 'bearer',
                 ]
             ]);
-        }    
+        }
     }
 
 }
-
 
     public function logout()
     {
@@ -165,59 +163,31 @@ public function login(LogUserRequest $request)
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
-///public function register(CreateUserRequest $request)
-///{
-    ///try {
-    //Role::FindOrFail($request->role_id);
-      ///$user = new User();
-      ///$user->nom = $request->nom;
-      ///$user->prenom = $request->prenom;
-      ///$user->email = $request->email;
-      ///$user->password = Hash::make($request->password);
-      ///$user->telephone = $request->telephone;
-      ///$user->etat = $request->etat;
-      ///$user->adresse = $request->adresse;
-      ///$user->role_id = $request->role_id;
-      ///$user->save();
-
-      ///return response()->json([
-        ///'status_code' => 200,
-        ///'status_message' => 'user a été ajouté',
-        ///'data' => $user
-      ///]);
-
-  // }else {
-  //         // Un utilisateur avec un role_id différent de 1 n'a pas le droit de modifier
-  //         return response()->json([
-  //             'status_code' => 403,
-  //             'status_message' => "Vous n'avez pas la permission d'ajouter cet utilisateur",
-  //         ]);
-  //     }
-   /// } catch (Exception $e) {
-     /// return response()->json($e);
-   /// }
-///}
-public function registerParent(CreateParentRequest $request){
-      $user =User::create([
-      $user->nom = $request->nom;
-      $user->prenom = $request->prenom;
-      $user->email = $request->email;
-      $user->password = Hash::make($request->password);
-      $user->telephone = $request->telephone;
-      $user->adresse = $request->adresse;
-      $user->role_nom = "parent"
+    
+public function registerTuteur(CreateTuteurRequest $request){
+    $user = User::create([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'role_nom' => 'tuteur',
     ]);
 
-    $ParentA = $user->ParentA()->create([
+    $tuteur = $user->tuteur()->create([
         'profession'=>$request->profession,
     ]);
 
     return response()->json([
         'status'=>200,
         'message' => 'Utilisateur créer avec succes',
-        'user' => $user
+        'user' => $user,
+        //'parent' => $tuteur,
     ]);
 }
+
 
 
 

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Role;
+use App\Models\Tuteur;
+use App\Models\Admin;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -50,10 +52,15 @@ class User extends Authenticatable implements JWTSubject
      public function role(){
         return $this->belongsTo(Role::class);
     }
-    public function ParentA()
+
+    public function tuteur()
     {
-        return $this->hasOne(ParentA::class);
+        return $this->hasOne(Tuteur::class);
     }
 
+    public function admin()
+    {
+        return $this->hasOne(Admin::class);
+    }
 
 }

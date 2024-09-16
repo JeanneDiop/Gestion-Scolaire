@@ -17,7 +17,7 @@ use App\Http\Controllers\API\RoleController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 //ces routes sont groupes dans un midleware api
@@ -45,4 +45,4 @@ Route::get('role/lister', [RoleController::class, 'index']);
 Route::get('role/{id}', [RoleController::class, 'show']);
 
 //-----------gestion Utilisateur----------------
-Route::post('ajouter/parent', [AuthController::class, 'registerParent']);
+Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);

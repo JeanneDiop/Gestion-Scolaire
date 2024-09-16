@@ -3,6 +3,9 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class LogUserRequest extends FormRequest
 {
@@ -22,19 +25,26 @@ class LogUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required','string','email','max:255','regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/','unique:users,email'],
-            'password' => 'required|min:8',
-
+             'email'=>'required|email|exists:users,email',
+            'password'=>'required'
         ];
     }
 
     public function messages()
     {
         return [
-            'email.required' => 'Le champ email est requis.',
-            'email.email' => 'Le champ email doit être une adresse email valide et doit etre unique.',
-            'password.min' => 'Le champ mot de passe doit avoir au moins :min 8 caractères et doit etre unique.',
-            "password.confirmed" => 'Les mots de passe ne sont pas conforment',
+            'email.required'=>'Un email doit etre fourni',
+            'email.email'=>'Email invalide',
+            'email.exists'=>'Adresse email introuvable',
+            'password.required'=>'Un mot de passe doit etre fourni',
         ];
+    }
+    protected function failedValidation(Validator $validator)
+    {
+        // Si la validation échoue, vous pouvez accéder aux erreurs
+        $errors = $validator->errors()->toArray();
+
+        // Retournez les erreurs dans la réponse JSON
+        throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
     }
 }

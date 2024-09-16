@@ -24,16 +24,18 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            "nom" => "Diouf",
-            "prenom" => "Germaine",
-            "adresse" => "dakar",
-            "telephone" => "775392600",
-            "email" => "dioufgermainedaba@gmail.com",
-            "role_id" => 1,
+            'nom' => fake()->name(),
+            'prenom' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' =>Hash::make('passer1234'),
+            "role_nom" => "admin",
+            "role_nom" => "tuteur",
+            "role_nom" => "employe",
+            "role_nom" => "enseignant",
+            "role_nom" => "apprenant",
             "etat"=> "actif",
-            'email_verified_at' => now(),
-            'password' => Hash::make('Password1@'),
-            'remember_token' => Str::random(10),
+            'telephone' => fake()->phoneNumber(),
+            'genre' => fake()->randomElement(['homme', 'femme']),
         ];
     }
 
