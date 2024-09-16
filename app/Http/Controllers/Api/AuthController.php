@@ -163,7 +163,7 @@ public function login(LogUserRequest $request)
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
-    
+
 public function registerTuteur(CreateTuteurRequest $request){
     $user = User::create([
         'nom' => $request->nom,
@@ -173,6 +173,7 @@ public function registerTuteur(CreateTuteurRequest $request){
         'telephone' => $request->telephone,
         'adresse' => $request->adresse,
         'genre' => $request->genre,
+        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
         'role_nom' => 'tuteur',
     ]);
 
