@@ -1,5 +1,5 @@
 <?php
-
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,7 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('enseignants', function (Blueprint $table) {
+
             $table->id();
+            $table->string('specialite');
+            $table->enum('statut_marital', ['celibataire', 'marié']);
+            $table->date('date_naissance');
+            $table->string('lieu_naissance');
+            $table->string('numero_CNI')->unique();
+            $table->string('numero_securite_social')->unique();
+            $table->enum('statut', ['permanent', 'vacataire','contractuel','honorariat']);
+            $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
+            $table->rememberToken();
             $table->timestamps();
         });
     }
@@ -24,4 +34,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('enseignants');
     }
+
 };

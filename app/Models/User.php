@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Role;
 use App\Models\Tuteur;
 use App\Models\Admin;
+use App\Models\Enseignant;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -62,5 +63,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(Admin::class);
     }
-
+    public function enseigant()
+    {
+        return $this->hasOne(Enseignant::class);
+    }
 }

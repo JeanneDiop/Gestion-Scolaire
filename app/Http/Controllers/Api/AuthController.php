@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Enseignant\CreateEnseignantRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Requests\User\EditUserRequest;
 use App\Http\Requests\Tuteur\CreateTuteurRequest;
+
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +22,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','refresh']]);
     }
 
  ///public function login()
@@ -189,6 +191,36 @@ public function registerTuteur(CreateTuteurRequest $request){
     ]);
 }
 
+public function registerEnseignant(CreateEnseignantRequest $request){
+    $user = User::create([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+        'role_nom' => 'enseignant',
+    ]);
+
+    $enseigant = $user->enseigant()->create([
+        'specialite'=>$request->specialite,
+        'statut_marital'=>$request->statut_marital,
+        'date_naissance' =>$request->date_naissance,
+        'lieu_naissance' =>$request->lieu_naissance,
+        'numero_CNI' =>$request->numero_CNI,
+        'numero_securite_social'=>$request->numero_securite_social,
+        'statut' =>$request->statut
+    ]);
+
+    return response()->json([
+        'status'=>200,
+        'message' => 'Utilisateur créer avec succes',
+        'user' => $user,
+        //'parent' => $tuteur,
+    ]);
+}
 
 
 

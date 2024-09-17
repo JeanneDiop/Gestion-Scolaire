@@ -44,5 +44,7 @@ Route::get('role/lister', [RoleController::class, 'index']);
 //recuper un role specifique
 Route::get('role/{id}', [RoleController::class, 'show']);
 
-//-----------gestion Utilisateur----------------
+//-----------gestion Utilisateur tuteur----------------
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
+//-----------gestion user enseignant-------------
+Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
