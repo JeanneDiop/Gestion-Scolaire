@@ -187,7 +187,7 @@ public function registerTuteur(CreateTuteurRequest $request){
         'status'=>200,
         'message' => 'Utilisateur créer avec succes',
         'user' => $user,
-        //'parent' => $tuteur,
+        'tuteur' => $tuteur,
     ]);
 }
 
@@ -218,7 +218,7 @@ public function registerEnseignant(CreateEnseignantRequest $request){
         'status'=>200,
         'message' => 'Utilisateur créer avec succes',
         'user' => $user,
-        //'parent' => $tuteur,
+        'enseigant' => $enseigant
     ]);
 }
 

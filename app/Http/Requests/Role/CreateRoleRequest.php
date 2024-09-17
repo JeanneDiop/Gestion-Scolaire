@@ -14,7 +14,7 @@ class CreateRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => ['required', 'string', 'max:50', 'alpha', 'min:3']
+           'nom' => ['required', 'string', 'max:50', 'regex:/^[\pL\s]+$/u', 'min:3']
         ];
     }
 
