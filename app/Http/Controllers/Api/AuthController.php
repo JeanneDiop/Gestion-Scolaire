@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Apprenant\CreateApprenantRequest;
 use App\Http\Requests\Enseignant\CreateEnseignantRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,7 @@ public function login(LogUserRequest $request)
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
+    //----------------------Tuteur-------------------
 
 public function registerTuteur(CreateTuteurRequest $request){
     $user = User::create([
@@ -190,7 +192,7 @@ public function registerTuteur(CreateTuteurRequest $request){
         'tuteur' => $tuteur,
     ]);
 }
-
+//-----------------Enseigant-------------------------------
 public function registerEnseignant(CreateEnseignantRequest $request){
     $user = User::create([
         'nom' => $request->nom,
@@ -211,7 +213,9 @@ public function registerEnseignant(CreateEnseignantRequest $request){
         'lieu_naissance' =>$request->lieu_naissance,
         'numero_CNI' =>$request->numero_CNI,
         'numero_securite_social'=>$request->numero_securite_social,
-        'statut' =>$request->statut
+        'statut' =>$request->statut,
+        'date_embauche' =>$request->date_embauche,
+        'date_fin_contrat' =>$request->date_fin_contrat,
     ]);
 
     return response()->json([
@@ -221,30 +225,30 @@ public function registerEnseignant(CreateEnseignantRequest $request){
         'enseigant' => $enseigant
     ]);
 }
+///---------------Apprenant-----------------------------
+public function registerApprenant(CreateApprenantRequest $request){
+    $user = User::create([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+        'role_nom' => 'apprenant',
+    ]);
 
+    $apprenant = $user->tuteur()->create([
+        ''=>$request->profession,
+    ]);
 
-
-
-public function refresh()
-{
-    // Assurez-vous que l'utilisateur est authentifié avec le garde 'api'
-    if (auth('api')->check()) {
-        // Rafraîchissez le token de l'utilisateur authentifié
-        $nouveauToken = auth('api')->refresh();
-
-        // Retournez la réponse avec le nouveau token
-        return response()->json([
-            "status" => true,
-            "message" => "Votre nouveau token",
-            "token" => $nouveauToken
-        ], 200);
-    } else {
-        // Retournez une réponse d'erreur si l'utilisateur n'est pas authentifié
-        return response()->json([
-            "status" => false,
-            "message" => "Utilisateur non authentifié"
-        ], 401);
-    }
+    return response()->json([
+        'status'=>200,
+        'message' => 'Utilisateur créer avec succes',
+        'user' => $user,
+        'apprenant' => $apprenant,
+    ]);
 }
 
 protected function respondWithToken($token,$user )

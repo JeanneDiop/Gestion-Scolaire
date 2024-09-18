@@ -42,6 +42,8 @@ class CreateEnseignantRequest extends FormRequest
             'numero_CNI' => 'required|string|unique:enseignants,numero_CNI',
             'numero_securite_social' => 'required|string|unique:enseignants,numero_securite_social',
             'statut' => 'required|in:permanent,vacataire,contractuel,honorariat',
+            'date_embauche' => 'required|date',
+            'date_fin_contrat' => 'required|date',
         ];
     }
 
@@ -53,6 +55,40 @@ class CreateEnseignantRequest extends FormRequest
     public function messages()
     {
         return [
+            'nom.required' => 'Le champ nom est obligatoire.',
+            'nom.string' => 'Le champ nom doit être une chaîne de caractères.',
+            'nom.max' => 'Le champ nom ne peut pas dépasser 255 caractères.',
+
+            'prenom.required' => 'Le champ prénom est obligatoire.',
+            'prenom.string' => 'Le champ prénom doit être une chaîne de caractères.',
+            'prenom.max' => 'Le champ prénom ne peut pas dépasser 255 caractères.',
+
+            'email.required' => 'Le champ email est obligatoire.',
+            'email.string' => 'Le champ email doit être une chaîne de caractères.',
+            'email.email' => 'Le champ email doit être une adresse email valide.',
+            'email.max' => 'Le champ email ne peut pas dépasser 255 caractères.',
+            'email.regex' => 'Le champ email ne correspond pas au format attendu.',
+            'email.unique' => 'Cette adresse email est déjà utilisée.',
+
+            'password.required' => 'Le champ mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+
+            'telephone.required' => 'Le champ téléphone est obligatoire.',
+            'telephone.regex' => 'Le numéro de téléphone doit commencer par +221 suivi d\'un code opérateur valide.',
+            'telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+
+            // 'image.required' => 'Le champ image est obligatoire.', // Ajoutez ce message si vous décidez de rendre ce champ obligatoire
+
+            'adresse.required' => 'Le champ adresse est obligatoire.',
+            'adresse.string' => 'Le champ adresse doit être une chaîne de caractères.',
+
+            'etat.sometimes' => 'Le champ état est parfois requis.',
+            'etat.string' => 'Le champ état doit être une chaîne de caractères.',
+            'etat.in' => 'Le champ état doit être l\'un des suivants : actif, inactif.',
+
+            'genre.required' => 'Le champ genre est obligatoire.',
+            'genre.string' => 'Le champ genre doit être une chaîne de caractères.',
+            'genre.in' => 'Le champ genre doit être l\'un des suivants : homme, femme.',
             'specialite.required' => 'La spécialité est requise.',
             'specialite.string' => 'La spécialité doit être une chaîne de caractères.',
             'specialite.max' => 'La spécialité ne peut pas dépasser 255 caractères.',
@@ -71,6 +107,10 @@ class CreateEnseignantRequest extends FormRequest
             'numero_securite_social.unique' => 'Le numéro de sécurité sociale est déjà utilisé.',
             'statut.required' => 'Le statut est requis.',
             'statut.in' => 'Le statut doit être l\'un des suivants : permanent, vacataire, contractuel, honorariat.',
+            'date_embauche.required' => 'La date d\'embauche est requise.',
+            'date_embauche.date' => 'La date d\'embauche doit être une date valide.',
+            'date_fin_contrat.required' => 'La date_fin_contrat est requise.',
+            'date_fin_contrat.date' => 'La date_fin_contrat doit être une date valide.',
         ];
     }
 

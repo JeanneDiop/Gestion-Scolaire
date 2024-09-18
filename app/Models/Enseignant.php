@@ -15,7 +15,9 @@ class Enseignant extends Model
         'lieu_naissance',
         'numero_securite_social',
         'statut',
-        'numero_CNI'
+        'numero_CNI',
+        'date_embauche',
+        'date_fin_contrat'
     ];
 
 
