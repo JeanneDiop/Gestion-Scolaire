@@ -35,6 +35,9 @@ class CreateApprenantRequest extends FormRequest
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
+            'date_naissance'=>'required|date',
+            'classe_id' => 'required|integer',
+            'tuteur_id' => 'required|integer',
         ];
     }
     public function messages()
@@ -74,12 +77,23 @@ class CreateApprenantRequest extends FormRequest
             'genre.required' => 'Le champ genre est obligatoire.',
             'genre.string' => 'Le champ genre doit être une chaîne de caractères.',
             'genre.in' => 'Le champ genre doit être l\'un des suivants : homme, femme.',
+            'date_naissance.required' => 'Le champ date de naissance est obligatoire.',
+            'date_naissance.date' => 'Le champ date de naissance doit être une date valide.',
+
+            'classe_id.required' => 'Le champ classe_id est obligatoire.',
+            'classe_id.integer' => 'Le champ classe_id doit être un entier.',
+
+            'tuteur_id.required' => 'Le champ tuteur_id est obligatoire.',
+            'tuteur_id.integer' => 'Le champ tuteur_id doit être un entier.',
     ];
 }
 
 protected function failedValidation(Validator $validator)
-{
-    $errors = $validator->errors()->toArray();
-    throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
-}
+    {
+        // Si la validation échoue, vous pouvez accéder aux erreurs
+        $errors = $validator->errors()->toArray();
+
+        // Retournez les erreurs dans la réponse JSON
+        throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
+    }
 }

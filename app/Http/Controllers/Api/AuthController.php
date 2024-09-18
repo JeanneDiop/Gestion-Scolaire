@@ -16,6 +16,8 @@ use App\Http\Requests\Tuteur\CreateTuteurRequest;
 
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Role;
+use App\Models\Classe;
+use App\Models\Tuteur;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
@@ -23,7 +25,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','refresh']]);
     }
 
  ///public function login()
@@ -192,7 +194,7 @@ public function registerTuteur(CreateTuteurRequest $request){
         'tuteur' => $tuteur,
     ]);
 }
-//-----------------Enseigant-------------------------------
+//-----------------Enseignant-------------------------------
 public function registerEnseignant(CreateEnseignantRequest $request){
     $user = User::create([
         'nom' => $request->nom,
@@ -226,7 +228,8 @@ public function registerEnseignant(CreateEnseignantRequest $request){
     ]);
 }
 ///---------------Apprenant-----------------------------
-public function registerApprenant(CreateApprenantRequest $request){
+public function registerApprenant(CreateApprenantRequest $request)
+{
     $user = User::create([
         'nom' => $request->nom,
         'prenom' => $request->prenom,
@@ -239,18 +242,25 @@ public function registerApprenant(CreateApprenantRequest $request){
         'role_nom' => 'apprenant',
     ]);
 
-    $apprenant = $user->tuteur()->create([
-        ''=>$request->profession,
+    $apprenant = $user->apprenant()->create([
+        'date_naissance' => $request->date_naissance,
+        'tuteur_id' => $request->tuteur_id,
+        'classe_id' => $request->classe_id,
     ]);
+
+    // Vous devez récupérer les informations du tuteur et de la classe si nécessaire
+    $tuteur = Tuteur::find($request->tuteur_id); // Assurez-vous d'importer le modèle Tuteur
+    $classe = Classe::find($request->classe_id); // Assurez-vous d'importer le modèle Classe
 
     return response()->json([
-        'status'=>200,
-        'message' => 'Utilisateur créer avec succes',
+        'status' => 200,
+        'message' => 'Utilisateur créé avec succès',
         'user' => $user,
         'apprenant' => $apprenant,
+        'tuteur' => $tuteur,
+        'classe' => $classe
     ]);
 }
-
 protected function respondWithToken($token,$user )
 {
     return response()->json([

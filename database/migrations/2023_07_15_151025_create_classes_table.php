@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('classes', function (Blueprint $table) {
             $table->id();
+            $table->string('nom');
+            $table->string('niveau_classe');
+            $table->foreignId('salle_id')->constrained()->onDelete('restrict');
+            $table->foreignId('enseignant_id')->constrained()->onDelete('restrict');
             $table->timestamps();
         });
     }

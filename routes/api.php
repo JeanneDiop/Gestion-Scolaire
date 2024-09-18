@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\RoleController;
+use App\Http\Controllers\API\SalleController;
+use App\Http\Controllers\API\ClasseController;
 
 
 /*
@@ -48,3 +50,10 @@ Route::get('role/{id}', [RoleController::class, 'show']);
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
 //-----------gestion user enseignant-------------
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
+//--------------gestion apprenant-------------
+Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
+//--------------------gestion classe-----------------------
+Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
+//------------------gestion salle-------------------------
+
+Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);

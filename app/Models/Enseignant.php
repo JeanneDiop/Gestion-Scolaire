@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Classe;
 
 class Enseignant extends Model
 {
@@ -25,4 +27,8 @@ class Enseignant extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function classe(){
+        return $this->hasmany(Classe::class);
+}
 }

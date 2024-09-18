@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\User;
 
 return new class extends Migration
 {
@@ -12,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('apprenants', function (Blueprint $table) {
+        Schema::create('salles', function (Blueprint $table) {
             $table->id();
-            $table->date('date_naissance');
-            $table->foreignId('tuteur_id')->constrained()->onDelete('cascade');
-            $table->foreignId('classe_id')->constrained()->onDelete('restrict');
-            $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
+            $table->string('nom');
+            $table->integer('capacity');
+            $table->string('type');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('apprenants');
+        Schema::dropIfExists('salles');
     }
 };
