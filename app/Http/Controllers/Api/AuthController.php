@@ -10,10 +10,8 @@ use App\Http\Requests\Apprenant\CreateApprenantRequest;
 use App\Http\Requests\Enseignant\CreateEnseignantRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-
 use App\Http\Requests\User\EditUserRequest;
 use App\Http\Requests\Tuteur\CreateTuteurRequest;
-
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Role;
 use App\Models\Classe;
@@ -25,55 +23,12 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','refresh']]);
     }
-
- ///public function login()
-///{
-    // Valider les données de la requête
-    ///$credentials = request()->validate([
-        ///'email' => 'required|email',
-        ///'password' => 'required'
-    ///]);
-
-    // Chercher l'utilisateur par email
-    ///$user = User::where('email', $credentials['email'])->first();
-
-    // Déboguer pour voir la valeur de $user
-    // dd($user);
-
-    // Vérifier si l'utilisateur existe
-    ///if ($user) {
-        // Vérifier si l'utilisateur est actif
-        ///if ($user->etat === 'actif') {
-            // Authentifier l'utilisateur et obtenir le token
-            ///if (!$token = auth()->attempt($credentials)) {
-                // Retourner une réponse 401 si les informations d'identification sont incorrectes
-               /// return response()->json(['error' => 'Unauthorized'], 401);
-           /// }
-
-            // Retourner les informations de l'utilisateur et le token en cas de succès
-            ///return response()->json([
-                ///'message' => 'Connexion réussie',
-                ///'user' => $user,
-                ///'token' => $token
-            ///]);
-        ///} else {
-            // Retourner une réponse 403 si l'utilisateur est inactif
-            ///return response()->json(['error' => 'Votre compte est inactif, vous ne pouvez pas vous connecter'], 403);
-       /// }
-    ///} else {
-        // Retourner une réponse 404 si l'utilisateur n'existe pas
-        ///return response()->json(['error' => 'Utilisateur non trouvé'], 404);
-    ///}
-///}
 
 public function login(LogUserRequest $request)
 {
-    //$request->validate([
-        //'email' => 'required|string|email',
-        //'password' => 'required|string',
-    //]);
+
     $credentials = $request->only('email', 'password');
     $token = Auth::attempt($credentials);
 
@@ -271,39 +226,14 @@ protected function respondWithToken($token,$user )
     ]);
 }
 
-public function update(EditUserRequest $request, User $user)
+///-------lister tous les utilisateurs-----------------
+public function ListeUtilisateur()
 {
-    try {
-        $userRole = auth()->user()->role_id;
-
-        if ($userRole == 1) {
-            // L'administrateur  (role_id égal à 1 ) aura le droit de modifier tous les comptes
-            $user->nom = $request->nom;
-            $user->prenom = $request->prenom;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->telephone = $request->telephone;
-            $user->adresse = $request->adresse;
-            $user->etat = $request->etat;
-            $user->role_id = $request->role_id;
-
-            $user->update();
-
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => "Modification du compte enregistré",
-                'user' => $user
-            ]);
-        } else {
-            // Un utilisateur avec un role_id différent de 1 n'a pas le droit de modifier
-            return response()->json([
-                'status_code' => 403,
-                'status_message' => "Vous n'avez pas la permission de modifier cet utilisateur",
-            ]);
-        }
-    } catch (Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
+    $users = User::where('role_nom', 'directeur')->orWhere('role_nom', 'enseignant')->orWhere('role_nom', 'tuteur')->orWhere('role_nom', 'apprenant')->orWhere('role_nom', 'employé')->get();
+    return response()->json([
+        'status'=>200,
+        'users' => $users
+    ]);
 }
 
 }

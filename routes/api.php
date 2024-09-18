@@ -31,6 +31,8 @@ Route::group(['middleware' => 'api'], function ($router) {
 
 Route::post('login', [AuthController::class, 'login']);
 
+//------lister tous les users------------------------
+Route::get('ListeUtilisateur',[AuthController::class,'ListeUtilisateur']);
 
 Route::put('directeur/edit/{user}', [AuthController::class, 'update']);
 
