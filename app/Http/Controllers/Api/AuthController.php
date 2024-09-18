@@ -23,7 +23,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -216,6 +216,27 @@ public function registerApprenant(CreateApprenantRequest $request)
         'classe' => $classe
     ]);
 }
+
+
+public function indexApprenant(){
+    $apprenant= Auth::user()->apprenant;
+    return response()->json([
+        'status'=>200,
+        'apprenant' => [
+            'nom'=>$apprenant->user->nom,
+            'prenom'=>$apprenant->user->prenom,
+            'email'=>$apprenant->user->email,
+            'genre'=>$apprenant->user->genre,
+            'telephone'=>$apprenant->user->telephone,
+            'etat'=>$apprenant->user->etat,
+            'adresse'=>$apprenant->adresse,
+            'date_naissance'=>$apprenant->date_naiss,
+            'tuteur_id'=>$apprenant->tuteur_id,
+            'classe_id'=>$apprenant->classe_id,
+        ]
+    ]);
+}
+
 protected function respondWithToken($token,$user )
 {
     return response()->json([
@@ -236,5 +257,32 @@ public function ListeUtilisateur()
     ]);
 }
 
+///lister apprenants
+public function indexApprenants() {
+    $apprenants = User::where('role_nom', 'apprenant')->get();
+
+    return response()->json([
+        'status' => 200,
+        'apprenants' => $apprenants,
+    ]);
+}
+//lister enseignants
+public function indexEnseignants() {
+    $enseignants = User::where('role_nom', 'enseignant')->get();
+
+    return response()->json([
+        'status' => 200,
+        'enseignants' => $enseignants,
+    ]);
+}
+//lister tuteur
+public function indexTuteurs() {
+    $tuteurs = User::where('role_nom', 'tuteur')->get();
+
+    return response()->json([
+        'status' => 200,
+        'enseignants' => $tuteurs,
+    ]);
+}
 }
 

@@ -50,10 +50,18 @@ Route::get('role/{id}', [RoleController::class, 'show']);
 
 //-----------gestion Utilisateur tuteur----------------
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
+//lister tuteur
+Route::get('tuteurs', [AuthController::class, 'indexTuteurs']);
 //-----------gestion user enseignant-------------
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
+
+//lister Enseignant
+Route::get('enseignants', [AuthController::class, 'indexEnseignants']);
 //--------------gestion apprenant-------------
+//ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
+//lister les apprenants
+Route::get('apprenants', [AuthController::class, 'indexApprenants']);
 //--------------------gestion classe-----------------------
 Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
 //------------------gestion salle-------------------------
