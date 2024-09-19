@@ -49,19 +49,26 @@ Route::get('role/{id}', [RoleController::class, 'show']);
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
 //lister tuteur
 Route::get('tuteurs', [AuthController::class, 'indexTuteurs']);
+//----afficher tuteur
+Route::get('/tuteur/{id}',[AuthController::class,'showTuteur']);
 //-----------gestion user enseignant-------------
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
 
 //lister Enseignant
 Route::get('enseignants', [AuthController::class, 'indexEnseignants']);
+//afficher un enseignant
+Route::get('/enseignant/{id}',[AuthController::class,'showEnseignant']);
 //--------------gestion apprenant-------------
 //ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 //lister les apprenants
 Route::get('apprenants', [AuthController::class, 'indexApprenants']);
 //lister les infos d'un apprenant
-Route::get('showapprenant',[AuthController::class,'showApprenant']);
+Route::get('/apprenant/{id}',[AuthController::class,'showApprenant']);
+
+
 //ajouter un directeur
+Route::get('/directeur/{id}',[AuthController::class,'showDirecteur']);
 
 Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
 //--------------------gestion classe-----------------------

@@ -13,6 +13,10 @@ use App\Http\Requests\User\LogUserRequest;
 use App\Models\Classe;
 use App\Models\Role;
 use App\Models\Tuteur;
+use App\Models\Apprenant;
+use App\Models\Enseignant;
+use App\Models\Directeur;
+
 
 use App\Models\User;
 use Exception;
@@ -27,7 +31,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -269,7 +273,7 @@ public function registerDirecteur(CreateDirecteurRequest $request){
     ]);
 }
 //afficher lapprenant authentifier
-public function showApprenant()
+public function show()
 {
     // Vérifier si l'utilisateur est authentifié
     if (!Auth::check()) {
@@ -338,13 +342,86 @@ public function ListeUtilisateur()
     ]);
 }
 
-///lister apprenants
+///-----lister apprenants
 public function indexApprenants() {
     $apprenants = User::where('role_nom', 'apprenant')->get();
 
     return response()->json([
         'status' => 200,
         'apprenants' => $apprenants,
+    ]);
+}
+//------afficher information dun apprenant
+
+public function showApprenant($id)
+{
+    // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
+    $apprenant = Apprenant::where('id', $id)->first();
+
+    if (!$apprenant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Apprenant non trouvé.',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'apprenant' => $apprenant,
+    ]);
+}
+//----------info enseignant
+public function showEnseignant($id)
+{
+    // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
+    $enseignant = Enseignant::where('id', $id)->first();
+
+    if (!$enseignant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'enseignant non trouvé.',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'enseignant' => $enseignant,
+    ]);
+}
+//---information dun directeur
+public function showDirecteur($id)
+{
+    
+    $directeur = Directeur::where('id', $id)->first();
+
+    if (!$directeur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'directeur non trouvé.',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'directeur' => $directeur,
+    ]);
+}
+
+public function showTuteur($id)
+{
+    
+    $tuteur = Tuteur::where('id', $id)->first();
+
+    if (!$tuteur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'tuteur non trouvé.',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'tuteur' => $tuteur,
     ]);
 }
 //lister enseignants
