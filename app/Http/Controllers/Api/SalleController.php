@@ -32,4 +32,29 @@ class SalleController extends Controller
             ]);
         }
     }
+
+
+    public function indexSalle()
+    {
+        try {
+          return response()->json([
+            'status_code' => 200,
+            'status_message' => 'tous les salles ont été recupéré',
+            'data' => Salle::all(),
+          ]);
+        } catch (Exception $e) {
+          return response()->json($e);
+        }
+      }
+
+      public function showSalle(string $id)
+      {
+          try {
+              $client = Salle::findOrFail($id);
+
+              return response()->json($client);
+          } catch (Exception) {
+              return response()->json(['message' => 'Désolé, pas de salle trouvé.'], 404);
+          }
+      }
 }

@@ -27,7 +27,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -268,25 +268,55 @@ public function registerDirecteur(CreateDirecteurRequest $request){
         'directeur' => $directeur
     ]);
 }
+//afficher lapprenant authentifier
+public function showApprenant()
+{
+    // Vérifier si l'utilisateur est authentifié
+    if (!Auth::check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Utilisateur non authentifié.',
+        ], 401);
+    }
 
-public function indexApprenant(){
-    $apprenant= Auth::user()->apprenant;
+    // Récupérer l'utilisateur authentifié
+    $user = Auth::user();
+
+    // Vérifier si l'utilisateur a un apprenant associé
+    $apprenant = $user->apprenant;
+    if (!$apprenant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Aucun apprenant associé à cet utilisateur.',
+        ], 404);
+    }
+
+    // Vérifier si l'utilisateur associé à l'apprenant existe
+    if (!$apprenant->user) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Utilisateur associé à l\'apprenant non trouvé.',
+        ], 404);
+    }
+
+    // Préparer la réponse
     return response()->json([
-        'status'=>200,
+        'status' => 200,
         'apprenant' => [
-            'nom'=>$apprenant->user->nom,
-            'prenom'=>$apprenant->user->prenom,
-            'email'=>$apprenant->user->email,
-            'genre'=>$apprenant->user->genre,
-            'telephone'=>$apprenant->user->telephone,
-            'etat'=>$apprenant->user->etat,
-            'adresse'=>$apprenant->adresse,
-            'date_naissance'=>$apprenant->date_naiss,
-            'tuteur_id'=>$apprenant->tuteur_id,
-            'classe_id'=>$apprenant->classe_id,
+            'nom' => $apprenant->user->nom,
+            'prenom' => $apprenant->user->prenom,
+            'email' => $apprenant->user->email,
+            'genre' => $apprenant->user->genre,
+            'telephone' => $apprenant->user->telephone,
+            'etat' => $apprenant->user->etat,
+            'adresse' => $apprenant->adresse,
+            'date_naissance' => $apprenant->date_naiss,
+            'tuteur_id' => $apprenant->tuteur_id,
+            'classe_id' => $apprenant->classe_id,
         ]
     ]);
 }
+
 
 protected function respondWithToken($token,$user )
 {

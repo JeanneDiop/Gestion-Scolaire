@@ -33,4 +33,28 @@ class ClasseController extends Controller
             ]);
         }
     }
+
+    public function indexClasse()
+    {
+        try {
+          return response()->json([
+            'status_code' => 200,
+            'status_message' => 'tous les classes ont été recupéré',
+            'data' => Classe::all(),
+          ]);
+        } catch (Exception $e) {
+          return response()->json($e);
+        }
+      }
+
+      public function showClasse(string $id)
+      {
+          try {
+              $client = Classe::findOrFail($id);
+
+              return response()->json($client);
+          } catch (Exception) {
+              return response()->json(['message' => 'Désolé, pas de classe trouvé.'], 404);
+          }
+      }
 }
