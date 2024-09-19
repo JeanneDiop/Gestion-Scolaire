@@ -13,6 +13,10 @@ class Apprenant extends Model
     use HasFactory;
     protected $fillable = [
         'date_naissance',
+        'lieu_naissance',
+        'numero_CNI',
+        'numero_carte_scolaire',
+        'statut_marital',
         'tuteur_id',
         'classe_id'
     ];

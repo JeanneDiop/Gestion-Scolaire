@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 
 return new class extends Migration
 {
@@ -14,7 +15,14 @@ return new class extends Migration
         Schema::create('directeurs', function (Blueprint $table) {
             $table->id();
             $table->date('date_naissance');
-            $table->foreignId('tuteur_id')->constrained()->onDelete('cascade');
+            $table->string('lieu_naissance');
+            $table->integer('annee_experience');
+            $table->integer('date_prise_fonction');
+            $table->string('numero_CNI')->unique();
+            $table->string('qualification_academique');
+            $table->enum('statut_marital', ['celibataire', 'marié']);
+            $table->date('date_embauche');
+            $table->date('date_fin_contrat')->nullable();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });

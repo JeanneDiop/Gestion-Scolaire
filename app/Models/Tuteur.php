@@ -12,7 +12,9 @@ class Tuteur extends Model
     use HasFactory;
 
     protected $fillable = [
-        'profession'
+        'profession',
+        'numero_CNI',
+        'statut_marital',
     ];
 
     public function user()

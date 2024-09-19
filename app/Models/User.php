@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Role;
 use App\Models\Tuteur;
 use App\Models\Apprenant;
+use App\Models\Directeur;
 use App\Models\Admin;
 use App\Models\Enseignant;
 use Laravel\Sanctum\HasApiTokens;
@@ -71,5 +72,9 @@ class User extends Authenticatable implements JWTSubject
     public function apprenant()
     {
         return $this->hasOne(Apprenant::class);
+    }
+    public function directeur()
+    {
+        return $this->hasOne(Directeur::class);
     }
 }

@@ -1,29 +1,33 @@
 <?php
 
 namespace App\Http\Controllers\API;
-use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Apprenant\CreateApprenantRequest;
+;
+use App\Http\Requests\Directeur\CreateDirecteurRequest;
 use App\Http\Requests\Enseignant\CreateEnseignantRequest;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\User\EditUserRequest;
 use App\Http\Requests\Tuteur\CreateTuteurRequest;
+use App\Http\Requests\User\EditUserRequest;
+
 use App\Http\Requests\User\LogUserRequest;
-use App\Models\Role;
 use App\Models\Classe;
+use App\Models\Role;
 use App\Models\Tuteur;
+
+use App\Models\User;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -140,6 +144,8 @@ public function registerTuteur(CreateTuteurRequest $request){
 
     $tuteur = $user->tuteur()->create([
         'profession'=>$request->profession,
+        'statut_marital'=>$request->statut_marital,
+        'numero_CNI'=>$request->numero_CNI,
     ]);
 
     return response()->json([
@@ -199,6 +205,10 @@ public function registerApprenant(CreateApprenantRequest $request)
 
     $apprenant = $user->apprenant()->create([
         'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'numero_carte_scolaire' => $request->numero_carte_scolaire,
+        'statut_marital' => $request->statut_marital,
         'tuteur_id' => $request->tuteur_id,
         'classe_id' => $request->classe_id,
     ]);
@@ -216,7 +226,48 @@ public function registerApprenant(CreateApprenantRequest $request)
         'classe' => $classe
     ]);
 }
+//------------------- directeur-------------
+public function registerDirecteur(CreateDirecteurRequest $request){
 
+    $validatedData = $request->validate([
+        'annee_experience' => ['required', 'regex:/^\d+\s*(ans|année|années)?$/'],
+        'date_prise_fonction' => 'required|integer|min:1900|max:' . date('Y'), // Validation pour INTEGER
+    ]);
+
+    $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']); // Extrait les chiffres uniquement
+
+    $date_prise_fonction = $validatedData['date_prise_fonction'];
+    $user = User::create([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+        'role_nom' => 'directeur',
+    ]);
+
+    $directeur = $user->directeur()->create([
+        'statut_marital'=>$request->statut_marital,
+        'date_naissance' =>$request->date_naissance,
+        'lieu_naissance' =>$request->lieu_naissance,
+        'numero_CNI' =>$request->numero_CNI,
+        'qualification_academique'=>$request->qualification_academique,
+        'date_prise_fonction' => $date_prise_fonction,
+        'annee_experience' => $annee_experience,
+        'date_embauche' =>$request->date_embauche,
+        'date_fin_contrat' =>$request->date_fin_contrat
+    ]);
+
+    return response()->json([
+        'status'=>200,
+        'message' => 'Utilisateur créer avec succes',
+        'user' => $user,
+        'directeur' => $directeur
+    ]);
+}
 
 public function indexApprenant(){
     $apprenant= Auth::user()->apprenant;

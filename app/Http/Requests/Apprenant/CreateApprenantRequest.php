@@ -36,6 +36,10 @@ class CreateApprenantRequest extends FormRequest
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
             'date_naissance'=>'required|date',
+            'lieu_naissance' => 'required|string|max:255',
+            'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
+            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
+            'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
         ];
@@ -79,6 +83,23 @@ class CreateApprenantRequest extends FormRequest
             'genre.in' => 'Le champ genre doit être l\'un des suivants : homme, femme.',
             'date_naissance.required' => 'Le champ date de naissance est obligatoire.',
             'date_naissance.date' => 'Le champ date de naissance doit être une date valide.',
+            'lieu_naissance.required' => 'Le champ lieu de naissance est obligatoire.',
+            'lieu_naissance.string' => 'Le champ lieu de naissance doit être une chaîne de caractères.',
+            'lieu_naissance.max' => 'Le champ lieu de naissance ne peut pas dépasser 255 caractères.',
+
+            'numero_CNI.unique' => 'Ce numéro de CNI est déjà enregistré.',
+            'numero_CNI.nullable' => 'Le numéro de CNI est facultatif.',
+            'numero_CNI.string' => 'Le champ numéro de CNI doit être une chaîne de caractères.',
+            'numero_CNI.max' => 'Le champ numéro de CNI ne peut pas dépasser 20 caractères.',
+
+            'numero_carte_scolaire.unique' => 'Ce numéro de carte scolaire est déjà enregistré.',
+            'numero_carte_scolaire.nullable' => 'Le numéro de carte scolaire est facultatif.',
+            'numero_carte_scolaire.string' => 'Le champ numéro de carte scolaire doit être une chaîne de caractères.',
+            'numero_carte_scolaire.max' => 'Le champ numéro de carte scolaire ne peut pas dépasser 20 caractères.',
+
+            'statut_marital.nullable' => 'Le statut marital est facultatif.',
+            'statut_marital.string' => 'Le champ statut marital doit être une chaîne de caractères.',
+            'statut_marital.in' => 'Le champ statut marital doit être l\'un des suivants : célibataire, marié.',
 
             'classe_id.required' => 'Le champ classe_id est obligatoire.',
             'classe_id.integer' => 'Le champ classe_id doit être un entier.',

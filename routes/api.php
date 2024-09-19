@@ -33,9 +33,6 @@ Route::post('login', [AuthController::class, 'login']);
 
 //------lister tous les users------------------------
 Route::get('ListeUtilisateur',[AuthController::class,'ListeUtilisateur']);
-
-Route::put('directeur/edit/{user}', [AuthController::class, 'update']);
-
 //----------Gestion Role----------------
 //ajouter role
 Route::post('ajouter/role', [RoleController::class, 'store']);
@@ -62,6 +59,10 @@ Route::get('enseignants', [AuthController::class, 'indexEnseignants']);
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 //lister les apprenants
 Route::get('apprenants', [AuthController::class, 'indexApprenants']);
+
+//ajouter un directeur
+
+Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
 //--------------------gestion classe-----------------------
 Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
 //------------------gestion salle-------------------------

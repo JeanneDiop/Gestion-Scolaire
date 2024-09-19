@@ -36,6 +36,8 @@ class CreateTuteurRequest extends FormRequest
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre'=>'required|string|in:homme,femme',
             'profession' => 'required|string',
+            'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
+            'numero_CNI' => ['nullable', 'string', 'unique:tuteurs'],
         ];
     }
     public function messages()
@@ -78,7 +80,15 @@ class CreateTuteurRequest extends FormRequest
 
             'profession.required' => 'Le champ profession est obligatoire.',
             'profession.string' => 'Le champ profession doit être une chaîne de caractères.',
-    ];
+            'statut_marital.nullable' => 'Le statut marital est facultatif.',
+            'statut_marital.string' => 'Le champ statut marital doit être une chaîne de caractères.',
+            'statut_marital.in' => 'Le champ statut marital doit être l\'un des suivants : célibataire, marié.',
+
+            'numero_CNI.nullable' => 'Le numéro de CNI est facultatif.',
+            'numero_CNI.string' => 'Le champ numéro de CNI doit être une chaîne de caractères.',
+            'numero_CNI.unique' => 'Ce numéro de CNI est déjà enregistré.',
+        ];
+    
     }
 
     protected function failedValidation(Validator $validator)
