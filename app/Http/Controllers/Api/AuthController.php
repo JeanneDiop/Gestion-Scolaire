@@ -272,56 +272,6 @@ public function registerDirecteur(CreateDirecteurRequest $request){
         'directeur' => $directeur
     ]);
 }
-//afficher lapprenant authentifier
-public function show()
-{
-    // Vérifier si l'utilisateur est authentifié
-    if (!Auth::check()) {
-        return response()->json([
-            'status' => 401,
-            'message' => 'Utilisateur non authentifié.',
-        ], 401);
-    }
-
-    // Récupérer l'utilisateur authentifié
-    $user = Auth::user();
-
-    // Vérifier si l'utilisateur a un apprenant associé
-    $apprenant = $user->apprenant;
-    if (!$apprenant) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'Aucun apprenant associé à cet utilisateur.',
-        ], 404);
-    }
-
-    // Vérifier si l'utilisateur associé à l'apprenant existe
-    if (!$apprenant->user) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'Utilisateur associé à l\'apprenant non trouvé.',
-        ], 404);
-    }
-
-    // Préparer la réponse
-    return response()->json([
-        'status' => 200,
-        'apprenant' => [
-            'nom' => $apprenant->user->nom,
-            'prenom' => $apprenant->user->prenom,
-            'email' => $apprenant->user->email,
-            'genre' => $apprenant->user->genre,
-            'telephone' => $apprenant->user->telephone,
-            'etat' => $apprenant->user->etat,
-            'adresse' => $apprenant->adresse,
-            'date_naissance' => $apprenant->date_naiss,
-            'tuteur_id' => $apprenant->tuteur_id,
-            'classe_id' => $apprenant->classe_id,
-        ]
-    ]);
-}
-
-
 protected function respondWithToken($token,$user )
 {
     return response()->json([
@@ -341,7 +291,7 @@ public function ListeUtilisateur()
         'users' => $users
     ]);
 }
-//lister tous les apprenants
+//lister tous les apprenants dans sa table
 public function ListerApprenant()
 {
     // Récupérer tous les apprenants avec les informations du tuteur et de la classe
@@ -374,39 +324,121 @@ public function ListerApprenant()
     ]);
 }
 
-//------lister tous les enseignants
-public function ListerEnseignant()
-{
-    // Récupérer tous les enseignants depuis la table 'enseignants'
-    $enseignants = Enseignant::all();
+ // Récupérer tous les enseignants depuis la table 'enseignants'
+ public function ListerEnseignant()
+ {
+     // Charger les enseignants avec leurs informations de User
+     $enseignants = Enseignant::with('user')->get();
 
-    return response()->json([
-        'status' => 200,
-        'enseignants' => $enseignants,
-    ]);
-}
+     // Créer une nouvelle structure de données sans duplications
+     $enseignantsData = $enseignants->map(function ($enseignant) {
+         return [
+             'id' => $enseignant->id,
+             'specialite' => $enseignant->specialite,
+             'statut_marital' => $enseignant->statut_marital,
+             'date_naissance' => $enseignant->date_naissance,
+             'lieu_naissance' => $enseignant->lieu_naissance,
+             'numero_CNI' => $enseignant->numero_CNI,
+             'numero_securite_social' => $enseignant->numero_securite_social,
+             'statut' => $enseignant->statut,
+             'date_embauche' => $enseignant->date_embauche,
+             'date_fin_contrat' => $enseignant->date_fin_contrat,
+             'user' => $enseignant->user ? [
+                 'id' => $enseignant->user->id,
+                 'nom' => $enseignant->user->nom,
+                 'prenom' => $enseignant->user->prenom,
+                 'telephone' => $enseignant->user->telephone,
+                 'email' => $enseignant->user->email,
+                 'genre' => $enseignant->user->genre,
+                 'etat' => $enseignant->user->etat,
+                 'adresse' => $enseignant->user->adresse,
+                 'role_nom' => $enseignant->user->role_nom,
+             ] : null,
+         ];
+     });
 
-public function ListerDirecteur()
-{
-    // Récupérer tous les directeurs depuis la table 'directeurs'
-    $directeurs = Directeur::all();
+     return response()->json([
+         'status' => 200,
+         'enseignants' => $enseignantsData,
+     ]);
+ }
 
-    return response()->json([
-        'status' => 200,
-        'directeurs' => $directeurs,
-    ]);
-}
-//----------------lister tuteur
+
+ // Récupérer tous les directeurs depuis la table 'directeurs'
+ public function ListerDirecteur()
+ {
+     // Charger les directeurs avec leurs informations de User
+     $directeurs = Directeur::with('user')->get();
+
+     // Créer une nouvelle structure de données sans duplications
+     $directeursData = $directeurs->map(function ($directeur) {
+         return [
+            // Ajoute ici les attributs spécifiques à Directeur
+             'id' => $directeur->id,
+             'date_naissance' => $directeur->date_naissance,
+             'lieu_naissance' => $directeur->lieu_naissance,
+             'annee_experience' => $directeur->annee_experience,
+             'date_prise_fonction' => $directeur->date_prise_fonction,
+             'numero_CNI' => $directeur->numero_CNI,
+             'qualification_academique' => $directeur->qualification_academique,
+             'statut_marital' => $directeur->statut_marital,
+             'date_embauche' => $directeur->date_embauche,
+             'date_fin_contrat' => $directeur->date_fin_contrat,
+             'user' => $directeur->user ? [
+                 'id' => $directeur->user->id,
+                 'nom' => $directeur->user->nom,
+                 'prenom' => $directeur->user->prenom,
+                 'telephone' => $directeur->user->telephone,
+                 'email' => $directeur->user->email,
+                 'genre' => $directeur->user->genre,
+                 'etat' => $directeur->user->etat,
+                 'adresse' => $directeur->user->adresse,
+                 'role_nom' => $directeur->user->role_nom,
+             ] : null,
+         ];
+     });
+
+     return response()->json([
+         'status' => 200,
+         'directeurs' => $directeursData,
+     ]);
+ }
+
+//----------------lister tuteur dans sa table
 public function ListerTuteur()
 {
-    // Récupérer tous les tuteurs depuis la table 'tuteurs'
-    $tuteurs = Tuteur::all();
+    // Charger les tuteurs avec leurs informations de User
+    $tuteurs = Tuteur::with('user')->get();
+
+    // Créer une nouvelle structure de données sans duplications
+    $tuteursData = $tuteurs->map(function ($tuteur) {
+        return [
+            // Attributs spécifiques au modèle Tuteur
+            'id' => $tuteur->id,
+            'profession' => $tuteur->profession,
+            'statut_marital' => $tuteur->statut_marital,
+            'numero_CNI' => $tuteur->numero_CNI,
+            // Attributs spécifiques au modèle User
+            'user' => $tuteur->user ? [
+                'id' => $tuteur->user->id,
+                'nom' => $tuteur->user->nom,
+                'prenom' => $tuteur->user->prenom,
+                'telephone' => $tuteur->user->telephone,
+                'email' => $tuteur->user->email,
+                'genre' => $tuteur->user->genre,
+                'etat' => $tuteur->user->etat,
+                'adresse' => $tuteur->user->adresse,
+                'role_nom' => $tuteur->user->role_nom,
+            ] : null,
+        ];
+    });
 
     return response()->json([
         'status' => 200,
-        'tuteurs' => $tuteurs,
+        'tuteurs' => $tuteursData,
     ]);
 }
+
 ///-----lister tous les apprenants qui se trouve dans la table user
 public function indexApprenants()
 {
@@ -452,7 +484,7 @@ public function indexApprenants()
 
 
 
-//------afficher information dun apprenant
+//------afficher information dun apprenant dans sa table
 
 public function showApprenant($id)
 {
@@ -490,85 +522,244 @@ public function showApprenant($id)
     ]);
 }
 
-//----------info enseignant
+//----------info enseignant dans sa table
 public function showEnseignant($id)
 {
-    // Récupérer enseignant avec l'ID spécifié depuis la table 'enseignant'
-    $enseignant = Enseignant::where('id', $id)->first();
+    // Récupérer l'enseignant avec l'ID spécifié depuis la table 'enseignant'
+    $enseignant = Enseignant::with('user')->where('id', $id)->first();
 
     if (!$enseignant) {
         return response()->json([
             'status' => 404,
-            'message' => 'enseignant non trouvé.',
+            'message' => 'Enseignant non trouvé.',
         ], 404);
     }
 
+    // Structurer les données de l'enseignant et de User
+    $enseignantData = [
+        'id' => $enseignant->id,
+        'specialite' => $enseignant->specialite,
+        'statut_marital' => $enseignant->statut_marital,
+        'date_naissance' => $enseignant->date_naissance,
+        'lieu_naissance' => $enseignant->lieu_naissance,
+        'numero_CNI' => $enseignant->numero_CNI,
+        'numero_securite_social' => $enseignant->numero_securite_social,
+        'statut' => $enseignant->statut,
+        'date_embauche' => $enseignant->date_embauche,
+        'date_fin_contrat' => $enseignant->date_fin_contrat,
+        'user' => $enseignant->user ? [
+            'id' => $enseignant->user->id,
+            'nom' => $enseignant->user->nom,
+            'prenom' => $enseignant->user->prenom,
+            'telephone' => $enseignant->user->telephone,
+            'email' => $enseignant->user->email,
+            'genre' => $enseignant->user->genre,
+            'etat' => $enseignant->user->etat,
+            'adresse' => $enseignant->user->adresse,
+            'role_nom' => $enseignant->user->role_nom,
+        ] : null,
+    ];
+
     return response()->json([
         'status' => 200,
-        'enseignant' => $enseignant,
+        'enseignant' => $enseignantData,
     ]);
 }
-//---information dun directeur
+
+
+//---information dun directeur dans sa table
 public function showDirecteur($id)
 {
-
-    $directeur = Directeur::where('id', $id)->first();
+    // Récupérer le directeur avec l'ID spécifié
+    $directeur = Directeur::with('user')->where('id', $id)->first();
 
     if (!$directeur) {
         return response()->json([
             'status' => 404,
-            'message' => 'directeur non trouvé.',
+            'message' => 'Directeur non trouvé.',
         ], 404);
     }
 
+    // Créer une structure de données personnalisée
+    $directeurData = [
+        'id' => $directeur->id,
+        'date_naissance' => $directeur->date_naissance,
+        'lieu_naissance' => $directeur->lieu_naissance,
+        'annee_experience' => $directeur->annee_experience,
+        'date_prise_fonction' => $directeur->date_prise_fonction,
+        'numero_CNI' => $directeur->numero_CNI,
+        'qualification_academique' => $directeur->qualification_academique,
+        'statut_marital' => $directeur->statut_marital,
+        'date_embauche' => $directeur->date_embauche,
+        'date_fin_contrat' => $directeur->date_fin_contrat,
+        'user' => $directeur->user ? [
+            'id' => $directeur->user->id,
+            'nom' => $directeur->user->nom,
+            'prenom' => $directeur->user->prenom,
+            'telephone' => $directeur->user->telephone,
+            'email' => $directeur->user->email,
+            'genre' => $directeur->user->genre,
+            'etat' => $directeur->user->etat,
+            'adresse' => $directeur->user->adresse,
+            'role_nom' => $directeur->user->role_nom,
+        ] : null,
+    ];
+
     return response()->json([
         'status' => 200,
-        'directeur' => $directeur,
+        'directeur' => $directeurData,
     ]);
 }
 
+//afficher les details dun tuteur dans sa table
 public function showTuteur($id)
 {
-
-    $tuteur = Tuteur::where('id', $id)->first();
+    // Récupérer le tuteur avec l'ID spécifié
+    $tuteur = Tuteur::with('user')->where('id', $id)->first();
 
     if (!$tuteur) {
         return response()->json([
             'status' => 404,
-            'message' => 'tuteur non trouvé.',
+            'message' => 'Tuteur non trouvé.',
         ], 404);
     }
 
+    // Créer une structure de données sans duplications
+    $tuteurData = [
+        // Attributs spécifiques au modèle Tuteur
+        'id' => $tuteur->id,
+        'profession' => $tuteur->profession,
+        'statut_marital' => $tuteur->statut_marital,
+        'numero_CNI' => $tuteur->numero_CNI,
+        // Attributs spécifiques au modèle User
+        'user' => $tuteur->user ? [
+            'id' => $tuteur->user->id,
+            'nom' => $tuteur->user->nom,
+            'prenom' => $tuteur->user->prenom,
+            'telephone' => $tuteur->user->telephone,
+            'email' => $tuteur->user->email,
+            'genre' => $tuteur->user->genre,
+            'etat' => $tuteur->user->etat,
+            'adresse' => $tuteur->user->adresse,
+            'role_nom' => $tuteur->user->role_nom,
+        ] : null,
+    ];
+
     return response()->json([
         'status' => 200,
-        'tuteur' => $tuteur,
+        'tuteur' => $tuteurData,
     ]);
 }
-//lister enseignants
-public function indexEnseignants() {
+
+//lister enseignants qui se trouve dans la table user
+public function indexEnseignants()
+{
+    // Récupérer tous les utilisateurs avec le rôle 'enseignant'
     $enseignants = User::where('role_nom', 'enseignant')->get();
 
-    return response()->json([
-        'status' => 200,
-        'enseignants' => $enseignants,
-    ]);
-}
-//lister tuteur
-public function indexTuteurs() {
-    $tuteurs = User::where('role_nom', 'tuteur')->get();
+    // Récupérer les informations correspondantes des enseignants
+    $enseignantsData = $enseignants->map(function ($user) {
+        // Récupérer l'enseignant associé à cet utilisateur
+        $enseignant = Enseignant::where('user_id', $user->id)->first(); // Remplace 'user_id' par la clé étrangère appropriée
+
+        // Structurer les données
+        $enseignantData = $enseignant ? [
+            'id' => $enseignant->id,
+            'specialite' => $enseignant->specialite,
+            'statut_marital' => $enseignant->statut_marital,
+            'date_naissance' => $enseignant->date_naissance,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'numero_securite_social' => $enseignant->numero_securite_social,
+            'statut' => $enseignant->statut,
+            'date_embauche' => $enseignant->date_embauche,
+            'date_fin_contrat' => $enseignant->date_fin_contrat,
+        ] : [];
+
+        // Fusionner les données de User et Enseignant
+        return array_merge($user->toArray(), $enseignantData);
+    });
 
     return response()->json([
         'status' => 200,
-        'tuteurs' => $tuteurs,
+        'enseignants' => $enseignantsData,
     ]);
 }
-public function indexDirecteurs() {
-    $directeurs = User::where('role_nom', 'directeur')->get();
+
+
+
+//lister tous tuteurs dans la table user
+public function indexTuteurs()
+{
+    // Récupérer les tuteurs à partir de la table User
+    $tuteurs = User::where('role_nom', 'tuteur')->with('tuteur')->get();
+
+    // Créer une nouvelle structure de données
+    $tuteursData = $tuteurs->map(function ($user) {
+        return [
+            // Attributs spécifiques au modèle User
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'telephone' => $user->telephone,
+            'email' => $user->email,
+            'genre' => $user->genre,
+            'etat' => $user->etat,
+            'adresse' => $user->adresse,
+            'role_nom' => $user->role_nom,
+            // Attributs spécifiques au modèle Tuteur
+            'tuteur' => $user->tuteur ? [
+                'profession' => $user->tuteur->profession,
+                'statut_marital' => $user->tuteur->statut_marital,
+                'numero_CNI' => $user->tuteur->numero_CNI,
+            ] : null,
+        ];
+    });
 
     return response()->json([
         'status' => 200,
-        'directeurs' => $directeurs,
+        'tuteurs' => $tuteursData,
     ]);
 }
+
+//lister tous les directeurs dans la table user
+public function indexDirecteurs()
+{
+    $directeurs = User::where('role_nom', 'directeur')->with('directeur')->get();
+
+    // Créer une nouvelle structure de données
+    $directeursData = $directeurs->map(function ($user) {
+        return [
+            // Attributs spécifiques au modèle User
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'telephone' => $user->telephone,
+            'email' => $user->email,
+            'genre' => $user->genre,
+            'etat' => $user->etat,
+            'adresse' => $user->adresse,
+            'role_nom' => $user->role_nom,
+            // Attributs spécifiques au modèle Directeur
+            'directeur' => $user->directeur ? [
+                'date_naissance' => $user->directeur->date_naissance,
+                'lieu_naissance' => $user->directeur->lieu_naissance,
+                'annee_experience' => $user->directeur->annee_experience,
+                'date_prise_fonction' => $user->directeur->date_prise_fonction,
+                'numero_CNI' => $user->directeur->numero_CNI,
+                'qualification_academique' => $user->directeur->qualification_academique,
+                'statut_marital' => $user->directeur->statut_marital,
+                'date_embauche' => $user->directeur->date_embauche,
+                'date_fin_contrat' => $user->directeur->date_fin_contrat,
+            ] : null,
+        ];
+    });
+
+    return response()->json([
+        'status' => 200,
+        'directeurs' => $directeursData,
+    ]);
+}
+
 }
 
