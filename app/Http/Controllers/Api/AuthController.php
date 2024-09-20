@@ -31,7 +31,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur', 'registerDirecteur', 'indexApprenants','indexEnseignants','indexTuteurs','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur', 'indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -341,22 +341,125 @@ public function ListeUtilisateur()
         'users' => $users
     ]);
 }
+//lister tous les apprenants
+public function ListerApprenant()
+{
+    // Récupérer tous les apprenants avec les informations du tuteur et de la classe
+    $apprenants = Apprenant::with(['tuteur.user', 'classe.salle', 'classe.enseignant.user'])->get();
 
-///-----lister apprenants
-public function indexApprenants() {
-    $apprenants = User::where('role_nom', 'apprenant')->get();
+    // Fusionner les informations du tuteur et de l'enseignant
+    $apprenants = $apprenants->map(function ($apprenant) {
+        // Vérification du tuteur
+        if ($apprenant->tuteur && is_object($apprenant->tuteur)) {
+            $tuteur = $apprenant->tuteur;
+            $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+            $apprenant->tuteur = $tuteurData;
+        }
+
+        // Vérification de la classe et de l'enseignant
+        if ($apprenant->classe) {
+            if ($apprenant->classe->enseignant && is_object($apprenant->classe->enseignant)) {
+                $enseignant = $apprenant->classe->enseignant;
+                $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
+                $apprenant->classe->enseignant = $enseignantData;
+            }
+        }
+
+        return $apprenant;
+    });
 
     return response()->json([
         'status' => 200,
         'apprenants' => $apprenants,
     ]);
 }
+
+//------lister tous les enseignants
+public function ListerEnseignant()
+{
+    // Récupérer tous les enseignants depuis la table 'enseignants'
+    $enseignants = Enseignant::all();
+
+    return response()->json([
+        'status' => 200,
+        'enseignants' => $enseignants,
+    ]);
+}
+
+public function ListerDirecteur()
+{
+    // Récupérer tous les directeurs depuis la table 'directeurs'
+    $directeurs = Directeur::all();
+
+    return response()->json([
+        'status' => 200,
+        'directeurs' => $directeurs,
+    ]);
+}
+//----------------lister tuteur
+public function ListerTuteur()
+{
+    // Récupérer tous les tuteurs depuis la table 'tuteurs'
+    $tuteurs = Tuteur::all();
+
+    return response()->json([
+        'status' => 200,
+        'tuteurs' => $tuteurs,
+    ]);
+}
+///-----lister tous les apprenants qui se trouve dans la table user
+public function indexApprenants()
+{
+    // Charger les apprenants avec les informations associées
+    $apprenants = User::with([
+        'apprenant.tuteur.user', // Charger le tuteur et son User
+        'apprenant.classe.salle', // Charger la salle
+        'apprenant.classe.enseignant.user' // Charger l'enseignant et son User
+    ])->where('role_nom', 'apprenant')->get();
+
+    // Fusionner les attributs du Tuteur et de User
+    $apprenants = $apprenants->map(function ($user) {
+        if ($user->apprenant) {
+            // Fusionner le tuteur
+            if ($user->apprenant->tuteur) {
+                $tuteur = $user->apprenant->tuteur;
+                $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+                $user->apprenant->tuteur = $tuteurData;
+            }
+
+            // Fusionner l'enseignant
+            if ($user->apprenant->classe && $user->apprenant->classe->enseignant) {
+                $enseignant = $user->apprenant->classe->enseignant;
+                if (is_object($enseignant)) { // Vérifie si c'est un objet
+                    $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
+                } else {
+                    $enseignantData = $enseignant; // Si c'est déjà un tableau
+                }
+                $user->apprenant->classe->enseignant = $enseignantData;
+            }
+        }
+
+        return $user;
+    });
+
+    return response()->json([
+        'status' => 200,
+        'apprenants' => $apprenants,
+    ]);
+}
+
+
+
+
+
 //------afficher information dun apprenant
 
 public function showApprenant($id)
 {
     // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
-    $apprenant = Apprenant::where('id', $id)->first();
+    $apprenant = Apprenant::with(['tuteur.user', 'classe.salle', 'classe.enseignant.user'])
+        ->where('id', $id)
+        ->first();
 
     if (!$apprenant) {
         return response()->json([
@@ -365,15 +468,32 @@ public function showApprenant($id)
         ], 404);
     }
 
+    // Fusionner les informations du tuteur
+    if ($apprenant->tuteur) {
+        $tuteur = $apprenant->tuteur;
+        $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        $apprenant->tuteur = $tuteurData;
+    }
+
+    // Fusionner les informations de la classe et de l'enseignant
+    if ($apprenant->classe) {
+        if ($apprenant->classe->enseignant) {
+            $enseignant = $apprenant->classe->enseignant;
+            $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
+            $apprenant->classe->enseignant = $enseignantData;
+        }
+    }
+
     return response()->json([
         'status' => 200,
         'apprenant' => $apprenant,
     ]);
 }
+
 //----------info enseignant
 public function showEnseignant($id)
 {
-    // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
+    // Récupérer enseignant avec l'ID spécifié depuis la table 'enseignant'
     $enseignant = Enseignant::where('id', $id)->first();
 
     if (!$enseignant) {
@@ -391,7 +511,7 @@ public function showEnseignant($id)
 //---information dun directeur
 public function showDirecteur($id)
 {
-    
+
     $directeur = Directeur::where('id', $id)->first();
 
     if (!$directeur) {
@@ -409,7 +529,7 @@ public function showDirecteur($id)
 
 public function showTuteur($id)
 {
-    
+
     $tuteur = Tuteur::where('id', $id)->first();
 
     if (!$tuteur) {
@@ -439,7 +559,15 @@ public function indexTuteurs() {
 
     return response()->json([
         'status' => 200,
-        'enseignants' => $tuteurs,
+        'tuteurs' => $tuteurs,
+    ]);
+}
+public function indexDirecteurs() {
+    $directeurs = User::where('role_nom', 'directeur')->get();
+
+    return response()->json([
+        'status' => 200,
+        'directeurs' => $directeurs,
     ]);
 }
 }
