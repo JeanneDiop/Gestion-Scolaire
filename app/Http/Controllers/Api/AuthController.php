@@ -299,6 +299,7 @@ public function ListerApprenant()
 
     // Créer une nouvelle structure de données
     $apprenantsData = $apprenants->map(function ($apprenant) {
+        // Informations de base de l'apprenant
         $data = [
             'id' => $apprenant->id,
             'date_naissance' => $apprenant->date_naissance,
@@ -315,44 +316,51 @@ public function ListerApprenant()
                 'genre' => $apprenant->user->genre,
                 'etat' => $apprenant->user->etat,
                 'adresse' => $apprenant->user->adresse,
-                'role_nom' => $apprenant->user->role_nom,
-                // Ajoute d'autres champs si nécessaire
+                'role_nom' => $apprenant->user->apprenant,
             ] : null,
         ];
 
         // Vérification du tuteur
         if ($apprenant->tuteur) {
             $tuteur = $apprenant->tuteur;
+            // Si l'utilisateur associé au tuteur existe, on fusionne les données du tuteur et de l'utilisateur
             $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
         } else {
-            // Si le tuteur n'existe pas, tu peux le laisser vide ou définir un tableau vide
-            $data['tuteur'] = null; // ou null, selon ta préférence
+            $data['tuteur'] = null; // Si pas de tuteur, on définit à null
         }
 
-        // Vérification de la classe et de l'enseignant
+        // Vérification de la classe et de la salle
         if ($apprenant->classe) {
             $data['classe'] = [
                 'id' => $apprenant->classe->id,
-                'salle' => $apprenant->classe->salle ? $apprenant->classe->salle->nom : null,
+                'nom_classe' => $apprenant->classe->nom, // Ajout du nom de la classe
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
+                ] : null, // Si pas de salle, on définit à null
                 'enseignant' => $apprenant->classe->enseignant ? [
                     'id' => $apprenant->classe->enseignant->id,
                     'nom' => $apprenant->classe->enseignant->user->nom,
                     'prenom' => $apprenant->classe->enseignant->user->prenom,
-                    // Ajoute d'autres champs de l'enseignant ici
-                ] : null,
+                    'telephone' => $apprenant->classe->enseignant->user->telephone,
+                    'email' => $apprenant->classe->enseignant->user->email,
+                    'specialite' => $apprenant->classe->enseignant->user->specialite,
+                ] : null, // Si pas d'enseignant, on définit à null
             ];
         } else {
-            $data['classe'] = null;
+            $data['classe'] = null; // Si pas de classe, on définit à null
         }
 
-        return $data;
+        return $data; // Retour des données de l'apprenant formatées
     });
 
     return response()->json([
         'status' => 200,
-        'apprenants' => $apprenantsData,
+        'apprenants' => $apprenantsData, // Retour des données des apprenants
     ]);
 }
+
 
 
  // Récupérer tous les enseignants depuis la table 'enseignants'
@@ -498,7 +506,7 @@ public function indexApprenants()
                 'genre' => $user->genre,
                 'etat' => $user->etat,
                 'adresse' => $user->adresse,
-                'role_nom' => $user->role_nom,
+                'role_nom' => $user->apprenant,
                 // Ajoute d'autres champs si nécessaire
             ] : null,
         ];
@@ -511,16 +519,32 @@ public function indexApprenants()
             $data['tuteur'] = null; // ou un tableau vide, selon ta préférence
         }
 
-        // Vérification de la classe et de l'enseignant
+        // Vérification de la classe et de la salle
         if ($user->apprenant->classe) {
             $data['classe'] = [
                 'id' => $user->apprenant->classe->id,
-                'salle' => $user->apprenant->classe->salle ? $user->apprenant->classe->salle->nom : null,
+                'nom' => $user->apprenant->classe->nom, // Nom de la classe (si disponible)
+                'niveau_classe' => $user->apprenant->classe->niveau_classe, // Ajoute d'autres attributs de la classe si nécessaires
+                'salle' => $user->apprenant->classe->salle ? [
+                    'id' => $user->apprenant->classe->salle->id,
+                    'nom' => $user->apprenant->classe->salle->nom,
+                    'capacity' => $user->apprenant->classe->salle->capacity, // Capacité de la salle
+                    'type' => $user->apprenant->classe->salle->type, // Type ou emplacement de la salle
+                ] : null,
+                // Vérification de l'enseignant
                 'enseignant' => $user->apprenant->classe->enseignant ? [
                     'id' => $user->apprenant->classe->enseignant->id,
                     'nom' => $user->apprenant->classe->enseignant->user->nom,
                     'prenom' => $user->apprenant->classe->enseignant->user->prenom,
-                    // Ajoute d'autres champs de l'enseignant ici
+                    'telephone' => $user->apprenant->classe->enseignant->user->telephone,
+                    'adresse' => $user->apprenant->classe->enseignant->user->adresse,
+                    'specialite' => $user->apprenant->classe->enseignant->user->specialite,
+                    'statut_marital' => $user->apprenant->classe->enseignant->user->statut_marital,
+                    'date_naissance' => $user->apprenant->classe->enseignant->user->date_naissance,
+                    'lieu_naissance' => $user->apprenant->classe->enseignant->user->lieu_naissance,
+                    'numero_CNI' => $user->apprenant->classe->enseignant->user->numero_CNI,
+                    'numero_securite_social' => $user->apprenant->classe->enseignant->user->numero_securite_social,
+                    'statut' => $user->apprenant->classe->enseignant->user->statut, // Corrigé ici
                 ] : null,
             ];
         } else {
@@ -556,7 +580,7 @@ public function showApprenant($id)
         ], 404);
     }
 
-    // Créer une nouvelle structure de données
+    // Structurer les données de l'apprenant
     $apprenantData = [
         'id' => $apprenant->id,
         'date_naissance' => $apprenant->date_naissance,
@@ -573,32 +597,48 @@ public function showApprenant($id)
             'genre' => $apprenant->user->genre,
             'etat' => $apprenant->user->etat,
             'adresse' => $apprenant->user->adresse,
-            'role_nom' => $apprenant->user->role_nom,
+            'role_nom' => $apprenant->user->apprenant,
         ] : null,
     ];
 
     // Vérification du tuteur
     if ($apprenant->tuteur) {
         $tuteur = $apprenant->tuteur;
+        // Si l'utilisateur associé au tuteur existe, on fusionne les données du tuteur et de l'utilisateur
         $apprenantData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
     } else {
-        $apprenantData['tuteur'] = null; // ou un tableau vide, selon ta préférence
+        $apprenantData['tuteur'] = null; // Si pas de tuteur, on définit à null
     }
 
-    // Vérification de la classe et de l'enseignant
+    // Vérification de la classe, de la salle et de l'enseignant
     if ($apprenant->classe) {
         $apprenantData['classe'] = [
             'id' => $apprenant->classe->id,
-            'salle' => $apprenant->classe->salle ? $apprenant->classe->salle->nom : null,
+            'nom' => $apprenant->classe->nom, // Nom de la classe
+            'niveau_classe' => $apprenant->classe->niveau_classe, // Niveau de la classe
+            'salle' => $apprenant->classe->salle ? [
+                'id' => $apprenant->classe->salle->id,
+                'nom' => $apprenant->classe->salle->nom,
+                'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
+                'type' => $apprenant->classe->salle->type, // Type de la salle
+            ] : null, // Si la salle n'existe pas, on met null
             'enseignant' => $apprenant->classe->enseignant ? [
                 'id' => $apprenant->classe->enseignant->id,
                 'nom' => $apprenant->classe->enseignant->user->nom,
                 'prenom' => $apprenant->classe->enseignant->user->prenom,
-                // Ajoute d'autres champs de l'enseignant ici
-            ] : null,
+                'telephone' => $apprenant->classe->enseignant->user->telephone,
+                'adresse' => $apprenant->classe->enseignant->user->adresse,
+                'specialite' => $apprenant->classe->enseignant->user->specialite,
+                'statut_marital' => $apprenant->classe->enseignant->user->statut_marital,
+                'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
+                'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
+                'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
+                'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
+                'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
+            ] : null, // Si l'enseignant n'existe pas, on met null
         ];
     } else {
-        $apprenantData['classe'] = null;
+        $apprenantData['classe'] = null; // Si pas de classe, on met null
     }
 
     return response()->json([
@@ -606,7 +646,6 @@ public function showApprenant($id)
         'apprenant' => $apprenantData,
     ]);
 }
-
 
 //----------info enseignant dans sa table
 public function showEnseignant($id)
