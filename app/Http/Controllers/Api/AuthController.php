@@ -294,35 +294,66 @@ public function ListeUtilisateur()
 //lister tous les apprenants dans sa table
 public function ListerApprenant()
 {
-    // Récupérer tous les apprenants avec les informations du tuteur et de la classe
-    $apprenants = Apprenant::with(['tuteur.user', 'classe.salle', 'classe.enseignant.user'])->get();
+    // Récupérer tous les apprenants avec les informations du tuteur, de la classe, et de l'utilisateur associé
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])->get();
 
-    // Fusionner les informations du tuteur et de l'enseignant
-    $apprenants = $apprenants->map(function ($apprenant) {
+    // Créer une nouvelle structure de données
+    $apprenantsData = $apprenants->map(function ($apprenant) {
+        $data = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'statut_marital' => $apprenant->statut_marital,
+            'user' => $apprenant->user ? [
+                'id' => $apprenant->user->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'adresse' => $apprenant->user->adresse,
+                'role_nom' => $apprenant->user->role_nom,
+                // Ajoute d'autres champs si nécessaire
+            ] : null,
+        ];
+
         // Vérification du tuteur
-        if ($apprenant->tuteur && is_object($apprenant->tuteur)) {
+        if ($apprenant->tuteur) {
             $tuteur = $apprenant->tuteur;
-            $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
-            $apprenant->tuteur = $tuteurData;
+            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        } else {
+            // Si le tuteur n'existe pas, tu peux le laisser vide ou définir un tableau vide
+            $data['tuteur'] = null; // ou null, selon ta préférence
         }
 
         // Vérification de la classe et de l'enseignant
         if ($apprenant->classe) {
-            if ($apprenant->classe->enseignant && is_object($apprenant->classe->enseignant)) {
-                $enseignant = $apprenant->classe->enseignant;
-                $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
-                $apprenant->classe->enseignant = $enseignantData;
-            }
+            $data['classe'] = [
+                'id' => $apprenant->classe->id,
+                'salle' => $apprenant->classe->salle ? $apprenant->classe->salle->nom : null,
+                'enseignant' => $apprenant->classe->enseignant ? [
+                    'id' => $apprenant->classe->enseignant->id,
+                    'nom' => $apprenant->classe->enseignant->user->nom,
+                    'prenom' => $apprenant->classe->enseignant->user->prenom,
+                    // Ajoute d'autres champs de l'enseignant ici
+                ] : null,
+            ];
+        } else {
+            $data['classe'] = null;
         }
 
-        return $apprenant;
+        return $data;
     });
 
     return response()->json([
         'status' => 200,
-        'apprenants' => $apprenants,
+        'apprenants' => $apprenantsData,
     ]);
 }
+
 
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
@@ -449,34 +480,59 @@ public function indexApprenants()
         'apprenant.classe.enseignant.user' // Charger l'enseignant et son User
     ])->where('role_nom', 'apprenant')->get();
 
-    // Fusionner les attributs du Tuteur et de User
-    $apprenants = $apprenants->map(function ($user) {
-        if ($user->apprenant) {
-            // Fusionner le tuteur
-            if ($user->apprenant->tuteur) {
-                $tuteur = $user->apprenant->tuteur;
-                $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
-                $user->apprenant->tuteur = $tuteurData;
-            }
+    // Créer une nouvelle structure de données
+    $apprenantsData = $apprenants->map(function ($user) {
+        $data = [
+            'id' => $user->apprenant->id,
+            'date_naissance' => $user->apprenant->date_naissance,
+            'lieu_naissance' => $user->apprenant->lieu_naissance,
+            'numero_CNI' => $user->apprenant->numero_CNI,
+            'numero_carte_scolaire' => $user->apprenant->numero_carte_scolaire,
+            'statut_marital' => $user->apprenant->statut_marital,
+            'user' => $user ? [
+                'id' => $user->id,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'telephone' => $user->telephone,
+                'email' => $user->email,
+                'genre' => $user->genre,
+                'etat' => $user->etat,
+                'adresse' => $user->adresse,
+                'role_nom' => $user->role_nom,
+                // Ajoute d'autres champs si nécessaire
+            ] : null,
+        ];
 
-            // Fusionner l'enseignant
-            if ($user->apprenant->classe && $user->apprenant->classe->enseignant) {
-                $enseignant = $user->apprenant->classe->enseignant;
-                if (is_object($enseignant)) { // Vérifie si c'est un objet
-                    $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
-                } else {
-                    $enseignantData = $enseignant; // Si c'est déjà un tableau
-                }
-                $user->apprenant->classe->enseignant = $enseignantData;
-            }
+        // Vérification du tuteur
+        if ($user->apprenant->tuteur) {
+            $tuteur = $user->apprenant->tuteur;
+            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        } else {
+            $data['tuteur'] = null; // ou un tableau vide, selon ta préférence
         }
 
-        return $user;
+        // Vérification de la classe et de l'enseignant
+        if ($user->apprenant->classe) {
+            $data['classe'] = [
+                'id' => $user->apprenant->classe->id,
+                'salle' => $user->apprenant->classe->salle ? $user->apprenant->classe->salle->nom : null,
+                'enseignant' => $user->apprenant->classe->enseignant ? [
+                    'id' => $user->apprenant->classe->enseignant->id,
+                    'nom' => $user->apprenant->classe->enseignant->user->nom,
+                    'prenom' => $user->apprenant->classe->enseignant->user->prenom,
+                    // Ajoute d'autres champs de l'enseignant ici
+                ] : null,
+            ];
+        } else {
+            $data['classe'] = null;
+        }
+
+        return $data;
     });
 
     return response()->json([
         'status' => 200,
-        'apprenants' => $apprenants,
+        'apprenants' => $apprenantsData,
     ]);
 }
 
@@ -489,7 +545,7 @@ public function indexApprenants()
 public function showApprenant($id)
 {
     // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
-    $apprenant = Apprenant::with(['tuteur.user', 'classe.salle', 'classe.enseignant.user'])
+    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])
         ->where('id', $id)
         ->first();
 
@@ -500,27 +556,57 @@ public function showApprenant($id)
         ], 404);
     }
 
-    // Fusionner les informations du tuteur
+    // Créer une nouvelle structure de données
+    $apprenantData = [
+        'id' => $apprenant->id,
+        'date_naissance' => $apprenant->date_naissance,
+        'lieu_naissance' => $apprenant->lieu_naissance,
+        'numero_CNI' => $apprenant->numero_CNI,
+        'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+        'statut_marital' => $apprenant->statut_marital,
+        'user' => $apprenant->user ? [
+            'id' => $apprenant->user->id,
+            'nom' => $apprenant->user->nom,
+            'prenom' => $apprenant->user->prenom,
+            'telephone' => $apprenant->user->telephone,
+            'email' => $apprenant->user->email,
+            'genre' => $apprenant->user->genre,
+            'etat' => $apprenant->user->etat,
+            'adresse' => $apprenant->user->adresse,
+            'role_nom' => $apprenant->user->role_nom,
+        ] : null,
+    ];
+
+    // Vérification du tuteur
     if ($apprenant->tuteur) {
         $tuteur = $apprenant->tuteur;
-        $tuteurData = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
-        $apprenant->tuteur = $tuteurData;
+        $apprenantData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+    } else {
+        $apprenantData['tuteur'] = null; // ou un tableau vide, selon ta préférence
     }
 
-    // Fusionner les informations de la classe et de l'enseignant
+    // Vérification de la classe et de l'enseignant
     if ($apprenant->classe) {
-        if ($apprenant->classe->enseignant) {
-            $enseignant = $apprenant->classe->enseignant;
-            $enseignantData = $enseignant->user ? array_merge($enseignant->toArray(), $enseignant->user->toArray()) : $enseignant->toArray();
-            $apprenant->classe->enseignant = $enseignantData;
-        }
+        $apprenantData['classe'] = [
+            'id' => $apprenant->classe->id,
+            'salle' => $apprenant->classe->salle ? $apprenant->classe->salle->nom : null,
+            'enseignant' => $apprenant->classe->enseignant ? [
+                'id' => $apprenant->classe->enseignant->id,
+                'nom' => $apprenant->classe->enseignant->user->nom,
+                'prenom' => $apprenant->classe->enseignant->user->prenom,
+                // Ajoute d'autres champs de l'enseignant ici
+            ] : null,
+        ];
+    } else {
+        $apprenantData['classe'] = null;
     }
 
     return response()->json([
         'status' => 200,
-        'apprenant' => $apprenant,
+        'apprenant' => $apprenantData,
     ]);
 }
+
 
 //----------info enseignant dans sa table
 public function showEnseignant($id)
