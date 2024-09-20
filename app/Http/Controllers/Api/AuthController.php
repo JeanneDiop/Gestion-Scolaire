@@ -333,7 +333,8 @@ public function ListerApprenant()
         if ($apprenant->classe) {
             $data['classe'] = [
                 'id' => $apprenant->classe->id,
-                'nom_classe' => $apprenant->classe->nom, // Ajout du nom de la classe
+                'nom_classe' => $apprenant->classe->nom,
+                'niveau_classe' => $apprenant->classe->niveau_classe, // Ajout du nom de la classe
                 'salle' => $apprenant->classe->salle ? [
                     'id' => $apprenant->classe->salle->id,
                     'nom' => $apprenant->classe->salle->nom,
