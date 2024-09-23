@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Apprenant\UpdateApprenantRequest;
+use App\Http\Requests\Tuteur\UpdateTuteurRequest;
+use App\Http\Requests\Directeur\UpdateDirecteurRequest;
+use App\Http\Requests\Enseignant\UpdateEnseignantRequest;
 use App\Http\Requests\Apprenant\CreateApprenantRequest;
-;
 use App\Http\Requests\Directeur\CreateDirecteurRequest;
 use App\Http\Requests\Enseignant\CreateEnseignantRequest;
 use App\Http\Requests\Tuteur\CreateTuteurRequest;
-use App\Http\Requests\User\EditUserRequest;
 
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Classe;
@@ -16,13 +18,12 @@ use App\Models\Tuteur;
 use App\Models\Apprenant;
 use App\Models\Enseignant;
 use App\Models\Directeur;
-
-
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -31,7 +32,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur', 'indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -159,6 +160,167 @@ public function registerTuteur(CreateTuteurRequest $request){
         'tuteur' => $tuteur,
     ]);
 }
+
+//modifier tuteur via sa table
+public function updateTuteur(UpdateTuteurRequest $request, $id)
+{
+    // Récupérer le tuteur et son utilisateur associé via l'ID
+    $tuteur = Tuteur::with('user')->find($id);
+
+    // Vérifier si le tuteur existe
+    if (!$tuteur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Tuteur non trouvé.',
+        ], 404);
+    }
+
+    // Mise à jour des informations de l'utilisateur
+    $tuteur->user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $tuteur->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques du tuteur
+    $tuteur->update([
+        'profession' => $request->profession,
+        'statut_marital' => $request->statut_marital,
+        'numero_CNI' => $request->numero_CNI,
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Tuteur mis à jour avec succès.',
+        'tuteur' => $tuteur,
+    ]);
+}
+//supprimer un tuteur via sa table
+public function supprimerTuteur(Tuteur $tuteur)
+{
+    try {
+        // Vérifier si le tuteur existe bien
+        if (!$tuteur) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Tuteur non trouvé'
+            ]);
+        }
+
+        // Vérifier si le tuteur est encore assigné à des apprenants
+        if ($tuteur->apprenants()->count() > 0) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Le tuteur est encore assigné à des apprenants et ne peut pas être supprimé.'
+            ]);
+        }
+
+        // Supprimer le tuteur dans sa table (cela supprimera aussi l'utilisateur lié via l'héritage si onDelete('cascade') est défini)
+        $tuteur->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le tuteur et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du tuteur.',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+//supprimer tuteur via la table user
+public function supprimerUserTuteur(User $user)
+{
+    try {
+        // Vérifier si l'utilisateur est bien un tuteur
+        if (!$user->tuteur) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Tuteur non trouvé'
+            ]);
+        }
+
+        // Récupérer le tuteur associé à l'utilisateur
+        $tuteur = $user->tuteur;
+
+        // Vérifier si le tuteur est encore assigné à des apprenants
+        if ($tuteur->apprenants()->count() > 0) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Le tuteur est encore assigné à des apprenants et ne peut pas être supprimé.'
+            ]);
+        }
+
+        // Supprimer l'utilisateur (cela supprime aussi le tuteur via l'héritage)
+        $user->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le tuteur et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du tuteur.',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+
+//modifier tuteur via la table user
+public function updateUserTuteur(UpdateTuteurRequest $request, $userId)
+{
+    // Récupérer l'utilisateur avec le tuteur associé
+    $user = User::with('tuteur')->find($userId);
+
+    // Vérifier si l'utilisateur existe
+    if (!$user) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Utilisateur non trouvé.',
+        ], 404);
+    }
+
+    // Mettre à jour les informations de l'utilisateur
+    $user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Vérifier si l'utilisateur a un tuteur associé
+    if ($user->tuteur) {
+        // Mettre à jour les informations spécifiques du tuteur
+        $user->tuteur->update([
+            'profession' => $request->profession,
+            'statut_marital' => $request->statut_marital,
+            'numero_CNI' => $request->numero_CNI,
+        ]);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Utilisateur et tuteur mis à jour avec succès.',
+        'user' => $user,
+        'tuteur' => $user->tuteur,
+    ]);
+}
+
+
 //-----------------Enseignant-------------------------------
 public function registerEnseignant(CreateEnseignantRequest $request){
     $user = User::create([
@@ -173,7 +335,7 @@ public function registerEnseignant(CreateEnseignantRequest $request){
         'role_nom' => 'enseignant',
     ]);
 
-    $enseigant = $user->enseigant()->create([
+    $enseignant = $user->enseignant()->create([
         'specialite'=>$request->specialite,
         'statut_marital'=>$request->statut_marital,
         'date_naissance' =>$request->date_naissance,
@@ -189,7 +351,7 @@ public function registerEnseignant(CreateEnseignantRequest $request){
         'status'=>200,
         'message' => 'Utilisateur créer avec succes',
         'user' => $user,
-        'enseigant' => $enseigant
+        'enseigant' => $enseignant
     ]);
 }
 ///---------------Apprenant-----------------------------
@@ -230,6 +392,397 @@ public function registerApprenant(CreateApprenantRequest $request)
         'classe' => $classe
     ]);
 }
+
+//modifier apprenant via la table user
+public function updateUserApprenant(UpdateApprenantRequest $request, $userId)
+{
+    // Récupérer l'utilisateur et vérifier s'il est associé à un apprenant
+    $user = User::with('apprenant')->find($userId);
+
+    if (!$user || !$user->apprenant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Apprenant non trouvé.',
+        ], 404);
+    }
+
+    // Mise à jour des informations de l'utilisateur
+    $user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques de l'apprenant
+    $user->apprenant->update([
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'numero_carte_scolaire' => $request->numero_carte_scolaire,
+        'statut_marital' => $request->statut_marital,
+        'tuteur_id' => $request->tuteur_id,
+        'classe_id' => $request->classe_id,
+    ]);
+
+    // Vous pouvez récupérer les informations du tuteur et de la classe si nécessaire
+    $tuteur = Tuteur::find($request->tuteur_id); // Assurez-vous d'importer le modèle Tuteur
+    $classe = Classe::find($request->classe_id); // Assurez-vous d'importer le modèle Classe
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Apprenant mis à jour avec succès.',
+        'user' => $user,
+        'apprenant' => $user->apprenant,
+        'tuteur' => $tuteur,
+        'classe' => $classe
+    ]);
+}
+//supprimer apprenant via sa table
+public function supprimerApprenant($id)
+{
+    try {
+        // Rechercher l'apprenant par son ID
+        $apprenant = Apprenant::find($id);
+
+        // Vérifier si l'apprenant existe
+        if (!$apprenant) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Apprenant non trouvé'
+            ]);
+        }
+
+        // Récupérer le tuteur, la classe et l'utilisateur associés avant suppression
+        $tuteur = $apprenant->tuteur;
+        $classe = $apprenant->classe;
+        $user = $apprenant->user; // Si Apprenant hérite de User, tu peux accéder à l'utilisateur.
+
+        // Vérifier si le tuteur a d'autres apprenants avant de supprimer
+        $tuteurApprenantsCount = $tuteur ? $tuteur->apprenants()->count() : 0;
+
+        // Supprimer l'apprenant (cela supprime aussi l'utilisateur associé grâce à onDelete('cascade'))
+        $apprenant->delete();
+
+        // Supprimer l'utilisateur si la relation d'héritage est manuelle
+        if ($user) {
+            $user->delete();
+            $userMessage = 'L\'utilisateur associé a été supprimé.';
+        } else {
+            $userMessage = 'Aucun utilisateur associé à cet apprenant.';
+        }
+
+        // Si le tuteur n'a plus d'apprenants, le supprimer
+        if ($tuteur && $tuteurApprenantsCount == 1) {
+            $tuteur->delete(); // Supprimer le tuteur si aucun autre apprenant n'est lié
+            $tuteurMessage = 'Le tuteur a été supprimé car aucun autre apprenant n\'est lié.';
+        } else if ($tuteur && $tuteurApprenantsCount > 1) {
+            $tuteurMessage = 'Le tuteur est toujours actif car d\'autres apprenants lui sont liés.';
+        } else {
+            $tuteurMessage = 'Aucun tuteur associé à cet apprenant.';
+        }
+
+        // Vérifier si la classe n'a plus d'apprenants
+        if ($classe && $classe->apprenants()->count() == 0) {
+            $classe->delete(); // Supprimer la classe si aucun autre apprenant n'est lié
+            $classeMessage = 'La classe a été supprimée car aucun autre apprenant n\'est lié.';
+        } else if ($classe && $classe->apprenants()->count() > 0) {
+            $classeMessage = 'La classe est toujours active car d\'autres apprenants y sont inscrits.';
+        } else {
+            $classeMessage = 'Aucune classe associée à cet apprenant.';
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'L\'apprenant a été supprimé avec succès.',
+            'details' => [
+                'user' => $userMessage,
+                'tuteur' => $tuteurMessage,
+                'classe' => $classeMessage
+            ]
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression de l\'apprenant.',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function supprimerUserApprenant(User $user)
+{
+    try {
+        // Vérifier si l'utilisateur est bien un apprenant
+        if (!$user->apprenant) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Apprenant non trouvé'
+            ]);
+        }
+
+        // Récupérer l'apprenant, le tuteur et la classe associés
+        $apprenant = $user->apprenant; // Relation héritée
+        $tuteur = $apprenant->tuteur;
+        $classe = $apprenant->classe;
+
+        // Supprimer l'utilisateur (cela supprime aussi l'apprenant grâce à onDelete('cascade'))
+        $user->delete();
+
+        // Vérifier si le tuteur n'a plus d'apprenants associés
+        if ($tuteur) {
+            if ($tuteur->apprenants()->count() == 0) {
+                $tuteur->delete(); // Supprimer le tuteur si aucun autre apprenant n'est lié
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'L\'apprenant a été supprimé, mais le tuteur reste actif car il est encore lié à d\'autres apprenants.'
+                ]);
+            }
+        }
+
+        // Vérifier si la classe n'a plus d'apprenants associés
+        if ($classe) {
+            if ($classe->apprenants()->count() == 0) {
+                $classe->delete(); // Supprimer la classe si aucun autre apprenant n'est lié
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'L\'apprenant a été supprimé, mais la classe reste active car elle est encore liée à d\'autres apprenants.'
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'L\'apprenant et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression de l\'apprenant.',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+
+
+//modifier les informations d'un apprenant via sa table
+public function updateApprenant(UpdateApprenantRequest $request, $id)
+{
+    // Récupérer l'apprenant et son utilisateur associé via l'ID
+    $apprenant = Apprenant::with('user')->find($id);
+
+    if (!$apprenant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Apprenant non trouvé.',
+        ], 404);
+    }
+
+    // Mise à jour des informations de l'utilisateur associé à cet apprenant
+    $apprenant->user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $apprenant->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques de l'apprenant
+    $apprenant->update([
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'numero_carte_scolaire' => $request->numero_carte_scolaire,
+        'statut_marital' => $request->statut_marital,
+        'tuteur_id' => $request->tuteur_id,
+        'classe_id' => $request->classe_id,
+    ]);
+
+    // Récupération des informations du tuteur et de la classe si nécessaire
+    $tuteur = Tuteur::find($request->tuteur_id); // Assurez-vous d'importer le modèle Tuteur
+    $classe = Classe::find($request->classe_id); // Assurez-vous d'importer le modèle Classe
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Apprenant et informations utilisateur mises à jour avec succès.',
+        'apprenant' => $apprenant,
+        'user' => $apprenant->user,
+        'tuteur' => $tuteur,
+        'classe' => $classe
+    ]);
+}
+
+public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
+{
+    // Récupérer l'utilisateur et vérifier si c'est un enseignant
+    $user = User::with('enseignant')->find($userId);
+
+    if (!$user || !$user->enseignant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Enseignant non trouvé.',
+        ], 404);
+    }
+
+    // Mise à jour des informations de l'utilisateur
+    $user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques de l'enseignant
+    $user->enseignant->update([
+        'specialite' => $request->specialite,
+        'statut_marital' => $request->statut_marital,
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'numero_securite_social' => $request->numero_securite_social,
+        'statut' => $request->statut,
+        'date_embauche' => $request->date_embauche,
+        'date_fin_contrat' => $request->date_fin_contrat,
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Enseignant mis à jour avec succès.',
+        'user' => $user,
+        'enseignant' => $user->enseignant,
+    ]);
+}
+public function updateEnseignant(UpdateEnseignantRequest $request, $id)
+{
+    // Récupérer l'enseignant et son utilisateur associé via l'ID
+    $enseignant = Enseignant::with('user')->find($id);
+
+    // Vérifier si l'enseignant existe
+    if (!$enseignant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Enseignant non trouvé.',
+        ], 404);
+    }
+
+    // Mise à jour des informations de l'utilisateur associé à cet enseignant
+    $enseignant->user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $enseignant->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques de l'enseignant
+    $enseignant->update([
+        'specialite' => $request->specialite,
+        'statut_marital' => $request->statut_marital,
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'numero_securite_social' => $request->numero_securite_social,
+        'statut' => $request->statut,
+        'date_embauche' => $request->date_embauche,
+        'date_fin_contrat' => $request->date_fin_contrat,
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
+        'enseignant' => $enseignant,
+        'user' => $enseignant->user,
+    ]);
+}
+
+///supprimer enseignant via sa table
+public function supprimerEnseignant(Enseignant $enseignant)
+{
+    try {
+        // Vérifier si l'enseignant existe bien
+        if (!$enseignant) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Enseignant non trouvé'
+            ]);
+        }
+
+        // Mettre à jour les classes pour retirer la référence à cet enseignant
+        Classe::where('enseignant_id', $enseignant->id)->update(['enseignant_id' => null]);
+
+        // Supprimer l'enregistrement dans la table 'enseignants'
+        $enseignant->delete();
+
+        // Supprimer l'utilisateur associé dans la table 'users'
+        $user = $enseignant->user;
+        if ($user) {
+            $user->delete();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'L\'enseignant et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression de l\'enseignant',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+
+//Supprimer enseignant via la table user
+public function supprimerUserEnseignant(User $user)
+{
+    try {
+        // Vérifier si l'utilisateur est bien un enseignant
+        if (!$user->enseignant()->exists()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Enseignant non trouvé'
+            ]);
+        }
+
+        // Mettre à jour les classes pour retirer la référence à cet enseignant
+        Classe::where('enseignant_id', $user->id)->update(['enseignant_id' => null]);
+
+        // Supprimer l'utilisateur (cela supprime aussi l'enseignant via l'héritage)
+        $user->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'L\'enseignant et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression de l\'enseignant',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+
+
 //------------------- directeur-------------
 public function registerDirecteur(CreateDirecteurRequest $request){
 
@@ -272,6 +825,189 @@ public function registerDirecteur(CreateDirecteurRequest $request){
         'directeur' => $directeur
     ]);
 }
+//modifier directeur via la table user
+public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
+{
+    // Récupérer l'utilisateur et vérifier si c'est un directeur
+    $user = User::with('directeur')->find($userId);
+
+    if (!$user || !$user->directeur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Directeur non trouvé.',
+        ], 404);
+    }
+
+    // Validation des données
+    $validatedData = $request->validate([
+        'annee_experience' => ['nullable', 'regex:/^\d+\s*(ans|année|années)?$/'],
+        'date_prise_fonction' => 'nullable|integer|min:1900|max:' . date('Y'),
+    ]);
+
+    // Extraire les chiffres uniquement pour l'expérience
+    if (isset($validatedData['annee_experience'])) {
+        $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']);
+    } else {
+        $annee_experience = $user->directeur->annee_experience; // Conserver l'actuel si non fourni
+    }
+
+    $date_prise_fonction = $validatedData['date_prise_fonction'] ?? $user->directeur->date_prise_fonction;
+
+    // Mise à jour des informations de l'utilisateur
+    $user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques du directeur
+    $user->directeur->update([
+        'statut_marital' => $request->statut_marital,
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'qualification_academique' => $request->qualification_academique,
+        'date_prise_fonction' => $date_prise_fonction,
+        'annee_experience' => $annee_experience,
+        'date_embauche' => $request->date_embauche,
+        'date_fin_contrat' => $request->date_fin_contrat,
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Directeur mis à jour avec succès.',
+        'user' => $user,
+        'directeur' => $user->directeur,
+    ]);
+}
+
+public function supprimerDirecteur(Directeur $directeur)
+{
+    try {
+        // Vérifier si le directeur existe
+        if (!$directeur) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Directeur non trouvé'
+            ]);
+        }
+
+        // Supprimer l'utilisateur correspondant, qui est hérité par le directeur
+        $user = $directeur->user; // Accéder à l'utilisateur lié
+
+        if ($user) {
+            $user->delete(); // Supprimer l'utilisateur (ce qui supprime aussi le directeur grâce à l'héritage)
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le directeur et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du directeur',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+//supprimer directeur via la table user
+public function supprimerUserDirecteur(User $user)
+{
+    try {
+        // Vérifier si l'utilisateur est bien un directeur
+        if (!$user->directeur) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Le directeur associé à cet utilisateur n\'a pas été trouvé.'
+            ]);
+        }
+
+        // Supprimer l'utilisateur (cela supprime également le directeur via l'héritage)
+        $user->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le directeur et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du directeur',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+//fonction modifier la table directeur
+public function updateDirecteur(UpdateDirecteurRequest $request, $id)
+{
+    // Récupérer le directeur et son utilisateur associé via l'ID
+    $directeur = Directeur::with('user')->find($id);
+
+    // Vérifier si le directeur existe
+    if (!$directeur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Directeur non trouvé.',
+        ], 404);
+    }
+
+    // Validation des données
+    $validatedData = $request->validate([
+        'annee_experience' => ['nullable', 'regex:/^\d+\s*(ans|année|années)?$/'],
+        'date_prise_fonction' => 'nullable|integer|min:1900|max:' . date('Y'),
+    ]);
+
+    // Extraire les chiffres uniquement pour l'expérience
+    if (isset($validatedData['annee_experience'])) {
+        $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']);
+    } else {
+        $annee_experience = $directeur->annee_experience; // Conserver l'actuel si non fourni
+    }
+
+    $date_prise_fonction = $validatedData['date_prise_fonction'] ?? $directeur->date_prise_fonction;
+
+    // Mise à jour des informations de l'utilisateur associé
+    $directeur->user->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'email' => $request->email,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'genre' => $request->genre,
+        'etat' => $request->etat ?: $directeur->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+    ]);
+
+    // Mise à jour des informations spécifiques du directeur
+    $directeur->update([
+        'statut_marital' => $request->statut_marital,
+        'date_naissance' => $request->date_naissance,
+        'lieu_naissance' => $request->lieu_naissance,
+        'numero_CNI' => $request->numero_CNI,
+        'qualification_academique' => $request->qualification_academique,
+        'date_prise_fonction' => $date_prise_fonction,
+        'annee_experience' => $annee_experience,
+        'date_embauche' => $request->date_embauche,
+        'date_fin_contrat' => $request->date_fin_contrat,
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Directeur et informations utilisateur mis à jour avec succès.',
+        'directeur' => $directeur,
+        'user' => $directeur->user,
+    ]);
+}
+
+
 protected function respondWithToken($token,$user )
 {
     return response()->json([
@@ -316,7 +1052,7 @@ public function ListerApprenant()
                 'genre' => $apprenant->user->genre,
                 'etat' => $apprenant->user->etat,
                 'adresse' => $apprenant->user->adresse,
-                'role_nom' => $apprenant->user->apprenant,
+                'role_nom' => $apprenant->user->role_nom,
             ] : null,
         ];
 
@@ -507,7 +1243,7 @@ public function indexApprenants()
                 'genre' => $user->genre,
                 'etat' => $user->etat,
                 'adresse' => $user->adresse,
-                'role_nom' => $user->apprenant,
+                'role_nom' => $user->role_nom,
                 // Ajoute d'autres champs si nécessaire
             ] : null,
         ];
@@ -598,7 +1334,7 @@ public function showApprenant($id)
             'genre' => $apprenant->user->genre,
             'etat' => $apprenant->user->etat,
             'adresse' => $apprenant->user->adresse,
-            'role_nom' => $apprenant->user->apprenant,
+            'role_nom' => $apprenant->user->role_nom,
         ] : null,
     ];
 

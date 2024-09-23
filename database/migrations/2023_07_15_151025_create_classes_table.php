@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('nom');
             $table->string('niveau_classe');
-            $table->foreignId('salle_id')->constrained()->onDelete('restrict');
-            $table->foreignId('enseignant_id')->constrained()->onDelete('restrict');
+            $table->foreignId('salle_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('enseignant_id')->nullable()->constrained()->onDelete('set null');
+
             $table->timestamps();
         });
     }
