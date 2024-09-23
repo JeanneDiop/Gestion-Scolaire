@@ -33,6 +33,8 @@ Route::post('login', [AuthController::class, 'login']);
 
 //------lister tous les users------------------------
 Route::get('ListeUtilisateur',[AuthController::class,'ListeUtilisateur']);
+//archiver ou desactiver un User
+Route::post('archiveruser/{user}',[AuthController::class,'archiverUser']);
 //----------Gestion Role----------------
 //ajouter role
 Route::post('ajouter/role', [RoleController::class, 'store']);
@@ -62,6 +64,8 @@ Route::get('/liste/tuteur',[AuthController::class,'ListerTuteur']);
 Route::delete('/supprimertuteur/{tuteur}', [AuthController::class, 'supprimerTuteur']);
 //supprimer tuteur dans la table user
 Route::delete('/supprimerusertuteur/{user}', [AuthController::class, 'supprimerUserTuteur']);
+//archiver ou desactiver un tuteur via sa table
+Route::post('archivertuteur/{tuteur}',[AuthController::class,'archiverTuteur']);
 
 
 
@@ -81,6 +85,8 @@ Route::put('/modifierenseignant/{id}',[AuthController::class,'updateEnseignant']
 Route::delete('/supprimerenseignant/{enseignant}', [AuthController::class, 'supprimerEnseignant']);
 //supprimer enseignant dans la table user
 Route::delete('/supprimeruserenseignant/{user}', [AuthController::class, 'supprimerUserEnseignant']);
+//archiver ou desactiver un enseignant via sa table
+Route::post('archiverenseignant/{enseignant}',[AuthController::class,'archiverenseignant']);
 
 
 //--------------gestion apprenant-------------
@@ -100,6 +106,8 @@ Route::put('/modifierapprenant/{id}',[AuthController::class,'updateApprenant']);
 Route::delete('/supprimerapprenant/{apprenant}', [AuthController::class, 'supprimerApprenant']);
 //supprimer apprenant dans la table user
 Route::delete('/supprimeruserapprenant/{user}', [AuthController::class, 'supprimerUserApprenant']);
+//archiver ou desactiver un apprenant via sa table
+Route::post('archiverapprenant/{apprenant}',[AuthController::class,'archiverapprenant']);
 
 
 //----------------------gestion directeur---------------------
@@ -119,6 +127,8 @@ Route::put('/modifierdirecteur/{id}',[AuthController::class,'updateDirecteur']);
 Route::delete('/supprimerdirecteur/{directeur}', [AuthController::class, 'supprimerDirecteur']);
 //supprimer directeur dans la table user
 Route::delete('/supprimeruserdirecteur/{user}', [AuthController::class, 'supprimerUserDirecteur']);
+//archiver ou desactiver un directeur via sa table
+Route::post('archiverdirecteur/{directeur}',[AuthController::class,'archiverdirecteur']);
 
 
 

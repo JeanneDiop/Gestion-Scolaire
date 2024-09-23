@@ -21,7 +21,7 @@ class Tuteur extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function apprenant(){
-        return $this->hasmany(Apprenant::class);
-}
+    public function apprenants(){
+        return $this->hasMany(Apprenant::class);
+    }
 }

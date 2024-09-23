@@ -28,7 +28,7 @@ class Enseignant extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function classe(){
-        return $this->hasmany(Classe::class);
+    public function classes(){
+        return $this->hasMany(Classe::class);
 }
 }
