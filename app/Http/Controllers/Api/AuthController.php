@@ -134,31 +134,51 @@ public function login(LogUserRequest $request)
     }
     //----------------------Tuteur-------------------
 
-public function registerTuteur(CreateTuteurRequest $request){
-    $user = User::create([
-        'nom' => $request->nom,
-        'prenom' => $request->prenom,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'telephone' => $request->telephone,
-        'adresse' => $request->adresse,
-        'genre' => $request->genre,
-        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
-        'role_nom' => 'tuteur',
-    ]);
+public function registerTuteur(CreateTuteurRequest $request)
+{
+    // Démarrer une transaction
+    DB::beginTransaction();
 
-    $tuteur = $user->tuteur()->create([
-        'profession'=>$request->profession,
-        'statut_marital'=>$request->statut_marital,
-        'numero_CNI'=>$request->numero_CNI,
-    ]);
+    try {
+        // Créer un nouvel utilisateur
+        $user = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'tuteur',
+        ]);
 
-    return response()->json([
-        'status'=>200,
-        'message' => 'Utilisateur créer avec succes',
-        'user' => $user,
-        'tuteur' => $tuteur,
-    ]);
+        // Créer un nouvel tuteur
+        $tuteur = $user->tuteur()->create([
+            'profession' => $request->profession,
+            'statut_marital' => $request->statut_marital,
+            'numero_CNI' => $request->numero_CNI,
+        ]);
+
+        // Valider la transaction
+        DB::commit();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Utilisateur créé avec succès',
+            'user' => $user,
+            'tuteur' => $tuteur,
+        ]);
+    } catch (\Exception $e) {
+        // Annuler la transaction en cas d'erreur
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
 
 //modifier tuteur via sa table
@@ -354,6 +374,60 @@ public function supprimerUserTuteur(User $user)
             'message' => 'Une erreur est survenue lors de la suppression du tuteur.',
             'error' => $e->getMessage()
         ],500);
+    }
+}
+///---------------Apprenant-----------------------------
+public function registerApprenant(CreateApprenantRequest $request)
+{
+    DB::beginTransaction(); // Démarre la transaction
+
+    try {
+        // Création de l'utilisateur
+        $user = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'apprenant',
+        ]);
+
+        // Création de l'apprenant
+        $apprenant = $user->apprenant()->create([
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'numero_CNI' => $request->numero_CNI,
+            'numero_carte_scolaire' => $request->numero_carte_scolaire,
+            'statut_marital' => $request->statut_marital,
+            'tuteur_id' => $request->tuteur_id,
+            'classe_id' => $request->classe_id,
+        ]);
+
+        // Vous devez récupérer les informations du tuteur et de la classe si nécessaire
+        $tuteur = Tuteur::find($request->tuteur_id); // Assurez-vous d'importer le modèle Tuteur
+        $classe = Classe::find($request->classe_id); // Assurez-vous d'importer le modèle Classe
+
+        DB::commit(); // Valide la transaction
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Utilisateur créé avec succès',
+            'user' => $user,
+            'apprenant' => $apprenant,
+            'tuteur' => $tuteur,
+            'classe' => $classe
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Annule la transaction en cas d'erreur
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'apprenant.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
 }
 
@@ -651,6 +725,56 @@ public function supprimerUserApprenant(User $user)
 }
 
 
+//-----------------Enseignant-------------------------------
+public function registerEnseignant(CreateEnseignantRequest $request)
+{
+    DB::beginTransaction(); // Démarre la transaction
+
+    try {
+        // Création de l'utilisateur
+        $user = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'enseignant',
+        ]);
+
+        // Création de l'enseignant
+        $enseignant = $user->enseignant()->create([
+            'specialite' => $request->specialite,
+            'statut_marital' => $request->statut_marital,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'numero_CNI' => $request->numero_CNI,
+            'numero_securite_social' => $request->numero_securite_social,
+            'statut' => $request->statut,
+            'date_embauche' => $request->date_embauche,
+            'date_fin_contrat' => $request->date_fin_contrat,
+        ]);
+
+        DB::commit(); // Valide la transaction
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Utilisateur créé avec succès',
+            'user' => $user,
+            'enseignant' => $enseignant
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Annule la transaction en cas d'erreur
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
 public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
 {
@@ -817,47 +941,66 @@ public function supprimerUserEnseignant(User $user)
 
 
 //------------------- directeur-------------
-public function registerDirecteur(CreateDirecteurRequest $request){
+public function registerDirecteur(CreateDirecteurRequest $request)
+{
+    DB::beginTransaction(); // Démarre la transaction
 
-    $validatedData = $request->validate([
-        'annee_experience' => ['required', 'regex:/^\d+\s*(ans|année|années)?$/'],
-        'date_prise_fonction' => 'required|integer|min:1900|max:' . date('Y'), // Validation pour INTEGER
-    ]);
+    try {
+        // Validation des données d'entrée
+        $validatedData = $request->validate([
+            'annee_experience' => ['required', 'regex:/^\d+\s*(ans|année|années)?$/'],
+            'date_prise_fonction' => 'required|integer|min:1900|max:' . date('Y'), // Validation pour INTEGER
+        ]);
 
-    $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']); // Extrait les chiffres uniquement
+        // Extrait les chiffres uniquement
+        $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']);
+        $date_prise_fonction = $validatedData['date_prise_fonction'];
 
-    $date_prise_fonction = $validatedData['date_prise_fonction'];
-    $user = User::create([
-        'nom' => $request->nom,
-        'prenom' => $request->prenom,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'telephone' => $request->telephone,
-        'adresse' => $request->adresse,
-        'genre' => $request->genre,
-        'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
-        'role_nom' => 'directeur',
-    ]);
+        // Création de l'utilisateur
+        $user = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'directeur',
+        ]);
 
-    $directeur = $user->directeur()->create([
-        'statut_marital'=>$request->statut_marital,
-        'date_naissance' =>$request->date_naissance,
-        'lieu_naissance' =>$request->lieu_naissance,
-        'numero_CNI' =>$request->numero_CNI,
-        'qualification_academique'=>$request->qualification_academique,
-        'date_prise_fonction' => $date_prise_fonction,
-        'annee_experience' => $annee_experience,
-        'date_embauche' =>$request->date_embauche,
-        'date_fin_contrat' =>$request->date_fin_contrat
-    ]);
+        // Création du directeur
+        $directeur = $user->directeur()->create([
+            'statut_marital' => $request->statut_marital,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'numero_CNI' => $request->numero_CNI,
+            'qualification_academique' => $request->qualification_academique,
+            'date_prise_fonction' => $date_prise_fonction,
+            'annee_experience' => $annee_experience,
+            'date_embauche' => $request->date_embauche,
+            'date_fin_contrat' => $request->date_fin_contrat
+        ]);
 
-    return response()->json([
-        'status'=>200,
-        'message' => 'Utilisateur créer avec succes',
-        'user' => $user,
-        'directeur' => $directeur
-    ]);
+        DB::commit(); // Valide la transaction
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Utilisateur créé avec succès',
+            'user' => $user,
+            'directeur' => $directeur
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Annule la transaction en cas d'erreur
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
+
 //modifier directeur via la table user
 public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
 {
