@@ -1397,6 +1397,48 @@ public function ListerTuteur()
     ]);
 }
 
+
+
+
+public function ListerDirecteur()
+{
+    // Récupérer tous les directeurs de la table 'directeur'
+    $directeurs = Directeur::with('user')->get(); // Récupération des directeurs avec leur relation utilisateur si nécessaire
+
+    // Créer une nouvelle structure de données
+    $directeursData = $directeurs->map(function ($directeur) {
+        return [
+            // Attributs spécifiques au modèle Directeur
+            'id' => $directeur->id, // Assurez-vous que cela correspond à la clé primaire de la table directeur
+            'date_naissance' => $directeur->date_naissance,
+            'lieu_naissance' => $directeur->lieu_naissance,
+            'annee_experience' => $directeur->annee_experience,
+            'date_prise_fonction' => $directeur->date_prise_fonction,
+            'numero_CNI' => $directeur->numero_CNI,
+            'qualification_academique' => $directeur->qualification_academique,
+            'statut_marital' => $directeur->statut_marital,
+            'date_embauche' => $directeur->date_embauche,
+            'date_fin_contrat' => $directeur->date_fin_contrat,
+            // Ajoutez d'autres attributs spécifiques au modèle Directeur si nécessaire
+            'user' => [
+                'nom' => $directeur->user->nom,
+                'prenom' => $directeur->user->prenom,
+                'telephone' => $directeur->user->telephone,
+                'email' => $directeur->user->email,
+                'genre' => $directeur->user->genre,
+                'etat' => $directeur->user->etat,
+                'adresse' => $directeur->user->adresse,
+                'role_nom' => $directeur->user->role_nom,
+            ],
+        ];
+    });
+
+    return response()->json([
+        'status' => 200,
+        'directeurs' => $directeursData,
+    ]);
+}
+
 ///-----lister tous les apprenants qui se trouve dans la table user
 public function indexApprenants()
 {
