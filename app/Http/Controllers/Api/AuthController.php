@@ -32,7 +32,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -1311,83 +1311,56 @@ public function ListerApprenant()
 
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
- {
-     // Charger les enseignants avec leurs informations de User
-     $enseignants = Enseignant::with('user')->get();
+{
+    // Charger les enseignants avec leurs informations de User et Classes avec Salle
+    $enseignants = Enseignant::with(['user', 'classes.salle'])->get();
 
-     // Créer une nouvelle structure de données sans duplications
-     $enseignantsData = $enseignants->map(function ($enseignant) {
-         return [
-             'id' => $enseignant->id,
-             'specialite' => $enseignant->specialite,
-             'statut_marital' => $enseignant->statut_marital,
-             'date_naissance' => $enseignant->date_naissance,
-             'lieu_naissance' => $enseignant->lieu_naissance,
-             'numero_CNI' => $enseignant->numero_CNI,
-             'numero_securite_social' => $enseignant->numero_securite_social,
-             'statut' => $enseignant->statut,
-             'date_embauche' => $enseignant->date_embauche,
-             'date_fin_contrat' => $enseignant->date_fin_contrat,
-             'user' => $enseignant->user ? [
-                 'id' => $enseignant->user->id,
-                 'nom' => $enseignant->user->nom,
-                 'prenom' => $enseignant->user->prenom,
-                 'telephone' => $enseignant->user->telephone,
-                 'email' => $enseignant->user->email,
-                 'genre' => $enseignant->user->genre,
-                 'etat' => $enseignant->user->etat,
-                 'adresse' => $enseignant->user->adresse,
-                 'role_nom' => $enseignant->user->role_nom,
-             ] : null,
-         ];
-     });
+    // Créer une nouvelle structure de données sans duplications
+    $enseignantsData = $enseignants->map(function ($enseignant) {
+        return [
+            'id' => $enseignant->id,
+            'specialite' => $enseignant->specialite,
+            'statut_marital' => $enseignant->statut_marital,
+            'date_naissance' => $enseignant->date_naissance,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'numero_securite_social' => $enseignant->numero_securite_social,
+            'statut' => $enseignant->statut,
+            'date_embauche' => $enseignant->date_embauche,
+            'date_fin_contrat' => $enseignant->date_fin_contrat,
+            'user' => $enseignant->user ? [
+                'id' => $enseignant->user->id,
+                'nom' => $enseignant->user->nom,
+                'prenom' => $enseignant->user->prenom,
+                'telephone' => $enseignant->user->telephone,
+                'email' => $enseignant->user->email,
+                'genre' => $enseignant->user->genre,
+                'etat' => $enseignant->user->etat,
+                'adresse' => $enseignant->user->adresse,
+                'role_nom' => $enseignant->user->role_nom,
+            ] : null,
+            'classes' => $enseignant->classes->map(function ($classe) {
+                return [
+                    'id' => $classe->id,
+                    'nom' => $classe->nom,
+                    'niveau_classe' => $classe->niveau_classe,
+                    'salle' => $classe->salle ? [
+                        'id' => $classe->salle->id,
+                        'nom' => $classe->salle->nom,
+                        'capacity' => $classe->salle->capacity,
+                        'type' => $classe->salle->type,
+                    ] : null,
+                ];
+            }),
+        ];
+    });
 
-     return response()->json([
-         'status' => 200,
-         'enseignants' => $enseignantsData,
-     ]);
- }
+    return response()->json([
+        'status' => 200,
+        'enseignants' => $enseignantsData,
+    ]);
+}
 
-
- // Récupérer tous les directeurs depuis la table 'directeurs'
- public function ListerDirecteur()
- {
-     // Charger les directeurs avec leurs informations de User
-     $directeurs = Directeur::with('user')->get();
-
-     // Créer une nouvelle structure de données sans duplications
-     $directeursData = $directeurs->map(function ($directeur) {
-         return [
-            // Ajoute ici les attributs spécifiques à Directeur
-             'id' => $directeur->id,
-             'date_naissance' => $directeur->date_naissance,
-             'lieu_naissance' => $directeur->lieu_naissance,
-             'annee_experience' => $directeur->annee_experience,
-             'date_prise_fonction' => $directeur->date_prise_fonction,
-             'numero_CNI' => $directeur->numero_CNI,
-             'qualification_academique' => $directeur->qualification_academique,
-             'statut_marital' => $directeur->statut_marital,
-             'date_embauche' => $directeur->date_embauche,
-             'date_fin_contrat' => $directeur->date_fin_contrat,
-             'user' => $directeur->user ? [
-                 'id' => $directeur->user->id,
-                 'nom' => $directeur->user->nom,
-                 'prenom' => $directeur->user->prenom,
-                 'telephone' => $directeur->user->telephone,
-                 'email' => $directeur->user->email,
-                 'genre' => $directeur->user->genre,
-                 'etat' => $directeur->user->etat,
-                 'adresse' => $directeur->user->adresse,
-                 'role_nom' => $directeur->user->role_nom,
-             ] : null,
-         ];
-     });
-
-     return response()->json([
-         'status' => 200,
-         'directeurs' => $directeursData,
-     ]);
- }
 
 //----------------lister tuteur dans sa table
 public function ListerTuteur()
@@ -1427,23 +1400,26 @@ public function ListerTuteur()
 ///-----lister tous les apprenants qui se trouve dans la table user
 public function indexApprenants()
 {
-    // Charger les apprenants avec les informations associées
+    // Charger les utilisateurs avec les rôles 'apprenant' et les informations associées
     $apprenants = User::with([
-        'apprenant.tuteur.user', // Charger le tuteur et son User
-        'apprenant.classe.salle', // Charger la salle
-        'apprenant.classe.enseignant.user' // Charger l'enseignant et son User
+        'apprenant.tuteur.user', // Charger le tuteur et son utilisateur associé
+        'apprenant.classe.salle', // Charger la salle associée
+        'apprenant.classe.enseignant.user' // Charger l'enseignant et son utilisateur associé
     ])->where('role_nom', 'apprenant')->get();
 
-    // Créer une nouvelle structure de données
+    // Créer une nouvelle structure de données similaire à showUser
     $apprenantsData = $apprenants->map(function ($user) {
-        $data = [
-            'id' => $user->apprenant->id,
-            'date_naissance' => $user->apprenant->date_naissance,
-            'lieu_naissance' => $user->apprenant->lieu_naissance,
-            'numero_CNI' => $user->apprenant->numero_CNI,
-            'numero_carte_scolaire' => $user->apprenant->numero_carte_scolaire,
-            'statut_marital' => $user->apprenant->statut_marital,
-            'user' => $user ? [
+        $apprenant = $user->apprenant;
+
+        // Structurer les données de l'apprenant
+        $apprenantData = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'statut_marital' => $apprenant->statut_marital,
+            'user' => [
                 'id' => $user->id,
                 'nom' => $user->nom,
                 'prenom' => $user->prenom,
@@ -1453,51 +1429,51 @@ public function indexApprenants()
                 'etat' => $user->etat,
                 'adresse' => $user->adresse,
                 'role_nom' => $user->role_nom,
-                // Ajoute d'autres champs si nécessaire
-            ] : null,
+                // Ajouter d'autres champs nécessaires
+            ]
         ];
 
         // Vérification du tuteur
-        if ($user->apprenant->tuteur) {
-            $tuteur = $user->apprenant->tuteur;
-            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        if ($apprenant->tuteur) {
+            $tuteur = $apprenant->tuteur;
+            // Fusionner les données du tuteur et de l'utilisateur associé
+            $apprenantData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
         } else {
-            $data['tuteur'] = null; // ou un tableau vide, selon ta préférence
+            $apprenantData['tuteur'] = null; // Si pas de tuteur, on définit à null
         }
 
-        // Vérification de la classe et de la salle
-        if ($user->apprenant->classe) {
-            $data['classe'] = [
-                'id' => $user->apprenant->classe->id,
-                'nom' => $user->apprenant->classe->nom, // Nom de la classe (si disponible)
-                'niveau_classe' => $user->apprenant->classe->niveau_classe, // Ajoute d'autres attributs de la classe si nécessaires
-                'salle' => $user->apprenant->classe->salle ? [
-                    'id' => $user->apprenant->classe->salle->id,
-                    'nom' => $user->apprenant->classe->salle->nom,
-                    'capacity' => $user->apprenant->classe->salle->capacity, // Capacité de la salle
-                    'type' => $user->apprenant->classe->salle->type, // Type ou emplacement de la salle
-                ] : null,
-                // Vérification de l'enseignant
-                'enseignant' => $user->apprenant->classe->enseignant ? [
-                    'id' => $user->apprenant->classe->enseignant->id,
-                    'nom' => $user->apprenant->classe->enseignant->user->nom,
-                    'prenom' => $user->apprenant->classe->enseignant->user->prenom,
-                    'telephone' => $user->apprenant->classe->enseignant->user->telephone,
-                    'adresse' => $user->apprenant->classe->enseignant->user->adresse,
-                    'specialite' => $user->apprenant->classe->enseignant->user->specialite,
-                    'statut_marital' => $user->apprenant->classe->enseignant->user->statut_marital,
-                    'date_naissance' => $user->apprenant->classe->enseignant->user->date_naissance,
-                    'lieu_naissance' => $user->apprenant->classe->enseignant->user->lieu_naissance,
-                    'numero_CNI' => $user->apprenant->classe->enseignant->user->numero_CNI,
-                    'numero_securite_social' => $user->apprenant->classe->enseignant->user->numero_securite_social,
-                    'statut' => $user->apprenant->classe->enseignant->user->statut, // Corrigé ici
-                ] : null,
+        // Vérification de la classe, de la salle et de l'enseignant
+        if ($apprenant->classe) {
+            $apprenantData['classe'] = [
+                'id' => $apprenant->classe->id,
+                'nom' => $apprenant->classe->nom, // Nom de la classe
+                'niveau_classe' => $apprenant->classe->niveau_classe, // Niveau de la classe
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
+                    'type' => $apprenant->classe->salle->type, // Type de la salle
+                ] : null, // Si la salle n'existe pas, on met null
+                'enseignant' => $apprenant->classe->enseignant ? [
+                    'id' => $apprenant->classe->enseignant->id,
+                    'nom' => $apprenant->classe->enseignant->user->nom,
+                    'prenom' => $apprenant->classe->enseignant->user->prenom,
+                    'telephone' => $apprenant->classe->enseignant->user->telephone,
+                    'adresse' => $apprenant->classe->enseignant->user->adresse,
+                    'specialite' => $apprenant->classe->enseignant->user->specialite,
+                    'statut_marital' => $apprenant->classe->enseignant->user->statut_marital,
+                    'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
+                    'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
+                    'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
+                    'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
+                    'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
+                ] : null, // Si l'enseignant n'existe pas, on met null
             ];
         } else {
-            $data['classe'] = null;
+            $apprenantData['classe'] = null; // Si pas de classe, on met null
         }
 
-        return $data;
+        return $apprenantData;
     });
 
     return response()->json([
@@ -1593,12 +1569,124 @@ public function showApprenant($id)
     ]);
 }
 
+
+public function showUserApprenant($id)
+{
+    // Récupérer l'utilisateur avec l'ID spécifié, en incluant les relations avec les modèles 'apprenant', 'tuteur' et 'enseignant'
+    $user = User::with(['apprenant.classe.salle', 'apprenant.classe.enseignant.user', 'tuteur.user', 'enseignant.user'])
+        ->find($id);
+
+    if (!$user) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Utilisateur non trouvé.',
+        ], 404);
+    }
+
+    // Structurer les données de l'utilisateur
+    $userData = [
+        'id' => $user->id,
+        'nom' => $user->nom,
+        'prenom' => $user->prenom,
+        'telephone' => $user->telephone,
+        'email' => $user->email,
+        'genre' => $user->genre,
+        'etat' => $user->etat,
+        'adresse' => $user->adresse,
+        'role_nom' => $user->role_nom,
+    ];
+
+    // Vérification de l'apprenant associé
+    if ($user->apprenant) {
+        $apprenant = $user->apprenant;
+        $userData['apprenant'] = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'statut_marital' => $apprenant->statut_marital,
+            'classe' => $apprenant->classe ? [
+                'id' => $apprenant->classe->id,
+                'nom' => $apprenant->classe->nom,
+                'niveau_classe' => $apprenant->classe->niveau_classe,
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity,
+                    'type' => $apprenant->classe->salle->type,
+                ] : null,
+                'enseignant' => $apprenant->classe->enseignant ? [
+                    'id' => $apprenant->classe->enseignant->id,
+                    'nom' => $apprenant->classe->enseignant->user->nom,
+                    'prenom' => $apprenant->classe->enseignant->user->prenom,
+                    'telephone' => $apprenant->classe->enseignant->user->telephone,
+                    'adresse' => $apprenant->classe->enseignant->user->adresse,
+                    'specialite' => $apprenant->classe->enseignant->specialite,
+                    'statut_marital' => $apprenant->classe->enseignant->statut_marital,
+                    'date_naissance' => $apprenant->classe->enseignant->date_naissance,
+                    'lieu_naissance' => $apprenant->classe->enseignant->lieu_naissance,
+                    'numero_CNI' => $apprenant->classe->enseignant->numero_CNI,
+                    'numero_securite_social' => $apprenant->classe->enseignant->numero_securite_social,
+                    'statut' => $apprenant->classe->enseignant->statut,
+                ] : null,
+            ] : null,
+        ];
+    } else {
+        $userData['apprenant'] = null; // Si pas d'apprenant, on met null
+    }
+
+    // Vérification du tuteur associé
+    if ($user->tuteur) {
+        $tuteur = $user->tuteur;
+        $userData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+    } else {
+        $userData['tuteur'] = null; // Si pas de tuteur, on met null
+    }
+
+    // Vérification de l'enseignant associé
+    if ($user->enseignant) {
+        $enseignant = $user->enseignant;
+        $userData['enseignant'] = [
+            'id' => $enseignant->id,
+            'specialite' => $enseignant->specialite,
+            'statut_marital' => $enseignant->statut_marital,
+            'date_naissance' => $enseignant->date_naissance,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'numero_securite_social' => $enseignant->numero_securite_social,
+            'statut' => $enseignant->statut,
+            'date_embauche' => $enseignant->date_embauche,
+            'date_fin_contrat' => $enseignant->date_fin_contrat,
+            'user' => $enseignant->user ? [
+                'id' => $enseignant->user->id,
+                'nom' => $enseignant->user->nom,
+                'prenom' => $enseignant->user->prenom,
+                'telephone' => $enseignant->user->telephone,
+                'email' => $enseignant->user->email,
+                'genre' => $enseignant->user->genre,
+                'etat' => $enseignant->user->etat,
+                'adresse' => $enseignant->user->adresse,
+                'role_nom' => $enseignant->user->role_nom,
+            ] : null,
+        ];
+    } else {
+        $userData['enseignant'] = null; // Si pas d'enseignant, on met null
+    }
+
+    return response()->json([
+        'status' => 200,
+        'user' => $userData,
+    ]);
+}
+
 //----------info enseignant dans sa table
 public function showEnseignant($id)
 {
-    // Récupérer l'enseignant avec l'ID spécifié depuis la table 'enseignant'
-    $enseignant = Enseignant::with('user')->where('id', $id)->first();
+    // Récupérer l'enseignant avec l'ID spécifié en incluant les informations de User et les classes associées
+    $enseignant = Enseignant::with(['user', 'classes.salle'])->find($id);
 
+    // Vérifier si l'enseignant n'existe pas
     if (!$enseignant) {
         return response()->json([
             'status' => 404,
@@ -1606,7 +1694,7 @@ public function showEnseignant($id)
         ], 404);
     }
 
-    // Structurer les données de l'enseignant et de User
+    // Structurer les données de l'enseignant et de l'utilisateur
     $enseignantData = [
         'id' => $enseignant->id,
         'specialite' => $enseignant->specialite,
@@ -1629,6 +1717,19 @@ public function showEnseignant($id)
             'adresse' => $enseignant->user->adresse,
             'role_nom' => $enseignant->user->role_nom,
         ] : null,
+        'classes' => $enseignant->classes->map(function ($classe) {
+            return [
+                'id' => $classe->id,
+                'nom' => $classe->nom,
+                'niveau_classe' => $classe->niveau_classe,
+                'salle' => $classe->salle ? [
+                    'id' => $classe->salle->id,
+                    'nom' => $classe->salle->nom,
+                    'capacity' => $classe->salle->capacity,
+                    'type' => $classe->salle->type,
+                ] : null,
+            ];
+        }),
     ];
 
     return response()->json([
@@ -1681,12 +1782,117 @@ public function showDirecteur($id)
         'directeur' => $directeurData,
     ]);
 }
+public function showUserDirecteur($id)
+{
+    // Récupérer l'utilisateur avec le rôle 'directeur' et son directeur associé
+    $user = User::with('directeur')->where('id', $id)->where('role_nom', 'directeur')->first();
+
+    // Vérifier si l'utilisateur existe et a un rôle de directeur
+    if (!$user || !$user->directeur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Directeur non trouvé.',
+        ], 404);
+    }
+
+    // Créer une structure de données personnalisée
+    $directeurData = [
+        'id' => $user->directeur->id,
+        'date_naissance' => $user->directeur->date_naissance,
+        'lieu_naissance' => $user->directeur->lieu_naissance,
+        'annee_experience' => $user->directeur->annee_experience,
+        'date_prise_fonction' => $user->directeur->date_prise_fonction,
+        'numero_CNI' => $user->directeur->numero_CNI,
+        'qualification_academique' => $user->directeur->qualification_academique,
+        'statut_marital' => $user->directeur->statut_marital,
+        'date_embauche' => $user->directeur->date_embauche,
+        'date_fin_contrat' => $user->directeur->date_fin_contrat,
+        'user' => [
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'telephone' => $user->telephone,
+            'email' => $user->email,
+            'genre' => $user->genre,
+            'etat' => $user->etat,
+            'adresse' => $user->adresse,
+            'role_nom' => $user->role_nom,
+        ],
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'directeur' => $directeurData,
+    ]);
+}
+
+
+
+public function showUserEnseignant($id)
+{
+    // Récupérer l'utilisateur avec l'ID spécifié qui a le rôle 'enseignant' et charger les relations nécessaires
+    $user = User::with(['enseignant', 'enseignant.classes.salle'])
+                ->where('id', $id)
+                ->where('role_nom', 'enseignant')
+                ->first();
+
+    // Vérifier si l'utilisateur n'existe pas ou n'est pas un enseignant
+    if (!$user || !$user->enseignant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Enseignant non trouvé.',
+        ], 404);
+    }
+
+    // Structurer les données de l'enseignant et de l'utilisateur
+    $enseignantData = [
+        'id' => $user->id,
+        'nom' => $user->nom,
+        'prenom' => $user->prenom,
+        'telephone' => $user->telephone,
+        'email' => $user->email,
+        'genre' => $user->genre,
+        'etat' => $user->etat,
+        'adresse' => $user->adresse,
+        'role_nom' => $user->role_nom,
+        'enseignant' => [
+            'id' => $user->enseignant->id,
+            'specialite' => $user->enseignant->specialite,
+            'statut_marital' => $user->enseignant->statut_marital,
+            'date_naissance' => $user->enseignant->date_naissance,
+            'lieu_naissance' => $user->enseignant->lieu_naissance,
+            'numero_CNI' => $user->enseignant->numero_CNI,
+            'numero_securite_social' => $user->enseignant->numero_securite_social,
+            'statut' => $user->enseignant->statut,
+            'date_embauche' => $user->enseignant->date_embauche,
+            'date_fin_contrat' => $user->enseignant->date_fin_contrat,
+            'classes' => $user->enseignant->classes->map(function ($classe) {
+                return [
+                    'id' => $classe->id,
+                    'nom' => $classe->nom,
+                    'niveau_classe' => $classe->niveau_classe,
+                    'salle' => $classe->salle ? [
+                        'id' => $classe->salle->id,
+                        'nom' => $classe->salle->nom,
+                        'capacity' => $classe->salle->capacity,
+                        'type' => $classe->salle->type,
+                    ] : null,
+                ];
+            }),
+        ]
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'enseignant' => $enseignantData,
+    ]);
+}
 
 //afficher les details dun tuteur dans sa table
 public function showTuteur($id)
 {
-    // Récupérer le tuteur avec l'ID spécifié
-    $tuteur = Tuteur::with('user')->where('id', $id)->first();
+    // Récupérer le tuteur avec l'ID spécifié et l'apprenant associé
+    $tuteur = Tuteur::with(['user', 'apprenants.classes.salle', 'apprenants.classes.enseignant'])->where('id', $id)->first();
 
     if (!$tuteur) {
         return response()->json([
@@ -1714,6 +1920,33 @@ public function showTuteur($id)
             'adresse' => $tuteur->user->adresse,
             'role_nom' => $tuteur->user->role_nom,
         ] : null,
+        // Inclure les apprenants associés avec les classes, salles et enseignants
+        'apprenants' => $tuteur->apprenants->map(function ($apprenant) {
+            return [
+                'id' => $apprenant->id,
+                'nom' => $apprenant->nom,
+                'prenom' => $apprenant->prenom,
+                'date_naissance' => $apprenant->date_naissance,
+                'classe' => $apprenant->classes->map(function ($classe) {
+                    return [
+                        'id' => $classe->id,
+                        'nom' => $classe->nom,
+                        'niveau_classe' => $classe->niveau_classe,
+                        'salle' => $classe->salle ? [
+                            'id' => $classe->salle->id,
+                            'nom' => $classe->salle->nom,
+                            'capacity' => $classe->salle->capacity,
+                            'type' => $classe->salle->type,
+                        ] : null,
+                        'enseignant' => $classe->enseignant ? [
+                            'id' => $classe->enseignant->id,
+                            'nom' => $classe->enseignant->nom,
+                            'prenom' => $classe->enseignant->prenom,
+                        ] : null,
+                    ];
+                }),
+            ];
+        }),
     ];
 
     return response()->json([
@@ -1722,33 +1955,53 @@ public function showTuteur($id)
     ]);
 }
 
+
 //lister enseignants qui se trouve dans la table user
 public function indexEnseignants()
 {
-    // Récupérer tous les utilisateurs avec le rôle 'enseignant'
-    $enseignants = User::where('role_nom', 'enseignant')->get();
+    // Charger les utilisateurs avec le rôle "enseignant" et leurs informations liées
+    $enseignants = User::with(['enseignant', 'enseignant.classes.salle'])
+                        ->where('role_nom', 'enseignant')
+                        ->get();
 
-    // Récupérer les informations correspondantes des enseignants
+    // Créer une nouvelle structure de données
     $enseignantsData = $enseignants->map(function ($user) {
-        // Récupérer l'enseignant associé à cet utilisateur
-        $enseignant = Enseignant::where('user_id', $user->id)->first(); // Remplace 'user_id' par la clé étrangère appropriée
-
-        // Structurer les données
-        $enseignantData = $enseignant ? [
-            'id' => $enseignant->id,
-            'specialite' => $enseignant->specialite,
-            'statut_marital' => $enseignant->statut_marital,
-            'date_naissance' => $enseignant->date_naissance,
-            'lieu_naissance' => $enseignant->lieu_naissance,
-            'numero_CNI' => $enseignant->numero_CNI,
-            'numero_securite_social' => $enseignant->numero_securite_social,
-            'statut' => $enseignant->statut,
-            'date_embauche' => $enseignant->date_embauche,
-            'date_fin_contrat' => $enseignant->date_fin_contrat,
-        ] : [];
-
-        // Fusionner les données de User et Enseignant
-        return array_merge($user->toArray(), $enseignantData);
+        return [
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'telephone' => $user->telephone,
+            'email' => $user->email,
+            'genre' => $user->genre,
+            'etat' => $user->etat,
+            'adresse' => $user->adresse,
+            'role_nom' => $user->role_nom,
+            'enseignant' => $user->enseignant ? [
+                'id' => $user->enseignant->id,
+                'specialite' => $user->enseignant->specialite,
+                'statut_marital' => $user->enseignant->statut_marital,
+                'date_naissance' => $user->enseignant->date_naissance,
+                'lieu_naissance' => $user->enseignant->lieu_naissance,
+                'numero_CNI' => $user->enseignant->numero_CNI,
+                'numero_securite_social' => $user->enseignant->numero_securite_social,
+                'statut' => $user->enseignant->statut,
+                'date_embauche' => $user->enseignant->date_embauche,
+                'date_fin_contrat' => $user->enseignant->date_fin_contrat,
+                'classes' => $user->enseignant->classes->map(function ($classe) {
+                    return [
+                        'id' => $classe->id,
+                        'nom' => $classe->nom,
+                        'niveau_classe' => $classe->niveau_classe,
+                        'salle' => $classe->salle ? [
+                            'id' => $classe->salle->id,
+                            'nom' => $classe->salle->nom,
+                            'capacity' => $classe->salle->capacity,
+                            'type' => $classe->salle->type,
+                        ] : null,
+                    ];
+                }),
+            ] : null,
+        ];
     });
 
     return response()->json([
@@ -1950,10 +2203,8 @@ public function updatePasswordTuteur(Request $request)
 {
     // Valider les données de la requête
     $validatedData = $request->validate([
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-    ]);
+        'password' => 'required|min:8', ],
+         ['password.required' => 'Le champ mot de passe est requis.',]);
 
     // Vérifier si l'utilisateur existe
     $tuteur = Tuteur::where('user_id')->first(); // Assurez-vous que le champ user_id est correct

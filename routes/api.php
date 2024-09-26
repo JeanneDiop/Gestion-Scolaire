@@ -35,6 +35,9 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('ListeUtilisateur',[AuthController::class,'ListeUtilisateur']);
 //archiver ou desactiver un User
 Route::post('archiveruser/{user}',[AuthController::class,'archiverUser']);
+
+
+
 //----------Gestion Role----------------
 //ajouter role
 Route::post('ajouter/role', [RoleController::class, 'store']);
@@ -46,6 +49,8 @@ Route::delete('role/{role}', [RoleController::class, 'destroy']);
 Route::get('role/lister', [RoleController::class, 'index']);
 //recuper un role specifique
 Route::get('role/{id}', [RoleController::class, 'show']);
+
+
 
 
 //-----------gestion Utilisateur tuteur----------------
@@ -75,8 +80,10 @@ Route::post('modifierpasswordtuteur',[AuthController::class,'updatePasswordTuteu
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
 //lister Enseignant user
 Route::get('enseignants', [AuthController::class, 'indexEnseignants']);
-//afficher un enseignant
+//afficher un enseignant dans sa table
 Route::get('/enseignant/{id}',[AuthController::class,'showEnseignant']);
+//afficher un enseignant dans la table user
+Route::get('/enseignant/user/{id}',[AuthController::class,'showUserEnseignant']);
 //lister tous les enseignants dans sa table
 Route::get('/liste/enseignant',[AuthController::class,'ListerEnseignant']);
 //modifier enseignant via user
@@ -112,6 +119,8 @@ Route::delete('/supprimeruserapprenant/{user}', [AuthController::class, 'supprim
 Route::post('archiverapprenant/{apprenant}',[AuthController::class,'archiverApprenant']);
 
 
+
+
 //----------------------gestion directeur---------------------
 //afficher info dun directeur
 Route::get('/directeur/{id}',[AuthController::class,'showDirecteur']);
@@ -140,6 +149,11 @@ Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
 Route::get('classe/lister', [ClasseController::class, 'indexClasse']);
 //afficher classe
 Route::get('classe/detail/{id}', [ClasseController::class, 'showClasse']);
+//modifier une classe
+Route::put('classe/edit/{id}', [ClasseController::class, 'updateClasse']);
+//supprimer un classe
+Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroyClasse']);
+
 
 
 //------------------gestion salle-------------------------
@@ -148,3 +162,7 @@ Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);
 Route::get('salle/lister', [SalleController::class, 'indexSalle']);
 //afficher salle
 Route::get('salle/detail/{id}', [SalleController::class, 'showSalle']);
+//modifier une salle
+Route::put('salle/edit/{id}', [SalleController::class, 'updateSalle']);
+//supprimer un salle
+Route::delete('salle/supprimer/{id}', [SalleController::class, 'destroySalle']);

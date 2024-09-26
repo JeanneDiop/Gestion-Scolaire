@@ -29,7 +29,7 @@ class UpdateEnseignantRequest extends FormRequest
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/'],
-            'password' => 'required|min:8',
+            //'password' => 'required|min:8',
             'telephone' => ['required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/'],
             // 'image' => 'required|string',  // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
@@ -70,8 +70,8 @@ class UpdateEnseignantRequest extends FormRequest
         'email.regex' => 'L\'adresse email n\'est pas dans un format valide.',
         'email.unique' => 'Cette adresse email est déjà utilisée.',
 
-        'password.required' => 'Le mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+        //'password.required' => 'Le mot de passe est requis.',
+        //'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
 
         'telephone.required' => 'Le numéro de téléphone est requis.',
         'telephone.regex' => 'Le numéro de téléphone doit être au format valide (+22177XXXXXXX).',
