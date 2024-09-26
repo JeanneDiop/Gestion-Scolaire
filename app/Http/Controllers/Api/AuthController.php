@@ -32,7 +32,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -401,6 +401,7 @@ public function registerApprenant(CreateApprenantRequest $request)
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
+            'niveau_education' =>$request->niveau_education,
             'statut_marital' => $request->statut_marital,
             'tuteur_id' => $request->tuteur_id,
             'classe_id' => $request->classe_id,
@@ -467,6 +468,7 @@ public function updateUserApprenant(UpdateApprenantRequest $request, $userId)
             'lieu_naissance' => $request->lieu_naissance ?: $user->apprenant->lieu_naissance,
             'numero_CNI' => $request->numero_CNI ?: $user->apprenant->numero_CNI,
             'numero_carte_scolaire' => $request->numero_carte_scolaire ?: $user->apprenant->numero_carte_scolaire,
+            'niveau_education' => $request->niveau_education ?: $user->apprenant->niveau_education,
             'statut_marital' => $request->statut_marital ?: $user->apprenant->statut_marital,
             'tuteur_id' => $request->tuteur_id ?: $user->apprenant->tuteur_id,
             'classe_id' => $request->classe_id ?: $user->apprenant->classe_id,
@@ -541,6 +543,7 @@ public function updateApprenant(UpdateApprenantRequest $request, $apprenant)
             'lieu_naissance' => $request->lieu_naissance ?: $apprenant->lieu_naissance,
             'numero_CNI' => $request->numero_CNI ?: $apprenant->numero_CNI,
             'numero_carte_scolaire' => $request->numero_carte_scolaire ?: $apprenant->numero_carte_scolaire,
+            'niveau_education' => $request->niveau_education ?: $user->apprenant->niveau_education,
             'statut_marital' => $request->statut_marital ?: $apprenant->statut_marital,
             'tuteur_id' => $request->tuteur_id ?: $apprenant->tuteur_id,
             'classe_id' => $request->classe_id ?: $apprenant->classe_id,
@@ -1251,6 +1254,7 @@ public function ListerApprenant()
             'lieu_naissance' => $apprenant->lieu_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
             'user' => $apprenant->user ? [
                 'id' => $apprenant->user->id,
@@ -1307,6 +1311,79 @@ public function ListerApprenant()
     ]);
 }
 
+//lister apprenant par niveau
+public function ListerApprenantParNiveau(Request $request, $niveauEducation)
+{
+    // Récupérer les apprenants filtrés par niveau d'éducation
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])
+                            ->where('niveau_education', $niveauEducation)
+                            ->get();
+
+    // Créer une nouvelle structure de données
+    $apprenantsData = $apprenants->map(function ($apprenant) {
+        // Informations de base de l'apprenant
+        $data = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'niveau_education' => $apprenant->niveau_education,
+            'statut_marital' => $apprenant->statut_marital,
+            'user' => $apprenant->user ? [
+                'id' => $apprenant->user->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'adresse' => $apprenant->user->adresse,
+                'role_nom' => $apprenant->user->role_nom,
+            ] : null,
+        ];
+
+        // Vérification du tuteur
+        if ($apprenant->tuteur) {
+            $tuteur = $apprenant->tuteur;
+            // Si l'utilisateur associé au tuteur existe, on fusionne les données du tuteur et de l'utilisateur
+            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        } else {
+            $data['tuteur'] = null; // Si pas de tuteur, on définit à null
+        }
+
+        // Vérification de la classe et de la salle
+        if ($apprenant->classe) {
+            $data['classe'] = [
+                'id' => $apprenant->classe->id,
+                'nom_classe' => $apprenant->classe->nom,
+                'niveau_classe' => $apprenant->classe->niveau_classe, // Ajout du nom de la classe
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
+                ] : null, // Si pas de salle, on définit à null
+                'enseignant' => $apprenant->classe->enseignant ? [
+                    'id' => $apprenant->classe->enseignant->id,
+                    'nom' => $apprenant->classe->enseignant->user->nom,
+                    'prenom' => $apprenant->classe->enseignant->user->prenom,
+                    'telephone' => $apprenant->classe->enseignant->user->telephone,
+                    'email' => $apprenant->classe->enseignant->user->email,
+                    'specialite' => $apprenant->classe->enseignant->user->specialite,
+                ] : null, // Si pas d'enseignant, on définit à null
+            ];
+        } else {
+            $data['classe'] = null; // Si pas de classe, on définit à null
+        }
+
+        return $data; // Retour des données de l'apprenant formatées
+    });
+
+    return response()->json([
+        'status' => 200,
+        'apprenants' => $apprenantsData, // Retour des données des apprenants
+    ]);
+}
 
 
  // Récupérer tous les enseignants depuis la table 'enseignants'
@@ -1487,6 +1564,7 @@ public function indexApprenants()
             'lieu_naissance' => $apprenant->lieu_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'niveau_eductaion' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
             'user' => [
                 'id' => $user->id,
@@ -1578,6 +1656,7 @@ public function showApprenant($id)
         'lieu_naissance' => $apprenant->lieu_naissance,
         'numero_CNI' => $apprenant->numero_CNI,
         'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+        'niveau_education' => $apprenant->niveau_education,
         'statut_marital' => $apprenant->statut_marital,
         'user' => $apprenant->user ? [
             'id' => $apprenant->user->id,
@@ -1674,6 +1753,7 @@ public function showUserApprenant($id)
             'lieu_naissance' => $apprenant->lieu_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
             'classe' => $apprenant->classe ? [
                 'id' => $apprenant->classe->id,

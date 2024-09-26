@@ -111,6 +111,8 @@ Route::get('/apprenant/{id}',[AuthController::class,'showApprenant']);
 Route::get('/apprenant/user/{id}',[AuthController::class,'showUserApprenant']);
 //lister tous les apprenants dans sa table
 Route::get('/liste/apprenant',[AuthController::class,'ListerApprenant']);
+//lister apprenant par niveau_education
+Route::get('/apprenants/niveau/{niveauEducation}', [AuthController::class, 'ListerApprenantParNiveau']);
 //modifier apprenant via user
 Route::put('/modifieruserapprenant/{user}',[AuthController::class,'updateUserApprenant']);
 //modifier apprenant via sa table

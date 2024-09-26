@@ -41,6 +41,7 @@ class CreateApprenantRequest extends FormRequest
             'lieu_naissance' => 'required|string|max:255',
            'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
+           'niveau_education' => 'required|string|max:255',
             'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
@@ -94,6 +95,9 @@ class CreateApprenantRequest extends FormRequest
 
         'numero_carte_scolaire.max' => 'Le numéro de carte scolaire ne peut pas dépasser 50 caractères.',
         'numero_carte_scolaire.unique' => 'Ce numéro de carte scolaire est déjà utilisé.',
+
+        'niveau_education.required' => 'niveau_education est requise.',
+        'niveau_education.string' => 'niveau_education doit être une chaîne de caractères.',
 
         'statut_marital.string' => 'Le statut marital doit être une chaîne de caractères.',
         'statut_marital.in' => 'Le statut marital doit être soit "célibataire" soit "marié".',

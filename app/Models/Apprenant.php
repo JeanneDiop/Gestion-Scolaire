@@ -16,6 +16,7 @@ class Apprenant extends Model
         'lieu_naissance',
         'numero_CNI',
         'numero_carte_scolaire',
+        'niveau_education',
         'statut_marital',
         'tuteur_id',
         'classe_id'

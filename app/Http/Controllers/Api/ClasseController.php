@@ -63,7 +63,7 @@ class ClasseController extends Controller
           }
       }
 
-      public function updateClasse(EditClasseRequest $request, $id)
+    public function updateClasse(EditClasseRequest $request, $id)
     {
     DB::beginTransaction();
 
@@ -74,7 +74,7 @@ class ClasseController extends Controller
         $classe->niveau_classe = $request->niveau_classe;
         $classe->enseignant_id = $request->enseignant_id;
         $classe->salle_id = $request->salle_id;
-        $classe->update(); 
+        $classe->update();
 
         // Récupération des données de l'enseignant et de la salle
         $enseignant = Enseignant::find($request->enseignant_id); // Assurez-vous d'importer le modèle Enseignant
@@ -105,7 +105,7 @@ public function destroyClasse(string $id, Request $request)
     try {
         // Trouver la classe à supprimer
         $classe = Classe::findOrFail($id);
-        
+
         // Récupérer l'ID de la nouvelle classe depuis la requête
         $nouvelleClasseId = $request->input('nouvelle_classe_id');
 
