@@ -65,6 +65,8 @@ Route::put('/modifierusertuteur/{user}',[AuthController::class,'updateUserTuteur
 Route::put('/modifiertuteur/{id}',[AuthController::class,'updateTuteur']);
 //lister tous les tuteurs dans sa table
 Route::get('/liste/tuteur',[AuthController::class,'ListerTuteur']);
+//afficher un tuteur dans la table user
+Route::get('/tuteur/user/{id}',[AuthController::class,'showUserTuteur']);
 //supprimer tuteur dans sa table
 Route::delete('/supprimertuteur/{tuteur}', [AuthController::class, 'supprimerTuteur']);
 //supprimer tuteur dans la table user
@@ -105,6 +107,8 @@ Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 Route::get('apprenants', [AuthController::class, 'indexApprenants']);
 //lister les infos d'un apprenant
 Route::get('/apprenant/{id}',[AuthController::class,'showApprenant']);
+//lister les infos d'un apprenant dans user
+Route::get('/apprenant/user/{id}',[AuthController::class,'showUserApprenant']);
 //lister tous les apprenants dans sa table
 Route::get('/liste/apprenant',[AuthController::class,'ListerApprenant']);
 //modifier apprenant via user
@@ -124,6 +128,8 @@ Route::post('archiverapprenant/{apprenant}',[AuthController::class,'archiverAppr
 //----------------------gestion directeur---------------------
 //afficher info dun directeur
 Route::get('/directeur/{id}',[AuthController::class,'showDirecteur']);
+//afficher info dun directeur dans user
+Route::get('/directeur/user/{id}',[AuthController::class,'showUserDirecteur']);
 //ajouter directeur
 Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
 //lister tous les directeurs dans sa table

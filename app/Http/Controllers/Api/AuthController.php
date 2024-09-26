@@ -1365,8 +1365,8 @@ public function ListerApprenant()
 //----------------lister tuteur dans sa table
 public function ListerTuteur()
 {
-    // Charger les tuteurs avec leurs informations de User
-    $tuteurs = Tuteur::with('user')->get();
+    // Charger les tuteurs avec leurs informations de User et leurs apprenants
+    $tuteurs = Tuteur::with(['user', 'apprenants.classe.salle', 'apprenants.classe.enseignant'])->get();
 
     // Créer une nouvelle structure de données sans duplications
     $tuteursData = $tuteurs->map(function ($tuteur) {
@@ -1388,6 +1388,35 @@ public function ListerTuteur()
                 'adresse' => $tuteur->user->adresse,
                 'role_nom' => $tuteur->user->role_nom,
             ] : null,
+            // Inclure les apprenants associés avec les classes, salles et enseignants
+            'apprenants' => $tuteur->apprenants->map(function ($apprenant) {
+                return [
+                    'id' => $apprenant->id,
+                    'nom' => $apprenant->user->nom,
+                    'prenom' => $apprenant->user->prenom,
+                    'date_naissance' => $apprenant->date_naissance,
+                    'classe' => $apprenant->classe ? [
+                        'id' => $apprenant->classe->id,
+                        'nom' => $apprenant->classe->nom,
+                        'niveau_classe' => $apprenant->classe->niveau_classe,
+                        'salle' => $apprenant->classe->salle ? [
+                            'id' => $apprenant->classe->salle->id,
+                            'nom' => $apprenant->classe->salle->nom,
+                            'capacity' => $apprenant->classe->salle->capacity,
+                            'type' => $apprenant->classe->salle->type,
+                        ] : null,
+                        'enseignant' => $apprenant->classe->enseignant ? [
+                            'id' => $apprenant->classe->enseignant->id,
+                            'nom' => $apprenant->classe->enseignant->user->nom,
+                            'prenom' => $apprenant->classe->enseignant->user->prenom,
+                            'adresse' => $apprenant->classe->enseignant->user->adresse,
+                            'email' => $apprenant->classe->enseignant->user->email,
+                            'telephone' => $apprenant->classe->enseignant->user->telephone,
+                            'specialite' => $apprenant->classe->enseignant->specialite,
+                        ] : null,
+                    ] : null,
+                ];
+            }),
         ];
     });
 
@@ -1397,9 +1426,7 @@ public function ListerTuteur()
     ]);
 }
 
-
-
-
+//LIster Directeur dans sa table
 public function ListerDirecteur()
 {
     // Récupérer tous les directeurs de la table 'directeur'
@@ -1934,7 +1961,7 @@ public function showUserEnseignant($id)
 public function showTuteur($id)
 {
     // Récupérer le tuteur avec l'ID spécifié et l'apprenant associé
-    $tuteur = Tuteur::with(['user', 'apprenants.classes.salle', 'apprenants.classes.enseignant'])->where('id', $id)->first();
+    $tuteur = Tuteur::with(['user', 'apprenants.classe.salle', 'apprenants.classe.enseignant'])->where('id', $id)->first();
 
     if (!$tuteur) {
         return response()->json([
@@ -1951,7 +1978,7 @@ public function showTuteur($id)
         'statut_marital' => $tuteur->statut_marital,
         'numero_CNI' => $tuteur->numero_CNI,
         // Attributs spécifiques au modèle User
-        'user' => $tuteur->user ? [
+        'user' => [
             'id' => $tuteur->user->id,
             'nom' => $tuteur->user->nom,
             'prenom' => $tuteur->user->prenom,
@@ -1961,32 +1988,35 @@ public function showTuteur($id)
             'etat' => $tuteur->user->etat,
             'adresse' => $tuteur->user->adresse,
             'role_nom' => $tuteur->user->role_nom,
-        ] : null,
+        ],
         // Inclure les apprenants associés avec les classes, salles et enseignants
         'apprenants' => $tuteur->apprenants->map(function ($apprenant) {
             return [
                 'id' => $apprenant->id,
-                'nom' => $apprenant->nom,
-                'prenom' => $apprenant->prenom,
+                // Accès direct à l'héritage de User
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
                 'date_naissance' => $apprenant->date_naissance,
-                'classe' => $apprenant->classes->map(function ($classe) {
-                    return [
-                        'id' => $classe->id,
-                        'nom' => $classe->nom,
-                        'niveau_classe' => $classe->niveau_classe,
-                        'salle' => $classe->salle ? [
-                            'id' => $classe->salle->id,
-                            'nom' => $classe->salle->nom,
-                            'capacity' => $classe->salle->capacity,
-                            'type' => $classe->salle->type,
-                        ] : null,
-                        'enseignant' => $classe->enseignant ? [
-                            'id' => $classe->enseignant->id,
-                            'nom' => $classe->enseignant->nom,
-                            'prenom' => $classe->enseignant->prenom,
-                        ] : null,
-                    ];
-                }),
+                'classe' => $apprenant->classe ? [
+                    'id' => $apprenant->classe->id,
+                    'nom' => $apprenant->classe->nom,
+                    'niveau_classe' => $apprenant->classe->niveau_classe,
+                    'salle' => $apprenant->classe->salle ? [
+                        'id' => $apprenant->classe->salle->id,
+                        'nom' => $apprenant->classe->salle->nom,
+                        'capacity' => $apprenant->classe->salle->capacity,
+                        'type' => $apprenant->classe->salle->type,
+                    ] : null,
+                    'enseignant' => $apprenant->classe->enseignant ? [
+                        'id' => $apprenant->classe->enseignant->id,
+                        'nom' => $apprenant->classe->enseignant->user->nom,
+                        'prenom' => $apprenant->classe->enseignant->user->prenom,
+                        'adresse'=>$apprenant->classe->enseignant->user->adresse,
+                        'email'=>$apprenant->classe->enseignant->user->email,
+                        'telephone'=>$apprenant->classe->enseignant->user->telephone,
+                        'specialite' => $apprenant->classe->enseignant->specialite,
+                    ] : null,
+                ] : null,
             ];
         }),
     ];
@@ -1994,6 +2024,75 @@ public function showTuteur($id)
     return response()->json([
         'status' => 200,
         'tuteur' => $tuteurData,
+    ]);
+}
+
+public function showUserTuteur($id)
+{
+    // Récupérer l'utilisateur avec l'ID spécifié et les informations du tuteur associé
+    $user = User::with(['tuteur', 'tuteur.apprenants.classe.salle', 'tuteur.apprenants.classe.enseignant'])
+        ->where('id', $id)
+        ->first();
+
+    if (!$user) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Utilisateur non trouvé.',
+        ], 404);
+    }
+
+    // Créer une structure de données pour le tuteur
+    $tuteurData = [
+        // Attributs spécifiques au modèle User
+        'id' => $user->id,
+        'nom' => $user->nom,
+        'prenom' => $user->prenom,
+        'telephone' => $user->telephone,
+        'email' => $user->email,
+        'genre' => $user->genre,
+        'etat' => $user->etat,
+        'adresse' => $user->adresse,
+        'role_nom' => $user->role_nom,
+        // Informations spécifiques au modèle Tuteur
+        'tuteur' => $user->tuteur ? [
+            'profession' => $user->tuteur->profession,
+            'statut_marital' => $user->tuteur->statut_marital,
+            'numero_CNI' => $user->tuteur->numero_CNI,
+            // Inclure les apprenants associés avec les classes, salles et enseignants
+            'apprenants' => $user->tuteur->apprenants->map(function ($apprenant) {
+                return [
+                    'id' => $apprenant->id,
+                    'nom' => $apprenant->user->nom,
+                    'prenom' => $apprenant->user->prenom,
+                    'date_naissance' => $apprenant->date_naissance,
+                    'classe' => $apprenant->classe ? [
+                        'id' => $apprenant->classe->id,
+                        'nom' => $apprenant->classe->nom,
+                        'niveau_classe' => $apprenant->classe->niveau_classe,
+                        'salle' => $apprenant->classe->salle ? [
+                            'id' => $apprenant->classe->salle->id,
+                            'nom' => $apprenant->classe->salle->nom,
+                            'capacity' => $apprenant->classe->salle->capacity,
+                            'type' => $apprenant->classe->salle->type,
+                        ] : null,
+                        'enseignant' => $apprenant->classe->enseignant ? [
+                            'id' => $apprenant->classe->enseignant->id,
+                            'nom' => $apprenant->classe->enseignant->user->nom,
+                            'prenom' => $apprenant->classe->enseignant->user->prenom,
+                            'adresse' => $apprenant->classe->enseignant->user->adresse,
+                            'email' => $apprenant->classe->enseignant->user->email,
+                            'telephone' => $apprenant->classe->enseignant->user->telephone,
+                            'specialite' => $apprenant->classe->enseignant->specialite,
+                        ] : null,
+                    ] : null,
+                ];
+            }),
+        ] : null,
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'user' => $tuteurData,
     ]);
 }
 
@@ -2058,7 +2157,7 @@ public function indexEnseignants()
 public function indexTuteurs()
 {
     // Récupérer les tuteurs à partir de la table User
-    $tuteurs = User::where('role_nom', 'tuteur')->with('tuteur')->get();
+    $tuteurs = User::where('role_nom', 'tuteur')->with(['tuteur.apprenants.classe.salle', 'tuteur.apprenants.classe.enseignant'])->get();
 
     // Créer une nouvelle structure de données
     $tuteursData = $tuteurs->map(function ($user) {
@@ -2078,6 +2177,35 @@ public function indexTuteurs()
                 'profession' => $user->tuteur->profession,
                 'statut_marital' => $user->tuteur->statut_marital,
                 'numero_CNI' => $user->tuteur->numero_CNI,
+                // Inclure les apprenants associés avec les classes, salles et enseignants
+                'apprenants' => $user->tuteur->apprenants->map(function ($apprenant) {
+                    return [
+                        'id' => $apprenant->id,
+                        'nom' => $apprenant->user->nom,
+                        'prenom' => $apprenant->user->prenom,
+                        'date_naissance' => $apprenant->date_naissance,
+                        'classe' => $apprenant->classe ? [
+                            'id' => $apprenant->classe->id,
+                            'nom' => $apprenant->classe->nom,
+                            'niveau_classe' => $apprenant->classe->niveau_classe,
+                            'salle' => $apprenant->classe->salle ? [
+                                'id' => $apprenant->classe->salle->id,
+                                'nom' => $apprenant->classe->salle->nom,
+                                'capacity' => $apprenant->classe->salle->capacity,
+                                'type' => $apprenant->classe->salle->type,
+                            ] : null,
+                            'enseignant' => $apprenant->classe->enseignant ? [
+                                'id' => $apprenant->classe->enseignant->id,
+                                'nom' => $apprenant->classe->enseignant->user->nom,
+                                'prenom' => $apprenant->classe->enseignant->user->prenom,
+                                'adresse' => $apprenant->classe->enseignant->user->adresse,
+                                'email' => $apprenant->classe->enseignant->user->email,
+                                'telephone' => $apprenant->classe->enseignant->user->telephone,
+                                'specialite' => $apprenant->classe->enseignant->specialite,
+                            ] : null,
+                        ] : null,
+                    ];
+                }),
             ] : null,
         ];
     });
@@ -2087,6 +2215,7 @@ public function indexTuteurs()
         'tuteurs' => $tuteursData,
     ]);
 }
+
 
 //lister tous les directeurs dans la table user
 public function indexDirecteurs()
