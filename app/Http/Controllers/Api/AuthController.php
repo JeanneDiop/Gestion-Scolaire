@@ -182,7 +182,6 @@ public function registerTuteur(CreateTuteurRequest $request)
     }
 }
 
-
 public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 {
     DB::beginTransaction(); // Démarre la transaction
@@ -201,7 +200,27 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'role_nom' => 'apprenant',
         ]);
 
-        // Création de l'apprenant
+        // Création de l'utilisateur Tuteur
+        $userTuteur = User::create([
+            'nom' => $request->tuteur['nom'],
+            'prenom' => $request->tuteur['prenom'],
+            'email' => $request->tuteur['email'],
+            'password' => Hash::make($request->tuteur['password']),
+            'telephone' => $request->tuteur['telephone'],
+            'adresse' => $request->tuteur['adresse'],
+            'genre' => $request->tuteur['genre'],
+            'etat' => $request->tuteur['etat'] ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'tuteur',
+        ]);
+
+        // Création du tuteur
+        $tuteur = $userTuteur->tuteur()->create([
+            'profession' => $request->tuteur['profession'],
+            'statut_marital' => $request->tuteur['statut_marital'],
+            'numero_CNI' => $request->tuteur['numero_CNI'],
+        ]);
+
+        // Création de l'apprenant avec le tuteur_id
         $apprenant = $userApprenant->apprenant()->create([
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
@@ -210,26 +229,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
             'classe_id' => $request->classe_id,
-        ]);
-
-        // Création de l'utilisateur Tuteur
-        $userTuteur = User::create([
-            'nom' => $request->tuteur_nom,
-            'prenom' => $request->tuteur_prenom,
-            'email' => $request->tuteur_email,
-            'password' => Hash::make($request->tuteur_password),
-            'telephone' => $request->tuteur_telephone,
-            'adresse' => $request->tuteur_adresse,
-            'genre' => $request->tuteur_genre,
-            'etat' => $request->tuteur_etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
-            'role_nom' => 'tuteur',
-        ]);
-
-        // Création du tuteur
-        $tuteur = $userTuteur->tuteur()->create([
-            'profession' => $request->tuteur_profession,
-            'statut_marital' => $request->tuteur_statut_marital,
-            'numero_CNI' => $request->tuteur_numero_CNI,
+            'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant
         ]);
 
         // Récupération des informations de la classe
@@ -254,127 +254,6 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'message' => 'Une erreur est survenue lors de la création de l\'apprenant et du tuteur.',
             'error' => $e->getMessage(),
         ], 500);
-    }
-}
-
-
-
-//modifier tuteur via sa table
-public function updateTuteur(UpdateTuteurRequest $request, $id)
-{
-    // Commencer une transaction
-    DB::beginTransaction();
-
-    try {
-        // Récupérer le tuteur et son utilisateur associé via l'ID
-        $tuteur = Tuteur::with('user')->find($id);
-
-        // Vérifier si le tuteur existe
-        if (!$tuteur) {
-            // Si le tuteur n'existe pas, annuler la transaction
-            DB::rollBack();
-            return response()->json([
-                'status' => 404,
-                'message' => 'Tuteur non trouvé.',
-            ], 404);
-        }
-
-        // Mise à jour des informations de l'utilisateur
-        $tuteur->user->update([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'telephone' => $request->telephone,
-            'adresse' => $request->adresse,
-            'genre' => $request->genre,
-            'etat' => $request->etat ?: $tuteur->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
-        ]);
-
-        // Mise à jour des informations spécifiques du tuteur
-        $tuteur->update([
-            'profession' => $request->profession,
-            'statut_marital' => $request->statut_marital,
-            'numero_CNI' => $request->numero_CNI,
-        ]);
-
-        // Valider la transaction
-        DB::commit();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Tuteur mis à jour avec succès.',
-            'tuteur' => $tuteur,
-        ]);
-
-    } catch (\Exception $e) {
-        // Annuler la transaction en cas d'erreur
-        DB::rollBack();
-        return response()->json([
-            'status' => 500,
-            'message' => 'Une erreur est survenue lors de la mise à jour du tuteur.',
-            'error' => $e->getMessage(),
-        ]);
-    }
-}
-
-//modifier tuteur via la table user
-public function updateUserTuteur(UpdateTuteurRequest $request, $userId)
-{
-    // Commencer une transaction
-    DB::beginTransaction();
-
-    try {
-        // Récupérer l'utilisateur avec le tuteur associé
-        $user = User::with('tuteur')->find($userId);
-
-        // Vérifier si l'utilisateur existe
-        if (!$user) {
-            DB::rollBack(); // Annuler la transaction si l'utilisateur n'est pas trouvé
-            return response()->json([
-                'status' => 404,
-                'message' => 'Utilisateur non trouvé.',
-            ], 404);
-        }
-
-        // Mettre à jour les informations de l'utilisateur
-        $user->update([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'telephone' => $request->telephone,
-            'adresse' => $request->adresse,
-            'genre' => $request->genre,
-            'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
-        ]);
-
-        // Vérifier si l'utilisateur a un tuteur associé
-        if ($user->tuteur) {
-            // Mettre à jour les informations spécifiques du tuteur
-            $user->tuteur->update([
-                'profession' => $request->profession,
-                'statut_marital' => $request->statut_marital,
-                'numero_CNI' => $request->numero_CNI,
-            ]);
-        }
-
-        // Valider la transaction
-        DB::commit();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Utilisateur et tuteur mis à jour avec succès.',
-            'user' => $user,
-            'tuteur' => $user->tuteur,
-        ]);
-
-    } catch (\Exception $e) {
-        // Annuler la transaction en cas d'erreur
-        DB::rollBack();
-        return response()->json([
-            'status' => 500,
-            'message' => 'Une erreur est survenue lors de la mise à jour de l\'utilisateur ou du tuteur.',
-            'error' => $e->getMessage(),
-        ],500);
     }
 }
 
