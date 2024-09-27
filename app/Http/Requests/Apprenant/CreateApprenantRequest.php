@@ -25,8 +25,6 @@ class CreateApprenantRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->userId; // Assurez-vous que cela correspond à l'ID de l'utilisateur à mettre à jour
-        $apprenantId = $this->apprenantId; // Assurez-vous que cela correspond à l'ID de l'apprenant à mettre à jour
         return [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',

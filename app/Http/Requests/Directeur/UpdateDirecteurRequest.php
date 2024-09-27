@@ -24,9 +24,9 @@ class UpdateDirecteurRequest extends FormRequest
         $userId = $this->route('id');
     return [
         'nom' => 'required|string|max:255',
-        'email' => ['required','string','email','max:255','regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]*\.[A-Za-z]{2,}$/'],
+        'email' => ['required','string','email','nullable','max:255','regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]*\.[A-Za-z]{2,}$/'],
         //'password' => 'required|min:8',
-        'telephone' => ['required','regex:/^\+221(77|78|76|70|75|33)\d{7}$/',],
+        'telephone' => ['required', 'nullable','regex:/^\+221(77|78|76|70|75|33)\d{7}$/',],
         // 'image' => 'required|string', // Ajustez selon vos besoins
         'adresse' => 'required|string|max:255',
         'genre' => 'required|in:homme,femme',

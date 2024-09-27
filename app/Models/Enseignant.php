@@ -15,6 +15,7 @@ class Enseignant extends Model
         'statut_marital',
         'date_naissance',
         'lieu_naissance',
+        'niveau_ecole',
         'numero_securite_social',
         'statut',
         'numero_CNI',

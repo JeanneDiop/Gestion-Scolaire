@@ -88,6 +88,8 @@ Route::get('/enseignant/{id}',[AuthController::class,'showEnseignant']);
 Route::get('/enseignant/user/{id}',[AuthController::class,'showUserEnseignant']);
 //lister tous les enseignants dans sa table
 Route::get('/liste/enseignant',[AuthController::class,'ListerEnseignant']);
+//lister enseignant par niveauecole
+Route::get('/enseignant/niveauecole/{niveauEcole}', [AuthController::class, 'ListerEnseignantNiveauEcole']);
 //modifier enseignant via user
 Route::put('/modifieruserenseignant/{user}',[AuthController::class,'updateUserEnseignant']);
 //modifier enseignant via sa table
@@ -101,6 +103,7 @@ Route::post('archiverenseignant/{enseignant}',[AuthController::class,'archiverEn
 
 
 //--------------gestion apprenant-------------
+Route::post('/registerapprenanttuteur', [AuthController::class, 'registerApprenantTuteur']);
 //ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 //lister les apprenants user

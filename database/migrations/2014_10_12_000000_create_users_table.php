@@ -16,10 +16,10 @@ return new class extends Migration
             $table->id();
             $table->string('nom');
             $table->string('prenom');
-            $table->string('telephone')->unique();
-            $table->string('email')->unique();
+            $table->string('telephone')->unique()->nullable();
+            $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable(); 
             $table->enum('genre',['homme','femme']);
             $table->enum('etat', ['actif', 'inactif'])->default('actif');
             $table->string('adresse');

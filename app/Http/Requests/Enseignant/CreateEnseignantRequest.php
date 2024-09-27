@@ -28,9 +28,9 @@ class CreateEnseignantRequest extends FormRequest
         return [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:users,email'],
-            'password' => 'required|min:8',
-            'telephone' => ['required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone'],
+            'email' => ['required', 'nullable','string', 'email', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:users,email'],
+            'password' => 'required|nullable|min:8',
+            'telephone' => ['required', 'nullable','regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone'],
             // 'image' => 'required|string',  // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
@@ -39,6 +39,7 @@ class CreateEnseignantRequest extends FormRequest
             'statut_marital' => 'required|in:celibataire,marié',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
+            'niveau_ecole' =>'required|string',
             'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
             'numero_securite_social' => 'required|string|unique:enseignants,numero_securite_social',
             'statut' => 'required|in:permanent,vacataire,contractuel,honorariat',
@@ -101,6 +102,9 @@ class CreateEnseignantRequest extends FormRequest
         'lieu_naissance.required' => 'Le lieu de naissance est requis.',
         'lieu_naissance.string' => 'Le lieu de naissance doit être une chaîne de caractères.',
         'lieu_naissance.max' => 'Le lieu de naissance ne peut pas dépasser 255 caractères.',
+
+        'niveau_ecole.required' => 'niveau_ecole est requise.',
+        'niveau_ecole.string' => 'niveau_ecole doit être une chaîne de caractères.',
 
         'numero_CNI.max' => 'Le numéro CNI ne peut pas dépasser 50 caractères.',
         'numero_CNI.unique' => 'Ce numéro CNI est déjà utilisé.',
