@@ -38,6 +38,7 @@ class UpdateEnseignantRequest extends FormRequest
             'specialite' => 'required|string|max:255',
             'statut_marital' => 'required|in:celibataire,marié',
             'date_naissance' => 'required|date',
+            'image' => ['nullable' ,'string'],
             'lieu_naissance' => 'required|string|max:255',
             'niveau_ecole' => 'required|string',
             'numero_CNI' => 'nullable|string|max:50',
@@ -84,7 +85,7 @@ class UpdateEnseignantRequest extends FormRequest
         'etat.sometimes' => 'L\'état est optionnel.',
         'etat.string' => 'L\'état doit être une chaîne de caractères.',
         'etat.in' => 'L\'état doit être soit "actif" soit "inactif".',
-
+        'image.required' => 'L\'image est obligatoire.',
         'genre.required' => 'Le genre est requis.',
         'genre.string' => 'Le genre doit être une chaîne de caractères.',
         'genre.in' => 'Le genre doit être soit "homme" soit "femme".',

@@ -7,16 +7,20 @@ use App\Http\Requests\Tuteur\UpdateTuteurRequest;
 use App\Http\Requests\Directeur\UpdateDirecteurRequest;
 use App\Http\Requests\Enseignant\UpdateEnseignantRequest;
 use App\Http\Requests\Apprenant\CreateApprenantRequest;
+use App\Http\Requests\Apprenant\UpdateApprenantTuteurRequest;
 use App\Http\Requests\Apprenant\CreateApprenantTuteurRequest;
 use App\Http\Requests\Directeur\CreateDirecteurRequest;
 use App\Http\Requests\Enseignant\CreateEnseignantRequest;
 use App\Http\Requests\Tuteur\CreateTuteurRequest;
-
+use App\Http\Requests\PersonnelAdministratif\CreatePersonnelAdministratifRequest;
+use App\Http\Requests\PersonnelAdministratif\UpdatePersonnelAdministratifRequest;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Classe;
 use App\Models\Role;
 use App\Models\Tuteur;
 use App\Models\Apprenant;
+use App\Models\PersonnelAdministratif;
 use App\Models\Enseignant;
 use App\Models\Directeur;
 use App\Models\User;
@@ -24,7 +28,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -33,7 +37,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','registerEnseignant','registerApprenant','ListeUtilisateur','ListerApprenant','ListerTuteur', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','supprimerUserDirecteur','supprimerUserEnseignant','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -106,6 +110,16 @@ public function login(LogUserRequest $request)
                     'type' => 'bearer',
                 ]
             ]);
+        } elseif ($user->role_nom === 'personnel_administratif' && $user->etat === 'actif') {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Salut personnel_administratif',
+                'user' => $user,
+                'authorization' => [
+                    'token' => $token,
+                    'type' => 'bearer',
+                ]
+            ]);
         }else{
             return response()->json([
                 'status'=>200,
@@ -133,7 +147,7 @@ public function login(LogUserRequest $request)
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
-    //----------------------Tuteur-------------------
+    //----------------------Tuteur-------------------------
 
 public function registerTuteur(CreateTuteurRequest $request)
 {
@@ -159,6 +173,7 @@ public function registerTuteur(CreateTuteurRequest $request)
             'profession' => $request->profession,
             'statut_marital' => $request->statut_marital,
             'numero_CNI' => $request->numero_CNI,
+            'image' => $request->image,
         ]);
 
         // Valider la transaction
@@ -196,7 +211,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
             'genre' => $request->genre,
-            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
             'role_nom' => 'apprenant',
         ]);
 
@@ -209,7 +224,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'telephone' => $request->tuteur['telephone'],
             'adresse' => $request->tuteur['adresse'],
             'genre' => $request->tuteur['genre'],
-            'etat' => $request->tuteur['etat'] ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
             'role_nom' => 'tuteur',
         ]);
 
@@ -218,6 +233,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'profession' => $request->tuteur['profession'],
             'statut_marital' => $request->tuteur['statut_marital'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
+            'image' => $request->tuteur['image']
         ]);
 
         // Création de l'apprenant avec le tuteur_id
@@ -228,6 +244,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
+            'image' => $request->image,
             'classe_id' => $request->classe_id,
             'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant
         ]);
@@ -256,6 +273,92 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
         ], 500);
     }
 }
+//modifier apprenanttuteur---------------------------------
+
+public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id)
+{
+    DB::beginTransaction(); // Démarre la transaction
+
+    try {
+        // Recherche de l'apprenant par son ID
+        $apprenant = Apprenant::findOrFail($id);
+
+        // Mise à jour de l'utilisateur Apprenant
+        $userApprenant = $apprenant->user;
+        $userApprenant->update([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+           'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'apprenant',
+        ]);
+
+        // Recherche du tuteur associé
+        $tuteur = $apprenant->tuteur;
+
+        // Mise à jour de l'utilisateur Tuteur
+        $userTuteur = $tuteur->user;
+        $userTuteur->update([
+            'nom' => $request->tuteur['nom'],
+            'prenom' => $request->tuteur['prenom'],
+            'email' => $request->tuteur['email'],
+            'telephone' => $request->tuteur['telephone'],
+            'adresse' => $request->tuteur['adresse'],
+            'genre' => $request->tuteur['genre'],
+            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'role_nom' => 'tuteur',
+        ]);
+
+        // Mise à jour du tuteur
+        $tuteur->update([
+            'profession' => $request->tuteur['profession'],
+            'statut_marital' => $request->tuteur['statut_marital'],
+            'numero_CNI' => $request->tuteur['numero_CNI'],
+            'image' => $request->tuteur['image']
+        ]);
+
+        // Mise à jour de l'apprenant avec le tuteur_id
+        $apprenant->update([
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'numero_CNI' => $request->numero_CNI,
+            'numero_carte_scolaire' => $request->numero_carte_scolaire,
+            'niveau_education' => $request->niveau_education,
+            'statut_marital' => $request->statut_marital,
+            'image' => $request->image,
+            'classe_id' => $request->classe_id,
+            'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant si nécessaire
+        ]);
+
+        // Récupération des informations de la classe
+        $classe = Classe::find($request->classe_id);
+
+        DB::commit(); // Valide la transaction
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Apprenant et Tuteur mis à jour avec succès',
+            'user_apprenant' => $userApprenant,
+            'apprenant' => $apprenant,
+            'user_tuteur' => $userTuteur,
+            'tuteur' => $tuteur,
+            'classe' => $classe,
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Annule la transaction en cas d'erreur
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la mise à jour de l\'apprenant et du tuteur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
 
 //supprimer un tuteur via sa table
 public function supprimerTuteur(Tuteur $tuteur)
@@ -360,6 +463,7 @@ public function registerApprenant(CreateApprenantRequest $request)
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' =>$request->niveau_education,
             'statut_marital' => $request->statut_marital,
+            'image' => $request->image,
             'tuteur_id' => $request->tuteur_id,
             'classe_id' => $request->classe_id,
         ]);
@@ -424,6 +528,7 @@ public function updateUserApprenant(UpdateApprenantRequest $request, $userId)
             'date_naissance' => $request->date_naissance ?: $user->apprenant->date_naissance,
             'lieu_naissance' => $request->lieu_naissance ?: $user->apprenant->lieu_naissance,
             'numero_CNI' => $request->numero_CNI ?: $user->apprenant->numero_CNI,
+            'image' => $request->image?:$user->apprenant->image,
             'numero_carte_scolaire' => $request->numero_carte_scolaire ?: $user->apprenant->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education ?: $user->apprenant->niveau_education,
             'statut_marital' => $request->statut_marital ?: $user->apprenant->statut_marital,
@@ -499,6 +604,7 @@ public function updateApprenant(UpdateApprenantRequest $request, $apprenant)
             'date_naissance' => $request->date_naissance ?: $apprenant->date_naissance,
             'lieu_naissance' => $request->lieu_naissance ?: $apprenant->lieu_naissance,
             'numero_CNI' => $request->numero_CNI ?: $apprenant->numero_CNI,
+            'image' => $request->image?:$user->apprenant->image,
             'numero_carte_scolaire' => $request->numero_carte_scolaire ?: $apprenant->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education ?: $user->apprenant->niveau_education,
             'statut_marital' => $request->statut_marital ?: $apprenant->statut_marital,
@@ -712,6 +818,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'lieu_naissance' => $request->lieu_naissance,
             'niveau_ecole' =>$request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
+            'image'=>$request->image,
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
             'date_embauche' => $request->date_embauche,
@@ -771,6 +878,7 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
+            'image' => $request->image,
             'niveau_ecole' =>$request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
             'numero_securite_social' => $request->numero_securite_social,
@@ -840,6 +948,7 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'lieu_naissance' => $request->lieu_naissance,
             'niveau_ecole' =>$request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
+            'image' => $request->image,
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
             'date_embauche' => $request->date_embauche,
@@ -902,6 +1011,46 @@ public function supprimerUserEnseignant(User $user)
 }
 
 
+//supprimer enseignant dans sa table
+public function supprimerEnseignant(Enseignant $enseignant)
+{
+    try {
+        // Vérifier si l'enseignant existe
+        if (!$enseignant) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Enseignant non trouvé.'
+            ], 404);
+        }
+
+        // Accéder à l'utilisateur associé à cet enseignant
+        $user = $enseignant->user; // Assurez-vous que la relation est définie dans le modèle Enseignant
+
+        // Mettre à jour les classes pour retirer la référence à cet enseignant
+        Classe::where('enseignant_id', $enseignant->id)->update(['enseignant_id' => null]);
+
+        // Supprimer l'enseignant
+        $enseignant->delete();
+
+        // Supprimer l'utilisateur (cela supprime aussi l'enseignant grâce à l'héritage)
+        if ($user) {
+            $user->delete();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'L\'enseignant et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression de l\'enseignant.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 //------------------- directeur-------------
 public function registerDirecteur(CreateDirecteurRequest $request)
@@ -941,6 +1090,7 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'qualification_academique' => $request->qualification_academique,
             'date_prise_fonction' => $date_prise_fonction,
             'annee_experience' => $annee_experience,
+            'image' => $request->image,
             'date_embauche' => $request->date_embauche,
             'date_fin_contrat' => $request->date_fin_contrat
         ]);
@@ -961,6 +1111,193 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
             'error' => $e->getMessage(),
         ], 500);
+    }
+}
+//register personnel_administratif
+public function registerPersonnelAdministratif(CreatePersonnelAdministratifRequest $request)
+{
+    // Démarrer une transaction
+    DB::beginTransaction();
+
+    try {
+        // Créer un nouvel utilisateur
+        $user = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: 'actif',
+            'role_nom' => 'personneladministratif',
+        ]);
+
+        // Créer un nouvel enregistrement pour le personnel administratif
+        $personneladministratif = $user->personneladministratif()->create([
+            'poste' => $request->poste,
+            'image' => $request->image,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'statut_emploie' => $request->statut_emploie,
+            'type_salaire' => $request->type_salaire,
+            'statut_marital' => $request->statut_marital,
+            'numero_securite_social' => $request->numero_securite_social,
+            'numero_CNI' => $request->numero_CNI,
+            'date_embauche' => $request->date_embauche,
+            'date_fin_contrat' => $request->date_fin_contrat,
+        ]);
+
+        // Valider la transaction
+        DB::commit();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Utilisateur créé avec succès',
+            'user' => $user,
+            'personneladministratif' => $personneladministratif,
+        ]);
+    } catch (\Exception $e) {
+        // Annuler la transaction en cas d'erreur
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+//modifier un personnel_administratif dans sa table
+public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest $request, $id)
+{
+    // Démarrer une transaction
+    DB::beginTransaction();
+
+    try {
+        // Récupérer l'enseignant et son utilisateur associé via l'ID
+        $personneladministratif = PersonnelAdministratif::with('user')->find($id);
+
+        // Vérifier si l'enseignant existe
+        if (!$personneladministratif) {
+            DB::rollBack(); // Annuler la transaction
+            return response()->json([
+                'status' => 404,
+                'message' => 'personneladministratif non trouvé.',
+            ], 404);
+        }
+
+        // Mise à jour des informations de l'utilisateur associé à cet enseignant
+        $personneladministratif->user->update([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: $personneladministratif->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+        ]);
+
+        // Mise à jour des informations spécifiques de l'enseignant
+        $personneladministratif->update([
+            'poste' => $request->poste,
+            'image' => $request->image,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'statut_emploie' => $request->statut_emploie,
+            'type_salaire' => $request->type_salaire,
+            'statut_marital' => $request->statut_marital,
+            'numero_securite_social' => $request->numero_securite_social,
+            'numero_CNI' => $request->numero_CNI,
+            'date_embauche' => $request->date_embauche,
+            'date_fin_contrat' => $request->date_fin_contrat,
+        ]);
+
+        // Valider la transaction
+        DB::commit();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
+            'personnel_administratif' => $personneladministratif,
+            'user' => $personneladministratif->user,
+        ]);
+
+    } catch (\Exception $e) {
+        // Annuler la transaction en cas d'erreur
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la mise à jour du personneladministratif.',
+            'trace' => $e->getTraceAsString(),
+        ],500);
+    }
+}
+//modifier personnel_administratif dans la table user
+public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifRequest $request, $userId)
+{
+    // Démarrer une transaction
+    DB::beginTransaction();
+
+    try {
+        // Récupérer l'utilisateur et vérifier s'il est associé à un personneladministratif
+        $user = User::with('personneladministratif')->find($userId);
+
+        if (!$user || !$user->personneladministratif) {
+            DB::rollBack(); // Annuler la transaction en cas de problème
+            return response()->json([
+                'status' => 404,
+                'message' => 'PersonnelAdministratif non trouvé.',
+            ], 404);
+        }
+
+        // Mise à jour des informations de l'utilisateur
+        $user->update([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+        ]);
+
+        // Mise à jour des informations spécifiques de l'enseignant
+        $user->personneladministratif->update([
+            'poste' => $request->poste,
+            'image' => $request->image,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'statut_emploie' => $request->statut_emploie,
+            'type_salaire' => $request->type_salaire,
+            'statut_marital' => $request->statut_marital,
+            'numero_securite_social' => $request->numero_securite_social,
+            'numero_CNI' => $request->numero_CNI,
+            'date_embauche' => $request->date_embauche,
+            'date_fin_contrat' => $request->date_fin_contrat,
+        ]);
+
+        // Valider la transaction
+        DB::commit();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'PersonnelAdministratif mis à jour avec succès.',
+            'user' => $user,
+            'personneladministratif' => $user->personneladministratif,
+        ]);
+
+    } catch (\Exception $e) {
+        // Annuler la transaction en cas d'erreur
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la mise à jour du personneladministratif.',
+            'error' => $e->getMessage(),
+        ],500);
     }
 }
 
@@ -1015,6 +1352,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
             'qualification_academique' => $request->qualification_academique,
+            'image' => $request->image,
             'date_prise_fonction' => $date_prise_fonction,
             'annee_experience' => $annee_experience,
             'date_embauche' => $request->date_embauche,
@@ -1029,7 +1367,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'message' => 'Directeur mis à jour avec succès.',
             'user' => $user,
             'directeur' => $user->directeur,
-        ]);
+        ],200);
 
     } catch (\Exception $e) {
         // Annuler la transaction en cas d'erreur
@@ -1039,7 +1377,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour du directeur.',
             'error' => $e->getMessage(),
-        ]);
+        ],500);
     }
 }
 
@@ -1094,16 +1432,86 @@ public function supprimerUserDirecteur(User $user)
         return response()->json([
             'status' => 200,
             'message' => 'Le directeur et l\'utilisateur associé ont été supprimés avec succès.'
-        ]);
+        ],200);
 
     } catch (Exception $e) {
         return response()->json([
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la suppression du directeur',
             'error' => $e->getMessage()
+        ],500);
+    }
+}
+//supprimer dans la table user
+public function supprimerUserPersonnelAdministratif(User $user)
+{
+    try {
+        // Vérifier si l'utilisateur est bien un personnel administratif
+        if (!$user->personnelAdministratif) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Le personnel administratif associé à cet utilisateur n\'a pas été trouvé.'
+            ]);
+        }
+
+        // Supprimer l'utilisateur (cela supprime également le personnel administratif via l'héritage)
+        $user->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le personnel administratif et l\'utilisateur associé ont été supprimés avec succès.'
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du personnel administratif',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+//supprimer personnel administratif via sa table
+public function supprimerPersonnelAdministratif(PersonnelAdministratif $personneladministratif)
+{
+    try {
+        // Vérifier si le personnel administratif existe
+        if (!$personneladministratif) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Personnel administratif non trouvé.'
+            ]);
+        }
+
+        // Accéder à l'utilisateur lié
+        $user = $personneladministratif->user;
+
+        // Logique pour la suppression
+        if ($user) {
+            // Vérifier si l'utilisateur existe avant de tenter la suppression
+            if ($user->exists) {
+                $user->delete(); // Supprimer l'utilisateur
+            }
+        }
+
+        // Supprimer le personnel administratif
+        $personneladministratif->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Le personnel administratif et l\'utilisateur associé ont été supprimés avec succès.'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la suppression du personnel administratif.',
+            'error' => $e->getMessage()
         ]);
     }
 }
+
+
 
 //fonction modifier la table directeur
 public function updateDirecteur(UpdateDirecteurRequest $request, $id)
@@ -1152,6 +1560,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
+            'image' => $request->image,
             'qualification_academique' => $request->qualification_academique,
             'date_prise_fonction' => $date_prise_fonction, // Utiliser la valeur validée
             'annee_experience' => $annee_experience, // Utiliser la valeur validée
@@ -1167,7 +1576,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'message' => 'Directeur et informations utilisateur mis à jour avec succès.',
             'directeur' => $directeur,
             'user' => $directeur->user,
-        ]);
+        ],200);
 
     } catch (\Exception $e) {
         // Annuler la transaction en cas d'erreur
@@ -1177,7 +1586,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour du directeur.',
             'error' => $e->getMessage(),
-        ]);
+        ],500);
     }
 }
 protected function respondWithToken($token,$user )
@@ -1193,7 +1602,7 @@ protected function respondWithToken($token,$user )
 ///-------lister tous les utilisateurs-----------------
 public function ListeUtilisateur()
 {
-    $users = User::where('role_nom', 'directeur')->orWhere('role_nom', 'enseignant')->orWhere('role_nom', 'tuteur')->orWhere('role_nom', 'apprenant')->orWhere('role_nom', 'employé')->get();
+    $users = User::where('role_nom', 'directeur')->orWhere('role_nom', 'enseignant')->orWhere('role_nom', 'personnel_administratif')->orWhere('role_nom', 'tuteur')->orWhere('role_nom', 'apprenant')->orWhere('role_nom', 'employé')->get();
     return response()->json([
         'status'=>200,
         'users' => $users
@@ -1213,6 +1622,7 @@ public function ListerApprenant()
             'date_naissance' => $apprenant->date_naissance,
             'lieu_naissance' => $apprenant->lieu_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
+            'image' => $apprenant->image,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
             'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
@@ -1359,6 +1769,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
             'specialite' => $enseignant->specialite,
             'statut_marital' => $enseignant->statut_marital,
             'date_naissance' => $enseignant->date_naissance,
+            'image' => $enseignant->image,
             'lieu_naissance' => $enseignant->lieu_naissance,
             'niveau_ecole' => $enseignant->niveau_ecole,
             'numero_CNI' => $enseignant->numero_CNI,
@@ -1398,8 +1809,89 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
         'enseignants' => $enseignantsData,
     ]);
 }
+//lister personnel administratif dans sa table
 
+public function ListerPersonnelAdministratif()
+{
+    // Charger les personnels administratifs avec leurs informations de User
+    $personnelAdministratifs = PersonnelAdministratif::with(['user'])->get();
 
+    // Créer une nouvelle structure de données sans duplications
+    $personnelAdministratifsData = $personnelAdministratifs->map(function ($personnelAdministratif) {
+        return [
+            'id' => $personnelAdministratif->id,
+            'poste' => $personnelAdministratif->poste,
+            'image' => $personnelAdministratif->image,
+            'date_naissance' => $personnelAdministratif->date_naissance,
+            'lieu_naissance' => $personnelAdministratif->lieu_naissance,
+            'statut_emploie' => $personnelAdministratif->statut_emploie, // Correction ici
+            'type_salaire' => $personnelAdministratif->type_salaire, // Correction ici
+            'statut_marital' => $personnelAdministratif->statut_marital, // Correction ici
+            'numero_securite_social' => $personnelAdministratif->numero_securite_social,
+            'numero_CNI' => $personnelAdministratif->numero_CNI,
+            'date_embauche' => $personnelAdministratif->date_embauche, // Correction ici
+            'date_fin_contrat' => $personnelAdministratif->date_fin_contrat,
+            'user' => $personnelAdministratif->user ? [
+                'id' => $personnelAdministratif->user->id,
+                'nom' => $personnelAdministratif->user->nom,
+                'prenom' => $personnelAdministratif->user->prenom,
+                'telephone' => $personnelAdministratif->user->telephone,
+                'email' => $personnelAdministratif->user->email,
+                'genre' => $personnelAdministratif->user->genre,
+                'etat' => $personnelAdministratif->user->etat,
+                'adresse' => $personnelAdministratif->user->adresse,
+                'role_nom' => $personnelAdministratif->user->role_nom,
+            ] : null,
+        ];
+    });
+
+    return response()->json([
+        'status' => 200,
+        'personneladministratifs' => $personnelAdministratifsData,
+    ]);
+}
+//lister personnel administratif par rapport à la poste
+public function ListerPersonnelAdministratifPoste(Request $request, $poste)
+{
+    // Récupérer les personnels administratifs filtrés par poste
+    $personnelAdministratifs = PersonnelAdministratif::with(['user'])
+                                ->where('poste', $poste)
+                                ->get();
+
+    // Créer une nouvelle structure de données sans duplications
+    $personnelAdministratifsData = $personnelAdministratifs->map(function ($personnelAdministratif) {
+        return [
+            'id' => $personnelAdministratif->id,
+            'poste' => $personnelAdministratif->poste,
+            'image' => $personnelAdministratif->image,
+            'date_naissance' => $personnelAdministratif->date_naissance,
+            'lieu_naissance' => $personnelAdministratif->lieu_naissance,
+            'statut_emploie' => $personnelAdministratif->statut_emploie,
+            'type_salaire' => $personnelAdministratif->type_salaire,
+            'statut_marital' => $personnelAdministratif->statut_marital,
+            'numero_securite_social' => $personnelAdministratif->numero_securite_social,
+            'numero_CNI' => $personnelAdministratif->numero_CNI,
+            'date_embauche' => $personnelAdministratif->date_embauche,
+            'date_fin_contrat' => $personnelAdministratif->date_fin_contrat,
+            'user' => $personnelAdministratif->user ? [
+                'id' => $personnelAdministratif->user->id,
+                'nom' => $personnelAdministratif->user->nom,
+                'prenom' => $personnelAdministratif->user->prenom,
+                'telephone' => $personnelAdministratif->user->telephone,
+                'email' => $personnelAdministratif->user->email,
+                'genre' => $personnelAdministratif->user->genre,
+                'etat' => $personnelAdministratif->user->etat,
+                'adresse' => $personnelAdministratif->user->adresse,
+                'role_nom' => $personnelAdministratif->user->role_nom,
+            ] : null,
+        ];
+    });
+
+    return response()->json([
+        'status' => 200,
+        'personnel_administratifs' => $personnelAdministratifsData,
+    ]);
+}
 
 public function ListerEnseignantNiveauEcole($niveauEcole)
 {
@@ -1415,6 +1907,7 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
             'specialite' => $enseignant->specialite,
             'statut_marital' => $enseignant->statut_marital,
             'date_naissance' => $enseignant->date_naissance,
+            'image' => $enseignant->image,
             'lieu_naissance' => $enseignant->lieu_naissance,
             'niveau_ecole' => $enseignant->niveau_ecole,
             'numero_CNI' => $enseignant->numero_CNI,
@@ -1468,6 +1961,7 @@ public function ListerTuteur()
             // Attributs spécifiques au modèle Tuteur
             'id' => $tuteur->id,
             'profession' => $tuteur->profession,
+            'image' => $tuteur->image,
             'statut_marital' => $tuteur->statut_marital,
             'numero_CNI' => $tuteur->numero_CNI,
             // Attributs spécifiques au modèle User
@@ -1489,6 +1983,8 @@ public function ListerTuteur()
                     'nom' => $apprenant->user->nom,
                     'prenom' => $apprenant->user->prenom,
                     'date_naissance' => $apprenant->date_naissance,
+                    'lieu_naissance' => $apprenant->lieu_naissance,
+                    'image' => $apprenant->image,
                     'classe' => $apprenant->classe ? [
                         'id' => $apprenant->classe->id,
                         'nom' => $apprenant->classe->nom,
@@ -1507,6 +2003,7 @@ public function ListerTuteur()
                             'email' => $apprenant->classe->enseignant->user->email,
                             'telephone' => $apprenant->classe->enseignant->user->telephone,
                             'specialite' => $apprenant->classe->enseignant->specialite,
+                            'image' => $apprenant->classe->enseignant->image,
                         ] : null,
                     ] : null,
                 ];
@@ -1536,6 +2033,7 @@ public function ListerDirecteur()
             'annee_experience' => $directeur->annee_experience,
             'date_prise_fonction' => $directeur->date_prise_fonction,
             'numero_CNI' => $directeur->numero_CNI,
+            'image' => $directeur->image,
             'qualification_academique' => $directeur->qualification_academique,
             'statut_marital' => $directeur->statut_marital,
             'date_embauche' => $directeur->date_embauche,
@@ -1580,6 +2078,7 @@ public function indexApprenants()
             'date_naissance' => $apprenant->date_naissance,
             'lieu_naissance' => $apprenant->lieu_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
+            'image' => $apprenant->image,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
             'niveau_eductaion' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
@@ -1629,6 +2128,7 @@ public function indexApprenants()
                     'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
                     'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
                     'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
+                    'image' => $apprenant->classe->enseignant->user->image,
                     'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
                     'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
                 ] : null, // Si l'enseignant n'existe pas, on met null
@@ -1672,6 +2172,7 @@ public function showApprenant($id)
         'date_naissance' => $apprenant->date_naissance,
         'lieu_naissance' => $apprenant->lieu_naissance,
         'numero_CNI' => $apprenant->numero_CNI,
+        'image' => $apprenant->image,
         'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
         'niveau_education' => $apprenant->niveau_education,
         'statut_marital' => $apprenant->statut_marital,
@@ -1720,6 +2221,7 @@ public function showApprenant($id)
                 'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
                 'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
                 'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
+                'image' => $apprenant->classe->enseignant->user->image,
                 'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
                 'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
             ] : null, // Si l'enseignant n'existe pas, on met null
@@ -1772,6 +2274,7 @@ public function showUserApprenant($id)
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
             'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
+            'image' => $apprenant->image,
             'classe' => $apprenant->classe ? [
                 'id' => $apprenant->classe->id,
                 'nom' => $apprenant->classe->nom,
@@ -1793,6 +2296,7 @@ public function showUserApprenant($id)
                     'date_naissance' => $apprenant->classe->enseignant->date_naissance,
                     'lieu_naissance' => $apprenant->classe->enseignant->lieu_naissance,
                     'numero_CNI' => $apprenant->classe->enseignant->numero_CNI,
+                    'image' => $apprenant->classe->enseignant->image,
                     'numero_securite_social' => $apprenant->classe->enseignant->numero_securite_social,
                     'statut' => $apprenant->classe->enseignant->statut,
                 ] : null,
@@ -1820,6 +2324,7 @@ public function showUserApprenant($id)
             'date_naissance' => $enseignant->date_naissance,
             'lieu_naissance' => $enseignant->lieu_naissance,
             'numero_CNI' => $enseignant->numero_CNI,
+            'image' => $enseignant->image,
             'numero_securite_social' => $enseignant->numero_securite_social,
             'statut' => $enseignant->statut,
             'date_embauche' => $enseignant->date_embauche,
@@ -1869,6 +2374,7 @@ public function showEnseignant($id)
         'lieu_naissance' => $enseignant->lieu_naissance,
         'niveau_ecole' => $enseignant->niveau_ecole,
         'numero_CNI' => $enseignant->numero_CNI,
+        'image' => $enseignant->image,
         'numero_securite_social' => $enseignant->numero_securite_social,
         'statut' => $enseignant->statut,
         'date_embauche' => $enseignant->date_embauche,
@@ -1904,7 +2410,52 @@ public function showEnseignant($id)
         'enseignant' => $enseignantData,
     ]);
 }
+//afficher les details du personneladministratif dans sa table
+public function showPersonnelAdministratif($id)
+{
+    // Récupérer le personnel administratif avec l'ID spécifié en incluant les informations de User
+    $personnelAdministratif = PersonnelAdministratif::with(['user'])->find($id);
 
+    // Vérifier si le personnel administratif n'existe pas
+    if (!$personnelAdministratif) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Personnel administratif non trouvé.',
+        ], 404);
+    }
+
+    // Structurer les données du personnel administratif et de l'utilisateur
+    $personnelAdministratifData = [
+        'id' => $personnelAdministratif->id,
+        'poste' => $personnelAdministratif->poste,
+        'image' => $personnelAdministratif->image,
+        'date_naissance' => $personnelAdministratif->date_naissance,
+        'lieu_naissance' => $personnelAdministratif->lieu_naissance,
+        'statut_emploi' => $personnelAdministratif->statut_emploi,
+        'type_salaire' => $personnelAdministratif->type_salaire,
+        'statut_marital' => $personnelAdministratif->statut_marital,
+        'numero_CNI' => $personnelAdministratif->numero_CNI,
+        'numero_securite_social' => $personnelAdministratif->numero_securite_social,
+        'date_embauche' => $personnelAdministratif->date_embauche,
+        'date_fin_contrat' => $personnelAdministratif->date_fin_contrat,
+        'user' => $personnelAdministratif->user ? [
+            'id' => $personnelAdministratif->user->id,
+            'nom' => $personnelAdministratif->user->nom,
+            'prenom' => $personnelAdministratif->user->prenom,
+            'telephone' => $personnelAdministratif->user->telephone,
+            'email' => $personnelAdministratif->user->email,
+            'genre' => $personnelAdministratif->user->genre,
+            'etat' => $personnelAdministratif->user->etat,
+            'adresse' => $personnelAdministratif->user->adresse,
+            'role_nom' => $personnelAdministratif->user->role_nom,
+        ] : null,
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'personneladministratif' => $personnelAdministratifData,
+    ]);
+}
 
 //---information dun directeur dans sa table
 public function showDirecteur($id)
@@ -1927,6 +2478,7 @@ public function showDirecteur($id)
         'annee_experience' => $directeur->annee_experience,
         'date_prise_fonction' => $directeur->date_prise_fonction,
         'numero_CNI' => $directeur->numero_CNI,
+        'image' => $directeur->image,
         'qualification_academique' => $directeur->qualification_academique,
         'statut_marital' => $directeur->statut_marital,
         'date_embauche' => $directeur->date_embauche,
@@ -1970,6 +2522,7 @@ public function showUserDirecteur($id)
         'annee_experience' => $user->directeur->annee_experience,
         'date_prise_fonction' => $user->directeur->date_prise_fonction,
         'numero_CNI' => $user->directeur->numero_CNI,
+        'image' => $user->directeur->image,
         'qualification_academique' => $user->directeur->qualification_academique,
         'statut_marital' => $user->directeur->statut_marital,
         'date_embauche' => $user->directeur->date_embauche,
@@ -2030,6 +2583,7 @@ public function showUserEnseignant($id)
             'lieu_naissance' => $user->enseignant->lieu_naissance,
             'niveau_ecole' => $user->enseignant->niveau_ecole,
             'numero_CNI' => $user->enseignant->numero_CNI,
+            'image' => $user->enseignant->image,
             'numero_securite_social' => $user->enseignant->numero_securite_social,
             'statut' => $user->enseignant->statut,
             'date_embauche' => $user->enseignant->date_embauche,
@@ -2055,6 +2609,56 @@ public function showUserEnseignant($id)
         'enseignant' => $enseignantData,
     ]);
 }
+//afficher les details du personnel administratif dans la table user
+public function showUserPersonnelAdministratif($id)
+{
+    // Récupérer l'utilisateur avec l'ID spécifié qui a le rôle 'personnel administratif' et charger les relations nécessaires
+    $user = User::with('personnelAdministratif')
+                ->where('id', $id)
+                ->where('role_nom', 'personneladministratif')
+                ->first();
+
+    // Vérifier si l'utilisateur n'existe pas ou n'est pas un personnel administratif
+    if (!$user || !$user->personnelAdministratif) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Personnel administratif non trouvé.',
+        ], 404);
+    }
+
+    // Structurer les données du personnel administratif et de l'utilisateur
+    $personnelData = [
+        'id' => $user->id,
+        'nom' => $user->nom,
+        'prenom' => $user->prenom,
+        'telephone' => $user->telephone,
+        'email' => $user->email,
+        'genre' => $user->genre,
+        'etat' => $user->etat,
+        'adresse' => $user->adresse,
+        'role_nom' => $user->role_nom,
+        'personnel_administratif' => [
+            'id' => $user->personnelAdministratif->id,
+            'poste' => $user->personnelAdministratif->poste,
+            'statut_emploi' => $user->personnelAdministratif->statut_emploi,
+            'type_salaire' => $user->personnelAdministratif->type_salaire,
+            'date_naissance' => $user->personnelAdministratif->date_naissance,
+            'lieu_naissance' => $user->personnelAdministratif->lieu_naissance,
+            'numero_CNI' => $user->personnelAdministratif->numero_CNI,
+            'image' => $user->personnelAdministratif->image,
+            'numero_securite_social' => $user->personnelAdministratif->numero_securite_social,
+            'statut_marital' => $user->personnelAdministratif->statut_marital,
+            'date_embauche' => $user->personnelAdministratif->date_embauche,
+            'date_fin_contrat' => $user->personnelAdministratif->date_fin_contrat,
+        ]
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'personneladministratif' => $personnelData,
+    ]);
+}
+
 
 //afficher les details dun tuteur dans sa table
 public function showTuteur($id)
@@ -2076,6 +2680,7 @@ public function showTuteur($id)
         'profession' => $tuteur->profession,
         'statut_marital' => $tuteur->statut_marital,
         'numero_CNI' => $tuteur->numero_CNI,
+        'image' => $tuteur->image,
         // Attributs spécifiques au modèle User
         'user' => [
             'id' => $tuteur->user->id,
@@ -2114,6 +2719,7 @@ public function showTuteur($id)
                         'email'=>$apprenant->classe->enseignant->user->email,
                         'telephone'=>$apprenant->classe->enseignant->user->telephone,
                         'specialite' => $apprenant->classe->enseignant->specialite,
+                        'image' => $apprenant->classe->enseignant->image,
                     ] : null,
                 ] : null,
             ];
@@ -2157,6 +2763,7 @@ public function showUserTuteur($id)
             'profession' => $user->tuteur->profession,
             'statut_marital' => $user->tuteur->statut_marital,
             'numero_CNI' => $user->tuteur->numero_CNI,
+            'image' => $user->tuteur->image,
             // Inclure les apprenants associés avec les classes, salles et enseignants
             'apprenants' => $user->tuteur->apprenants->map(function ($apprenant) {
                 return [
@@ -2164,6 +2771,8 @@ public function showUserTuteur($id)
                     'nom' => $apprenant->user->nom,
                     'prenom' => $apprenant->user->prenom,
                     'date_naissance' => $apprenant->date_naissance,
+                    'lieu_naissance' => $apprenant->lieu_naissance,
+                    'image' => $apprenant->image,
                     'classe' => $apprenant->classe ? [
                         'id' => $apprenant->classe->id,
                         'nom' => $apprenant->classe->nom,
@@ -2182,6 +2791,7 @@ public function showUserTuteur($id)
                             'email' => $apprenant->classe->enseignant->user->email,
                             'telephone' => $apprenant->classe->enseignant->user->telephone,
                             'specialite' => $apprenant->classe->enseignant->specialite,
+                            'image' => $apprenant->classe->enseignant->image,
                         ] : null,
                     ] : null,
                 ];
@@ -2226,6 +2836,7 @@ public function indexEnseignants()
                 'numero_CNI' => $user->enseignant->numero_CNI,
                 'numero_securite_social' => $user->enseignant->numero_securite_social,
                 'statut' => $user->enseignant->statut,
+                'image' => $user->enseignant->image,
                 'date_embauche' => $user->enseignant->date_embauche,
                 'date_fin_contrat' => $user->enseignant->date_fin_contrat,
                 'classes' => $user->enseignant->classes->map(function ($classe) {
@@ -2250,7 +2861,49 @@ public function indexEnseignants()
         'enseignants' => $enseignantsData,
     ]);
 }
+//listerpersonneladministratif dans la table user
+public function indexPersonnelAdministaratifs()
+{
+    // Charger les utilisateurs avec le rôle "administratif" et leurs informations liées
+    $personnelsAdministratifs = User::with(['PersonnelAdministratif']) // Assurez-vous que la relation est définie dans le modèle User
+                                     ->where('role_nom', 'personneladministratif') // Filtrer par le rôle administratif
+                                     ->get();
 
+    // Créer une nouvelle structure de données
+    $personnelsAdministratifsData = $personnelsAdministratifs->map(function ($user) {
+        return [
+            'id' => $user->id,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'telephone' => $user->telephone,
+            'email' => $user->email,
+            'genre' => $user->genre,
+            'etat' => $user->etat,
+            'adresse' => $user->adresse,
+            'role_nom' => $user->role_nom,
+            'personnelAdministratif' => $user->personneladministratif ? [
+                'id' => $user->personneladministratif->id,
+                'poste' => $user->personneladministratif->poste,
+                'image' => $user->personneladministratif->image,
+                'date_naissance' => $user->personneladministratif->date_naissance,
+                'lieu_naissance' => $user->personneladministratif->lieu_naissance,
+                'statut_emploi' => $user->personneladministratif->statut_emploi,
+                'type_salaire' => $user->personneladministratif->type_salaire,
+                'statut_marital' => $user->personneladministratif->statut_marital,
+                'numero_CNI' => $user->personneladministratif->numero_CNI,
+                'image' => $user->personneladministratif->image,
+                'numero_securite_social' => $user->personneladministratif->numero_securite_social,
+                'date_embauche' => $user->personneladministratif->date_embauche,
+                'date_fin_contrat' => $user->personneladministratif->date_fin_contrat,
+            ] : null,
+        ];
+    });
+
+    return response()->json([
+        'status' => 200,
+        'personnelsadministratifs' => $personnelsAdministratifsData,
+    ]);
+}
 
 
 //lister tous tuteurs dans la table user
@@ -2277,6 +2930,7 @@ public function indexTuteurs()
                 'profession' => $user->tuteur->profession,
                 'statut_marital' => $user->tuteur->statut_marital,
                 'numero_CNI' => $user->tuteur->numero_CNI,
+                'image' => $user->tuteur->image,
                 // Inclure les apprenants associés avec les classes, salles et enseignants
                 'apprenants' => $user->tuteur->apprenants->map(function ($apprenant) {
                     return [
@@ -2302,6 +2956,7 @@ public function indexTuteurs()
                                 'email' => $apprenant->classe->enseignant->user->email,
                                 'telephone' => $apprenant->classe->enseignant->user->telephone,
                                 'specialite' => $apprenant->classe->enseignant->specialite,
+                                'image' => $apprenant->classe->enseignant->image,
                             ] : null,
                         ] : null,
                     ];
@@ -2342,6 +2997,7 @@ public function indexDirecteurs()
                 'annee_experience' => $user->directeur->annee_experience,
                 'date_prise_fonction' => $user->directeur->date_prise_fonction,
                 'numero_CNI' => $user->directeur->numero_CNI,
+                'image' => $user->directeur->image,
                 'qualification_academique' => $user->directeur->qualification_academique,
                 'statut_marital' => $user->directeur->statut_marital,
                 'date_embauche' => $user->directeur->date_embauche,
@@ -2375,6 +3031,7 @@ public function archiverUser(User $user) {
         ]);
     }
 }
+
 
 //archiver tuteur via sa table
 public function archiverTuteur(Tuteur $tuteur) {
@@ -2446,7 +3103,30 @@ public function archiverEnseignant(Enseignant $enseignant) {
         ]);
     }
 }
-//archiver directeur via sa table
+//archiver personneladministratif via sa table
+public function archiverPersonnelAdministratif(PersonnelAdministratif $personneladministratif) {
+    // Récupérer l'utilisateur associé au directeur
+    $user = $personneladministratif->user;
+
+    if ($user->etat === 'actif') {
+        $user->etat = 'inactif';
+        $user->save();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Compte désactivé',
+            'user' => $user
+        ]);
+    } else {
+        $user->etat = 'actif';
+        $user->save();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Compte activé',
+            'user' => $user
+        ]);
+    }
+}
+
 public function archiverDirecteur(Directeur $directeur) {
     // Récupérer l'utilisateur associé au directeur
     $user = $directeur->user;

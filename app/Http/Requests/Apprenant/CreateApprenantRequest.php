@@ -31,7 +31,7 @@ class CreateApprenantRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:users,email'],
             'password' => 'required|min:8',
             'telephone' => ['required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone'],
-            // 'image' => 'required|string',  // Vous devrez ajuster cette règle en fonction de vos besoins
+            'image' => ['nullable' ,'string'], // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
@@ -40,7 +40,7 @@ class CreateApprenantRequest extends FormRequest
            'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
            'niveau_education' => 'required|string|max:255',
-            'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
+           'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
         ];
@@ -55,7 +55,7 @@ class CreateApprenantRequest extends FormRequest
         'prenom.required' => 'Le prénom est requis.',
         'prenom.string' => 'Le prénom doit être une chaîne de caractères.',
         'prenom.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
-
+         'image.required' => 'L\'image est obligatoire.',
         'email.required' => 'L\'adresse email est requise.',
         'email.string' => 'L\'adresse email doit être une chaîne de caractères.',
         'email.email' => 'L\'adresse email doit être un format valide.',

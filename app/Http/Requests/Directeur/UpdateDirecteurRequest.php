@@ -33,6 +33,7 @@ class UpdateDirecteurRequest extends FormRequest
         'etat' => 'nullable|string|in:actif,inactif',
         'statut_marital' => 'required|in:celibataire,marié',
         'date_naissance' => 'required|date',
+        'image' => ['nullable' ,'string'],
         'lieu_naissance' => 'required|string|max:255',
         'numero_CNI' => ['nullable','string','max:50'],
         'qualification_academique' => 'required|string|max:255',
@@ -73,7 +74,7 @@ class UpdateDirecteurRequest extends FormRequest
             'adresse.required' => 'L\'adresse est requise.',
             'adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
             'adresse.max' => 'L\'adresse ne peut pas dépasser 255 caractères.',
-
+             'image.required' => 'L\'image est obligatoire.',
             'genre.required' => 'Le genre est requis.',
             'genre.in' => 'Le genre doit être soit "homme" soit "femme".',
 

@@ -14,6 +14,7 @@ class Directeur extends Model
         'statut_marital',
         'date_naissance',
         'lieu_naissance',
+        'image',
         'numero_CNI',
         'annee_experience',
         'date_prise_fonction',

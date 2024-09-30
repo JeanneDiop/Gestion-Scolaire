@@ -36,6 +36,7 @@ class CreateEnseignantRequest extends FormRequest
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
             'specialite' => 'required|string|max:255',
+            'image' => ['nullable' ,'string'],
             'statut_marital' => 'required|in:celibataire,marié',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
@@ -73,7 +74,7 @@ class CreateEnseignantRequest extends FormRequest
 
         'password.required' => 'Le mot de passe est requis.',
         'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-
+         'image.required' => 'L\'image est obligatoire.',
         'telephone.required' => 'Le numéro de téléphone est requis.',
         'telephone.regex' => 'Le numéro de téléphone doit être au format valide (+22177XXXXXXX).',
         'telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',

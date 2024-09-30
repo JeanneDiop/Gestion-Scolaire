@@ -32,6 +32,7 @@ class CreateDirecteurRequest extends FormRequest
             'statut_marital' => 'required|in:celibataire,marié',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
+            'image' => ['nullable' ,'string'],
             'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
             'qualification_academique' => 'required|string|max:255',
             'annee_experience' => ['required', 'regex:/^\d+\s*(ans|année|années)?$/'],
@@ -59,7 +60,7 @@ class CreateDirecteurRequest extends FormRequest
             'email.max' => 'L\'adresse email ne peut pas dépasser 255 caractères.',
             'email.regex' => 'L\'adresse email n\'est pas dans un format valide.',
             'email.unique' => 'Cette adresse email est déjà utilisée.',
-
+            'image.required' => 'L\'image est obligatoire.',
             'password.required' => 'Le mot de passe est requis.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
 

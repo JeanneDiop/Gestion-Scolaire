@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->string('profession');
-            $table->enum('statut_marital', ['celibataire', 'marié']);
+            $table->string('image')->nullable();
+            $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf']);
             $table->string('numero_CNI')->unique();
             $table->timestamps();
         });

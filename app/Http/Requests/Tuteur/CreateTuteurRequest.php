@@ -38,6 +38,7 @@ class CreateTuteurRequest extends FormRequest
             'profession' => 'required|string',
             'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'numero_CNI' => ['nullable', 'string', 'unique:tuteurs',],
+            'image' => ['nullable' ,'string'],
         ];
     }
     public function messages()
@@ -46,6 +47,7 @@ class CreateTuteurRequest extends FormRequest
             'nom.required' => 'Le nom est requis.',
             'nom.string' => 'Le nom doit être une chaîne de caractères.',
             'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'image.required' => 'L\'image est obligatoire.',
 
             'prenom.required' => 'Le prénom est requis.',
             'prenom.string' => 'Le prénom doit être une chaîne de caractères.',

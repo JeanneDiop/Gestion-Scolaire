@@ -13,6 +13,7 @@ class Tuteur extends Model
 
     protected $fillable = [
         'profession',
+        'image',
         'numero_CNI',
         'statut_marital',
     ];

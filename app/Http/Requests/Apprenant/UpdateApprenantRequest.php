@@ -42,6 +42,7 @@ class UpdateApprenantRequest extends FormRequest
             'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
+            'image' => ['nullable' ,'string'],
         ];
     }
     public function messages()
@@ -50,7 +51,7 @@ class UpdateApprenantRequest extends FormRequest
         'nom.required' => 'Le nom est requis.',
         'nom.string' => 'Le nom doit être une chaîne de caractères.',
         'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
-
+        'image.required' => 'L\'image est obligatoire.',
         'prenom.required' => 'Le prénom est requis.',
         'prenom.string' => 'Le prénom doit être une chaîne de caractères.',
         'prenom.max' => 'Le prénom ne peut pas dépasser 255 caractères.',

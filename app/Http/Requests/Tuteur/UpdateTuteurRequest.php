@@ -38,6 +38,7 @@ class UpdateTuteurRequest extends FormRequest
             'profession' => 'required|string',
             'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
             'numero_CNI' => ['nullable', 'string'],
+            'image' => ['nullable' ,'string'],
         ];
     }
     public function messages()
@@ -57,7 +58,7 @@ class UpdateTuteurRequest extends FormRequest
             'email.max' => 'L\'adresse email ne peut pas dépasser 255 caractères.',
             'email.regex' => 'L\'adresse email n\'est pas dans un format valide.',
             'email.unique' => 'Cette adresse email est déjà utilisée.',
-
+            'image.required' => 'L\'image est obligatoire.',
             //'password.required' => 'Le mot de passe est requis.',
             //'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
 

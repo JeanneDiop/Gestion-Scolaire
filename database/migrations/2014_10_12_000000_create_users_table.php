@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('telephone')->unique()->nullable();
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password')->nullable(); 
-            $table->enum('genre',['homme','femme']);
+            $table->string('password')->nullable();
+            $table->enum('genre',['Homme','Femme']);
             $table->enum('etat', ['actif', 'inactif'])->default('actif');
             $table->string('adresse');
             //$table->foreignIdFor(Role::class)->constrained()->onDelete('cascade');

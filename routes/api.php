@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\SalleController;
 use App\Http\Controllers\API\ClasseController;
+use App\Http\Controllers\API\EmployeController;
 
 
 /*
@@ -18,7 +19,6 @@ use App\Http\Controllers\API\ClasseController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -28,15 +28,12 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 
-
 Route::post('login', [AuthController::class, 'login']);
 
 //------lister tous les users------------------------
 Route::get('ListeUtilisateur',[AuthController::class,'ListeUtilisateur']);
 //archiver ou desactiver un User
 Route::post('archiveruser/{user}',[AuthController::class,'archiverUser']);
-
-
 
 //----------Gestion Role----------------
 //ajouter role
@@ -49,9 +46,6 @@ Route::delete('role/{role}', [RoleController::class, 'destroy']);
 Route::get('role/lister', [RoleController::class, 'index']);
 //recuper un role specifique
 Route::get('role/{id}', [RoleController::class, 'show']);
-
-
-
 
 //-----------gestion Utilisateur tuteur----------------
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
@@ -76,8 +70,6 @@ Route::post('archivertuteur/{tuteur}',[AuthController::class,'archiverTuteur']);
 //modifier password tuteur
 Route::post('modifierpasswordtuteur',[AuthController::class,'updatePasswordTuteur']);
 
-
-
 //-----------gestion user enseignant-------------
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
 //lister Enseignant user
@@ -101,9 +93,10 @@ Route::delete('/supprimeruserenseignant/{user}', [AuthController::class, 'suppri
 //archiver ou desactiver un enseignant via sa table
 Route::post('archiverenseignant/{enseignant}',[AuthController::class,'archiverEnseignant']);
 
-
 //--------------gestion apprenant-------------
 Route::post('/registerapprenanttuteur', [AuthController::class, 'registerApprenantTuteur']);
+// modifier apprenanttuteur
+Route::put('/updateapprenanttuteur/{id}', [AuthController::class, 'updateApprenantTuteur']);
 //ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 //lister les apprenants user
@@ -127,9 +120,6 @@ Route::delete('/supprimeruserapprenant/{user}', [AuthController::class, 'supprim
 //archiver ou desactiver un apprenant via sa table
 Route::post('archiverapprenant/{apprenant}',[AuthController::class,'archiverApprenant']);
 
-
-
-
 //----------------------gestion directeur---------------------
 //afficher info dun directeur
 Route::get('/directeur/{id}',[AuthController::class,'showDirecteur']);
@@ -152,7 +142,27 @@ Route::delete('/supprimeruserdirecteur/{user}', [AuthController::class, 'supprim
 //archiver ou desactiver un directeur via sa table
 Route::post('archiverdirecteur/{directeur}',[AuthController::class,'archiverDirecteur']);
 
-
+//----------------------gestion personneladministratif---------------------
+//afficher info dun personnel
+Route::get('/personneladministratif/{id}',[AuthController::class,'showPersonnelAdministratif']);
+//afficher info dun personnel dans user
+Route::get('/personnel/user/{id}',[AuthController::class,'showUserPersonnelAdministratif']);
+//ajouter personnel
+Route::post('ajouter/personnel', [AuthController::class, 'registerPersonnelAdministratif']);
+//lister tous les personnels dans sa table
+Route::get('/liste/personnel',[AuthController::class,'ListerPersonnelAdministratif']);
+//lister tous les personnels dans users
+Route::get('personnels', [AuthController::class, 'indexPersonnelAdministaratifs']);
+//modifier personnel via user
+Route::put('/modifieruserpersonnel/{user}',[AuthController::class,'updateUserPersonnelAdministratif']);
+//modifier personnel via sa table
+Route::put('/modifierpersonnel/{id}',[AuthController::class,'updatePersonnelAdministratif']);
+//supprimer personnel dans sa table
+Route::delete('/supprimerpersonnel/{personneladministratif}', [AuthController::class, 'supprimerPersonnelAdministratif']);
+//supprimer personnel dans la table user
+Route::delete('/supprimeruserpersonnel/{user}', [AuthController::class, 'supprimerUserPersonnelAdministratif']);
+//archiver ou desactiver un personnel via sa table
+Route::post('archiverpersonnel/{personneladministratif}',[AuthController::class,'archiverPersonnelAdministratif']);
 
 //--------------------gestion classe-----------------------
 Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
@@ -165,8 +175,6 @@ Route::put('classe/edit/{id}', [ClasseController::class, 'updateClasse']);
 //supprimer un classe
 Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroyClasse']);
 
-
-
 //------------------gestion salle-------------------------
 Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);
 //lister les salles
@@ -177,3 +185,14 @@ Route::get('salle/detail/{id}', [SalleController::class, 'showSalle']);
 Route::put('salle/edit/{id}', [SalleController::class, 'updateSalle']);
 //supprimer un salle
 Route::delete('salle/supprimer/{id}', [SalleController::class, 'destroySalle']);
+
+//-------------gestion employer------------------------------
+Route::post('employe/create', [EmployeController::class, 'store']);
+//modifier employe
+Route::put('employe/edit/{id}', [EmployeController::class, 'update']);
+//supprimer  employe
+Route::delete('employe/supprimer/{id}', [EmployeController::class, 'destroy']);
+//lister employes
+Route::get('employe/lister', [EmployeController::class, 'index']);
+//afficher employe
+Route::get('employe/detail/{id}', [EmployeController::class, 'show']);

@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\Validator;
 
-class CreateApprenantTuteurRequest extends FormRequest
+class UpdateApprenantTuteurRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -35,50 +35,47 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/',
-                'unique:users,email',
+                
             ],
             'password' => 'nullable|min:8',
             'telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
             ],
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
-
+           
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
             'statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
-            'numero_CNI' => ['nullable', 'string', 'max:50', 'unique:apprenants,numero_CNI'],
-            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
+            'numero_CNI' => ['nullable', 'string', 'max:50'],
+            'numero_carte_scolaire' => 'nullable|string|max:50',
             'niveau_education' => 'required|string|max:255',
             'classe_id' => 'required|integer',
             'image' => ['nullable' ,'string'],
 
             // Règles spécifiques au tuteur
             'tuteur.nom' => 'required|string|max:255',
-            'tuteur.image'=>  ['nullable' ,'string'],
             'tuteur.prenom' => 'required|string|max:255',
+            'tuteur.image' => ['nullable' ,'string'],
             'tuteur.email' => [
                 'nullable',
                 'string',
                 'email',
                 'max:255',
-                'unique:users,email',
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:homme,femme',
             'tuteur.profession' => 'required|string',
             'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
-            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
+            'tuteur.numero_CNI' => ['nullable', 'string'],
         ];
     }
 
@@ -109,7 +106,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.adresse.required' => 'Le champ adresse du tuteur est obligatoire.',
             'tuteur.genre.required' => 'Le champ genre du tuteur est obligatoire.',
             'tuteur.profession.required' => 'Le champ profession du tuteur est obligatoire.',
-            'tuteur.image.required' => 'Le champ image du tuteur est obligatoire.',
+            'tuteur.image.required' => 'L\'image est obligatoire.',
         ];
 }
     protected function failedValidation(Validator $validator)
@@ -121,4 +118,3 @@ class CreateApprenantTuteurRequest extends FormRequest
         throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
     }
 }
-

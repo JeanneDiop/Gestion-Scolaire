@@ -8,6 +8,7 @@ use App\Models\Apprenant;
 use App\Models\Directeur;
 use App\Models\Admin;
 use App\Models\Enseignant;
+use App\Models\PersonnelAdministratif;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -76,5 +77,9 @@ class User extends Authenticatable implements JWTSubject
     public function directeur()
     {
         return $this->hasOne(Directeur::class);
+    }
+    public function personneladministratif()
+    {
+        return $this->hasOne(PersonnelAdministratif::class);
     }
 }
