@@ -233,7 +233,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'profession' => $request->tuteur['profession'],
             'statut_marital' => $request->tuteur['statut_marital'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
-            'image' => $request->tuteur['image']
+            'image' => isset($request->tuteur['image']) ? $request->tuteur['image'] : null,
         ]);
 
         // Création de l'apprenant avec le tuteur_id
@@ -244,7 +244,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
-            'image' => $request->image,
+            'image' => isset($request->image) ? $request->image : null,
             'classe_id' => $request->classe_id,
             'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant
         ]);
@@ -317,7 +317,7 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'profession' => $request->tuteur['profession'],
             'statut_marital' => $request->tuteur['statut_marital'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
-            'image' => $request->tuteur['image']
+           'image' => isset($request->tuteur['image']) ? $request->tuteur['image'] : null,
         ]);
 
         // Mise à jour de l'apprenant avec le tuteur_id
@@ -328,7 +328,7 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
-            'image' => $request->image,
+            'image' => isset($request->image) ? $request->image : null,
             'classe_id' => $request->classe_id,
             'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant si nécessaire
         ]);
