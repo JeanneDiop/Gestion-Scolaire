@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('numero_CNI')->unique()->nullable();
             $table->string('numero_carte_scolaire')->unique()->nullable();
             $table->string('niveau_education');
-            $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf'])->nullable;
+            $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf'])->nullable();
             $table->foreignId('tuteur_id')->constrained()->onDelete('restrict');
             $table->foreignId('classe_id')->constrained()->onDelete('restrict');
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');

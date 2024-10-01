@@ -35,7 +35,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/',
-                
+
             ],
             'password' => 'nullable|min:8',
             'telephone' => [
@@ -45,11 +45,11 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:homme,femme',
-           
+
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
-            'statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
+           'statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'numero_CNI' => ['nullable', 'string', 'max:50'],
             'numero_carte_scolaire' => 'nullable|string|max:50',
             'niveau_education' => 'required|string|max:255',
@@ -74,7 +74,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:homme,femme',
             'tuteur.profession' => 'required|string',
-            'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
+            'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'tuteur.numero_CNI' => ['nullable', 'string'],
         ];
     }

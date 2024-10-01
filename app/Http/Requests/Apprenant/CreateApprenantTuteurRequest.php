@@ -50,7 +50,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
-            'statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
+            'statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'numero_CNI' => ['nullable', 'string', 'max:50', 'unique:apprenants,numero_CNI'],
             'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
             'niveau_education' => 'required|string|max:255',
@@ -77,7 +77,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:homme,femme',
             'tuteur.profession' => 'required|string',
-            'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['célibataire', 'marié'])],
+            'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
         ];
     }
