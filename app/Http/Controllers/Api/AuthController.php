@@ -228,13 +228,31 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'role_nom' => 'tuteur',
         ]);
 
+        // Gestion du fichier image du tuteur
+        $tuteurImageFileName = null;
+        if ($request->file('tuteur.image')) {
+            $tuteurFile = $request->file('tuteur.image');
+            $tuteurFileName = date('YmdHi').$tuteurFile->getClientOriginalName();
+            $tuteurFile->move(public_path('images'), $tuteurFileName);
+            $tuteurImageFileName = $tuteurFileName;
+        }
+
         // Création du tuteur
         $tuteur = $userTuteur->tuteur()->create([
             'profession' => $request->tuteur['profession'],
             'statut_marital' => $request->tuteur['statut_marital'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
-            'image' => isset($request->tuteur['image']) ? $request->tuteur['image'] : null,
+            'image' => $tuteurImageFileName, // Utiliser le nom du fichier image du tuteur s'il est défini
         ]);
+
+        // Gestion du fichier image de l'apprenant
+        $apprenantImageFileName = null;
+        if ($request->file('image')) {
+            $apprenantFile = $request->file('image');
+            $apprenantFileName = date('YmdHi').$apprenantFile->getClientOriginalName();
+            $apprenantFile->move(public_path('images'), $apprenantFileName);
+            $apprenantImageFileName = $apprenantFileName;
+        }
 
         // Création de l'apprenant avec le tuteur_id
         $apprenant = $userApprenant->apprenant()->create([
@@ -244,7 +262,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
-            'image' => isset($request->image) ? $request->image : null,
+            'image' => $apprenantImageFileName, // Utiliser le nom du fichier image de l'apprenant s'il est défini
             'classe_id' => $request->classe_id,
             'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant
         ]);
@@ -273,6 +291,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
         ], 500);
     }
 }
+
 //modifier apprenanttuteur---------------------------------
 
 public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id)
@@ -289,38 +308,58 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'email' => $request->email,
+            'password' => $request->password ? Hash::make($request->password) : $userApprenant->password, // Mise à jour si le mot de passe est fourni
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
             'genre' => $request->genre,
-           'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'etat' => data_get($request->tuteur, 'etat', $userApprenant->etat), // Utilise l'état actuel s'il n'est pas fourni
             'role_nom' => 'apprenant',
         ]);
 
         // Recherche du tuteur associé
         $tuteur = $apprenant->tuteur;
+        $userTuteur = $tuteur->user;
 
         // Mise à jour de l'utilisateur Tuteur
-        $userTuteur = $tuteur->user;
         $userTuteur->update([
             'nom' => $request->tuteur['nom'],
             'prenom' => $request->tuteur['prenom'],
             'email' => $request->tuteur['email'],
+            'password' => $request->tuteur['password'] ? Hash::make($request->tuteur['password']) : $userTuteur->password, // Mise à jour si le mot de passe est fourni
             'telephone' => $request->tuteur['telephone'],
             'adresse' => $request->tuteur['adresse'],
             'genre' => $request->tuteur['genre'],
-            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'etat' => data_get($request->tuteur, 'etat', $userTuteur->etat), // Utilise l'état actuel s'il n'est pas fourni
             'role_nom' => 'tuteur',
         ]);
 
-        // Mise à jour du tuteur
+        // Gestion de l'image du tuteur (si un fichier est fourni)
+        $tuteurImageFileName = $tuteur->image; // Conserve l'image actuelle si aucun fichier n'est fourni
+        if ($request->file('tuteur.image')) {
+            $tuteurFile = $request->file('tuteur.image');
+            $tuteurFileName = date('YmdHi') . $tuteurFile->getClientOriginalName();
+            $tuteurFile->move(public_path('images'), $tuteurFileName);
+            $tuteurImageFileName = $tuteurFileName;
+        }
+
+        // Mise à jour des informations du tuteur
         $tuteur->update([
             'profession' => $request->tuteur['profession'],
             'statut_marital' => $request->tuteur['statut_marital'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
-           'image' => isset($request->tuteur['image']) ? $request->tuteur['image'] : null,
+            'image' => $tuteurImageFileName, // Utilise l'image mise à jour ou conserve l'actuelle
         ]);
 
-        // Mise à jour de l'apprenant avec le tuteur_id
+        // Gestion de l'image de l'apprenant (si un fichier est fourni)
+        $apprenantImageFileName = $apprenant->image; // Conserve l'image actuelle si aucun fichier n'est fourni
+        if ($request->file('image')) {
+            $apprenantFile = $request->file('image');
+            $apprenantFileName = date('YmdHi') . $apprenantFile->getClientOriginalName();
+            $apprenantFile->move(public_path('images'), $apprenantFileName);
+            $apprenantImageFileName = $apprenantFileName;
+        }
+
+        // Mise à jour des informations de l'apprenant
         $apprenant->update([
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
@@ -328,9 +367,9 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
-            'image' => isset($request->image) ? $request->image : null,
+            'image' => $apprenantImageFileName, // Utilise l'image mise à jour ou conserve l'actuelle
             'classe_id' => $request->classe_id,
-            'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant si nécessaire
+            'tuteur_id' => $tuteur->id, // Associe l'ID du tuteur à l'apprenant
         ]);
 
         // Récupération des informations de la classe
@@ -810,15 +849,23 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'role_nom' => 'enseignant',
         ]);
 
+        // Gestion du fichier image de l'enseignant
+        $fileName = null;
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName);
+        }
+
         // Création de l'enseignant
         $enseignant = $user->enseignant()->create([
             'specialite' => $request->specialite,
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'niveau_ecole' =>$request->niveau_ecole,
+            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
-            'image'=>$request->image,
+            'image' => $fileName, // Utiliser le nom du fichier image si l'image est uploadée
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
             'date_embauche' => $request->date_embauche,
@@ -829,7 +876,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
 
         return response()->json([
             'status' => 200,
-            'message' => 'Utilisateur créé avec succès',
+            'message' => 'Enseignant créé avec succès',
             'user' => $user,
             'enseignant' => $enseignant
         ]);
@@ -838,7 +885,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
 
         return response()->json([
             'status' => 500,
-            'message' => 'Une erreur est survenue lors de la création de l\'utilisateur.',
+            'message' => 'Une erreur est survenue lors de la création de l\'enseignant.',
             'error' => $e->getMessage(),
         ], 500);
     }
@@ -872,14 +919,22 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
+        // Gestion de l'image si elle est téléchargée
+        $fileName = $user->enseignant->image; // Conserver l'image actuelle si aucune nouvelle image n'est fournie
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName);
+        }
+
         // Mise à jour des informations spécifiques de l'enseignant
         $user->enseignant->update([
             'specialite' => $request->specialite,
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'image' => $request->image,
-            'niveau_ecole' =>$request->niveau_ecole,
+            'image' => $fileName, // Mettre à jour avec la nouvelle image ou conserver l'ancienne
+            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
@@ -905,9 +960,10 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour de l\'enseignant.',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
+
 
 
 //modifier enseignant dans sa table
@@ -940,15 +996,23 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'etat' => $request->etat ?: $enseignant->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
+        // Gestion de l'image si elle est téléchargée
+        $fileName = $enseignant->image; // Conserver l'image actuelle si aucune nouvelle image n'est fournie
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName);
+        }
+
         // Mise à jour des informations spécifiques de l'enseignant
         $enseignant->update([
             'specialite' => $request->specialite,
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'niveau_ecole' =>$request->niveau_ecole,
+            'image' => $fileName, // Mettre à jour avec la nouvelle image ou conserver l'ancienne
+            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
-            'image' => $request->image,
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
             'date_embauche' => $request->date_embauche,
@@ -973,9 +1037,10 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour de l\'enseignant.',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
+
 
 
 //Supprimer enseignant via la table user
@@ -1051,7 +1116,6 @@ public function supprimerEnseignant(Enseignant $enseignant)
     }
 }
 
-
 //------------------- directeur-------------
 public function registerDirecteur(CreateDirecteurRequest $request)
 {
@@ -1081,6 +1145,14 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'role_nom' => 'directeur',
         ]);
 
+        // Gestion de l'image
+        $fileName = null; // Initialisation de la variable pour le nom du fichier
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
         // Création du directeur
         $directeur = $user->directeur()->create([
             'statut_marital' => $request->statut_marital,
@@ -1090,7 +1162,7 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'qualification_academique' => $request->qualification_academique,
             'date_prise_fonction' => $date_prise_fonction,
             'annee_experience' => $annee_experience,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nom du fichier
             'date_embauche' => $request->date_embauche,
             'date_fin_contrat' => $request->date_fin_contrat
         ]);
@@ -1113,6 +1185,7 @@ public function registerDirecteur(CreateDirecteurRequest $request)
         ], 500);
     }
 }
+
 //register personnel_administratif
 public function registerPersonnelAdministratif(CreatePersonnelAdministratifRequest $request)
 {
@@ -1133,10 +1206,18 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
             'role_nom' => 'personneladministratif',
         ]);
 
+        // Gestion de l'image
+        $fileName = null; // Initialisation de la variable pour le nom du fichier
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
         // Créer un nouvel enregistrement pour le personnel administratif
         $personneladministratif = $user->personneladministratif()->create([
             'poste' => $request->poste,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nom du fichier
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'statut_emploie' => $request->statut_emploie,
@@ -1176,10 +1257,10 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
     DB::beginTransaction();
 
     try {
-        // Récupérer l'enseignant et son utilisateur associé via l'ID
+        // Récupérer le personnel administratif et son utilisateur associé via l'ID
         $personneladministratif = PersonnelAdministratif::with('user')->find($id);
 
-        // Vérifier si l'enseignant existe
+        // Vérifier si le personnel administratif existe
         if (!$personneladministratif) {
             DB::rollBack(); // Annuler la transaction
             return response()->json([
@@ -1188,7 +1269,7 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             ], 404);
         }
 
-        // Mise à jour des informations de l'utilisateur associé à cet enseignant
+        // Mise à jour des informations de l'utilisateur associé à ce personnel administratif
         $personneladministratif->user->update([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -1199,10 +1280,18 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'etat' => $request->etat ?: $personneladministratif->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
-        // Mise à jour des informations spécifiques de l'enseignant
+        // Gestion de l'image
+        $fileName = $personneladministratif->image; // Utilise l'image actuelle par défaut
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
+        // Mise à jour des informations spécifiques du personnel administratif
         $personneladministratif->update([
             'poste' => $request->poste,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'statut_emploie' => $request->statut_emploie,
@@ -1230,11 +1319,12 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
 
         return response()->json([
             'status' => 500,
-            'message' => 'Une erreur est survenue lors de la mise à jour du personneladministratif.',
+            'message' => 'Une erreur est survenue lors de la mise à jour du personnel administratif.',
             'trace' => $e->getTraceAsString(),
-        ],500);
+        ], 500);
     }
 }
+
 //modifier personnel_administratif dans la table user
 public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifRequest $request, $userId)
 {
@@ -1242,7 +1332,7 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
     DB::beginTransaction();
 
     try {
-        // Récupérer l'utilisateur et vérifier s'il est associé à un personneladministratif
+        // Récupérer l'utilisateur et vérifier s'il est associé à un personnel administratif
         $user = User::with('personneladministratif')->find($userId);
 
         if (!$user || !$user->personneladministratif) {
@@ -1264,10 +1354,18 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
             'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
-        // Mise à jour des informations spécifiques de l'enseignant
+        // Gestion de l'image
+        $fileName = $user->personneladministratif->image; // Utilise l'image actuelle par défaut
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
+        // Mise à jour des informations spécifiques du personnel administratif
         $user->personneladministratif->update([
             'poste' => $request->poste,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'statut_emploie' => $request->statut_emploie,
@@ -1295,9 +1393,9 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
 
         return response()->json([
             'status' => 500,
-            'message' => 'Une erreur est survenue lors de la mise à jour du personneladministratif.',
+            'message' => 'Une erreur est survenue lors de la mise à jour du personnel administratif.',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
 
@@ -1345,6 +1443,14 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'etat' => $request->etat ?: $user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
+        // Gestion de l'image
+        $fileName = $user->directeur->image; // Utilise l'image actuelle par défaut
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
         // Mise à jour des informations spécifiques du directeur
         $user->directeur->update([
             'statut_marital' => $request->statut_marital,
@@ -1352,7 +1458,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
             'qualification_academique' => $request->qualification_academique,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'date_prise_fonction' => $date_prise_fonction,
             'annee_experience' => $annee_experience,
             'date_embauche' => $request->date_embauche,
@@ -1367,7 +1473,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'message' => 'Directeur mis à jour avec succès.',
             'user' => $user,
             'directeur' => $user->directeur,
-        ],200);
+        ], 200);
 
     } catch (\Exception $e) {
         // Annuler la transaction en cas d'erreur
@@ -1377,7 +1483,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour du directeur.',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
 
@@ -1530,12 +1636,12 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
                 'message' => 'Directeur non trouvé.',
             ], 404);
         }
+
         // Validation des données
         $validatedData = $request->validate([
             'annee_experience' => ['nullable', 'regex:/^\d+\s*(ans|année|années)?$/'],
             'date_prise_fonction' => 'nullable|integer|min:1900|max:' . date('Y'),
         ]);
-
 
         // Extraire les chiffres uniquement pour l'expérience
         $annee_experience = isset($validatedData['annee_experience'])
@@ -1543,6 +1649,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             : $directeur->annee_experience; // Conserver l'actuel si non fourni
 
         $date_prise_fonction = $validatedData['date_prise_fonction'] ?? $directeur->date_prise_fonction; // Conserver l'actuel si non fourni
+
         // Mise à jour des informations de l'utilisateur associé
         $directeur->user->update([
             'nom' => $request->nom,
@@ -1554,13 +1661,21 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'etat' => $request->etat ?: $directeur->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
         ]);
 
+        // Gestion de l'image
+        $fileName = $directeur->image; // Utilise l'image actuelle par défaut
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName); // Déplace le fichier vers le bon dossier
+        }
+
         // Mise à jour des informations spécifiques du directeur
         $directeur->update([
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
-            'image' => $request->image,
+            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'qualification_academique' => $request->qualification_academique,
             'date_prise_fonction' => $date_prise_fonction, // Utiliser la valeur validée
             'annee_experience' => $annee_experience, // Utiliser la valeur validée
@@ -1576,7 +1691,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'message' => 'Directeur et informations utilisateur mis à jour avec succès.',
             'directeur' => $directeur,
             'user' => $directeur->user,
-        ],200);
+        ], 200);
 
     } catch (\Exception $e) {
         // Annuler la transaction en cas d'erreur
@@ -1586,9 +1701,10 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour du directeur.',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
+
 protected function respondWithToken($token,$user )
 {
     return response()->json([
@@ -1788,19 +1904,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
                 'adresse' => $enseignant->user->adresse,
                 'role_nom' => $enseignant->user->role_nom,
             ] : null,
-            'classes' => $enseignant->classes->map(function ($classe) {
-                return [
-                    'id' => $classe->id,
-                    'nom' => $classe->nom,
-                    'niveau_classe' => $classe->niveau_classe,
-                    'salle' => $classe->salle ? [
-                        'id' => $classe->salle->id,
-                        'nom' => $classe->salle->nom,
-                        'capacity' => $classe->salle->capacity,
-                        'type' => $classe->salle->type,
-                    ] : null,
-                ];
-            }),
+
         ];
     });
 
@@ -1926,19 +2030,6 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
                 'adresse' => $enseignant->user->adresse,
                 'role_nom' => $enseignant->user->role_nom,
             ] : null,
-            'classes' => $enseignant->classes->map(function ($classe) {
-                return [
-                    'id' => $classe->id,
-                    'nom' => $classe->nom,
-                    'niveau_classe' => $classe->niveau_classe,
-                    'salle' => $classe->salle ? [
-                        'id' => $classe->salle->id,
-                        'nom' => $classe->salle->nom,
-                        'capacity' => $classe->salle->capacity,
-                        'type' => $classe->salle->type,
-                    ] : null,
-                ];
-            }),
         ];
     });
 
@@ -2390,19 +2481,7 @@ public function showEnseignant($id)
             'adresse' => $enseignant->user->adresse,
             'role_nom' => $enseignant->user->role_nom,
         ] : null,
-        'classes' => $enseignant->classes->map(function ($classe) {
-            return [
-                'id' => $classe->id,
-                'nom' => $classe->nom,
-                'niveau_classe' => $classe->niveau_classe,
-                'salle' => $classe->salle ? [
-                    'id' => $classe->salle->id,
-                    'nom' => $classe->salle->nom,
-                    'capacity' => $classe->salle->capacity,
-                    'type' => $classe->salle->type,
-                ] : null,
-            ];
-        }),
+
     ];
 
     return response()->json([
@@ -2588,19 +2667,6 @@ public function showUserEnseignant($id)
             'statut' => $user->enseignant->statut,
             'date_embauche' => $user->enseignant->date_embauche,
             'date_fin_contrat' => $user->enseignant->date_fin_contrat,
-            'classes' => $user->enseignant->classes->map(function ($classe) {
-                return [
-                    'id' => $classe->id,
-                    'nom' => $classe->nom,
-                    'niveau_classe' => $classe->niveau_classe,
-                    'salle' => $classe->salle ? [
-                        'id' => $classe->salle->id,
-                        'nom' => $classe->salle->nom,
-                        'capacity' => $classe->salle->capacity,
-                        'type' => $classe->salle->type,
-                    ] : null,
-                ];
-            }),
         ]
     ];
 
@@ -2839,19 +2905,6 @@ public function indexEnseignants()
                 'image' => $user->enseignant->image,
                 'date_embauche' => $user->enseignant->date_embauche,
                 'date_fin_contrat' => $user->enseignant->date_fin_contrat,
-                'classes' => $user->enseignant->classes->map(function ($classe) {
-                    return [
-                        'id' => $classe->id,
-                        'nom' => $classe->nom,
-                        'niveau_classe' => $classe->niveau_classe,
-                        'salle' => $classe->salle ? [
-                            'id' => $classe->salle->id,
-                            'nom' => $classe->salle->nom,
-                            'capacity' => $classe->salle->capacity,
-                            'type' => $classe->salle->type,
-                        ] : null,
-                    ];
-                }),
             ] : null,
         ];
     });

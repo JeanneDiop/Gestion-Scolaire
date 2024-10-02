@@ -45,7 +45,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             ],
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
-            'genre' => 'required|string|in:homme,femme',
+            'genre' => 'required|string|in:Homme,Femme',
 
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
@@ -75,7 +75,7 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'unique:users,telephone',
             ],
             'tuteur.adresse' => 'required|string',
-            'tuteur.genre' => 'required|string|in:homme,femme',
+            'tuteur.genre' => 'required|string|in:Homme,Femme',
             'tuteur.profession' => 'required|string',
             'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],

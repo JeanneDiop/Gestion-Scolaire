@@ -3,8 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Classe; // Importation de la classe Classe
-use App\Models\Cour;   // Importation de la classe Cour
+use App\Models\Classe;
+use App\Models\Cours;
 
 return new class extends Migration
 {
@@ -13,22 +13,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('planifier_cours', function (Blueprint $table) {
+        Schema::create('planifiercours', function (Blueprint $table) {
             $table->id();
             $table->date('date_cours');
             $table->time('heure_debut');
             $table->time('heure_fin');
             $table->string('jour_semaine');
-            $table->integer('duree');
+            $table->time('duree')->nullable();
             $table->enum('statut', ['prévu', 'annulé', 'reporté'])->default('prévu');
-            $table->string('type_cours')->nullable();
-            $table->integer('semestre')->nullable();
-            $table->string('matiere')->nullable();
-
-            // Clés étrangères en utilisant les classes
+            $table->string('annee_scolaire');
+            $table->integer('semestre');
             $table->foreignIdFor(Classe::class)->constrained()->onDelete('cascade');
-            $table->foreignIdFor(Cour::class)->constrained()->onDelete('cascade');
-
+            $table->foreignIdFor(Cours::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -38,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('planifier_cours');
+        Schema::dropIfExists('planifiercours');
     }
 };

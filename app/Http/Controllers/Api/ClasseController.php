@@ -20,8 +20,7 @@ class ClasseController extends Controller
         try {
             $classe = new Classe();
             $classe->nom = $request->nom;
-            $classe->niveau_classe = $request->niveau_classe; // Corrigez l'orthographe de 'niveau_classe'
-            $classe->enseignant_id = $request->enseignant_id; // Corrigez l'orthographe de 'enseignant_id'
+            $classe->niveau_classe = $request->niveau_classe; // Corrigez l'orthographe de 'niveau_classe
             $classe->salle_id = $request->salle_id;
             $classe->save();
 
@@ -55,9 +54,9 @@ class ClasseController extends Controller
       public function showClasse(string $id)
       {
           try {
-              $client = Classe::findOrFail($id);
+              $classe = Classe::findOrFail($id);
 
-              return response()->json($client);
+              return response()->json($classe);
           } catch (Exception) {
               return response()->json(['message' => 'Désolé, pas de classe trouvé.'], 404);
           }
@@ -72,12 +71,11 @@ class ClasseController extends Controller
         $classe = Classe::findOrFail($id);
         $classe->nom = $request->nom;
         $classe->niveau_classe = $request->niveau_classe;
-        $classe->enseignant_id = $request->enseignant_id;
         $classe->salle_id = $request->salle_id;
         $classe->update();
 
         // Récupération des données de l'enseignant et de la salle
-        $enseignant = Enseignant::find($request->enseignant_id); // Assurez-vous d'importer le modèle Enseignant
+    
         $salle = Salle::find($request->salle_id); // Assurez-vous d'importer le modèle Salle
 
         DB::commit(); // Valide la transaction
@@ -86,7 +84,6 @@ class ClasseController extends Controller
             'status_code' => 200,
             'status_message' => 'La classe a été modifiée avec succès',
             'data' => $classe,
-            'enseignant' => $enseignant,
             'salle' => $salle
         ]);
     } catch (\Exception $e) {

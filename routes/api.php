@@ -7,6 +7,9 @@ use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\SalleController;
 use App\Http\Controllers\API\ClasseController;
 use App\Http\Controllers\API\EmployeController;
+use App\Http\Controllers\API\CoursController;
+use App\Http\Controllers\API\PlanifiercourController;
+use App\Http\Controllers\API\EnseignantClasseController;
 
 
 /*
@@ -196,3 +199,33 @@ Route::delete('employe/supprimer/{id}', [EmployeController::class, 'destroy']);
 Route::get('employe/lister', [EmployeController::class, 'index']);
 //afficher employe
 Route::get('employe/detail/{id}', [EmployeController::class, 'show']);
+//gestion cours-----------------------------------------------
+Route::post('cours/create', [CoursController::class, 'store']);
+//modifier cours
+Route::put('cours/edit/{id}', [CoursController::class, 'update']);
+//supprimer  cours
+Route::delete('cours/supprimer/{id}', [CoursController::class, 'destroy']);
+//lister cours
+Route::get('cours/lister', [CoursController::class, 'index']);
+//afficher cours
+Route::get('cours/detail/{id}', [CoursController::class, 'show']);
+//gestion enseignant_classe-------------------------------------------
+Route::post('enseignantclasse/create', [EnseignantClasseController::class, 'store']);
+//modifier cours
+Route::put('enseignantclasse/edit/{id}', [EnseignantClasseController::class, 'update']);
+//supprimer  cours
+Route::delete('enseignantclasse/supprimer/{id}', [EnseignantClasseController::class, 'destroy']);
+//lister cours
+Route::get('enseignantclasse/lister', [EnseignantClasseController::class, 'index']);
+//afficher cours
+Route::get('enseignantclasse/detail/{id}', [EnseignantClasseController::class, 'show']);
+//gestion planifiercour------------------------------------
+Route::post('planifiercour/create', [PlanifiercourController::class, 'store']);
+//modifier cours
+Route::put('planifiercour/edit/{id}', [PlanifiercourController::class, 'update']);
+//supprimer  cours
+Route::delete('planifiercour/supprimer/{id}', [PlanifiercourController::class, 'destroy']);
+//lister cours
+Route::get('planifiercour/lister', [PlanifiercourController::class, 'index']);
+//afficher cours
+Route::get('planifiercour/detail/{id}', [PlanifiercourController::class, 'show']);

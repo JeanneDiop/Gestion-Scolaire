@@ -34,9 +34,9 @@ class UpdateTuteurRequest extends FormRequest
             // 'image' => 'required|string',  // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
-            'genre'=>'required|string|in:homme,femme',
+            'genre'=>'required|string|in:Homme,Femme',
             'profession' => 'required|string',
-            'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
+            'statut_marital' => ['nullable', 'string', Rule::in(['marié','celibataire','divorcé','veuve','veuf'])],
             'numero_CNI' => ['nullable', 'string'],
             'image' => ['nullable' ,'string'],
         ];

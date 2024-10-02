@@ -21,11 +21,11 @@ return new class extends Migration
             $table->string('poste');
             $table->string('image')->nullable();
             $table->date('date_embauche');
-            $table->enum('statut_emploie', ['permanent', 'vacataire','contractuel','honoraire']);
+            $table->enum('statut', ['permanent', 'vacataire','contractuel','honoraire']);
             $table->enum('type_salaire', ['fixe', 'horaire']);
             $table->date('date_naissance');
             $table->string('lieu_naissance');
-            $table->enum('sexe', ['Femme', 'Homme']);
+            $table->enum('genre', ['Femme', 'Homme']);
             $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf']);
             $table->string('numero_CNI')->unique();
             $table->string('numero_securite_social')->unique()->nullable();

@@ -44,7 +44,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
             ],
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
-            'genre' => 'required|string|in:homme,femme',
+            'genre' => 'required|string|in:Homme,Femme',
 
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
@@ -72,7 +72,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
             ],
             'tuteur.adresse' => 'required|string',
-            'tuteur.genre' => 'required|string|in:homme,femme',
+            'tuteur.genre' => 'required|string|in:Homme,Femme',
             'tuteur.profession' => 'required|string',
             'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'tuteur.numero_CNI' => ['nullable', 'string'],

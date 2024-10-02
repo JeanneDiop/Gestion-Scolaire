@@ -34,13 +34,13 @@ class CreateApprenantRequest extends FormRequest
             'image' => ['nullable' ,'string'], // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
-            'genre' => 'required|string|in:homme,femme',
+            'genre' => 'required|string|in:Homme,Femme',
             'date_naissance'=>'required|date',
             'lieu_naissance' => 'required|string|max:255',
            'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
            'niveau_education' => 'required|string|max:255',
-           'statut_marital' => ['nullable', 'string', Rule::in(['celibataire', 'marié'])],
+           'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
             'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
         ];

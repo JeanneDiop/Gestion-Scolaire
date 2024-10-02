@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Salle;
-use App\Models\Enseignant;
 use App\Models\Apprenant;
+use App\Models\Planifiercour;
+use App\Models\EnseignantClasse;
 
 class Classe extends Model
 {
@@ -21,11 +22,18 @@ class Classe extends Model
     public function salle(){
         return $this->belongsTo(Salle::class);
     }
-    public function enseignant(){
-        return $this->belongsTo(Enseignant::class);
-    }
     public function apprenants()
     {
         return $this->hasMany(Apprenant::class);
+    }
+
+    public function planifiercours()
+    {
+        return $this->hasMany(Planifiercour::class);
+    }
+
+    public function enseignantclasses()
+    {
+        return $this->hasMany(EnseignantClasse::class);
     }
 }

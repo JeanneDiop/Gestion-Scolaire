@@ -34,7 +34,7 @@ class UpdateApprenantRequest extends FormRequest
             // 'image' => 'required|string',  // Vous devrez ajuster cette règle en fonction de vos besoins
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
-            'genre' => 'required|string|in:homme,femme',
+            'genre' => 'required|string|in:Homme,Femme',
             'date_naissance'=>'required|date',
             'lieu_naissance' => 'required|string|max:255',
            'numero_CNI' => 'nullable|string|max:50',

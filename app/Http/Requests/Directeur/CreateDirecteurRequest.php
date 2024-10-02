@@ -29,7 +29,7 @@ class CreateDirecteurRequest extends FormRequest
             'adresse' => 'required|string|max:255',
             'genre' => 'required|in:homme,femme',
             'etat' => 'nullable|string|in:actif,inactif',
-            'statut_marital' => 'required|in:celibataire,marié',
+            'statut_marital' => 'required|in:celibataire,marié,veuf,veuve,divorcé',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
             'image' => ['nullable' ,'string'],

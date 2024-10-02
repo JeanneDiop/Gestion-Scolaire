@@ -14,71 +14,46 @@ class EmployeController extends Controller
 {
     public function store(CreateEmployeRequest $request)
     {
-        {
-            try {
-              $employe = new Employe();
-              $employe->nom= $request->nom;
-              $employe->prenom= $request->prenom;
-              $employe->telephone= $request->telephone;
-              $employe->email= $request->email;
-              $employe->adresse= $request->adresse;
-              $employe->poste= $request->poste;
-              $employe->image = $request->image;
-              $employe->date_embauche = $request->date_embauche;
-              $employe->statut_emploie = $request->statut_emploie;
-              $employe->type_salaire = $request->type_salaire;
-              $employe->date_naissance = $request->date_naissance;
-              $employe->lieu_naissance = $request->lieu_naissance;
-              $employe->sexe = $request->sexe;
-              $employe->statut_marital= $request->statut_marital;
-              $employe->numero_securite_social = $request->numero_securite_social;
-              $employe->numero_CNI = $request->numero_CNI;
-              $employe->date_fin_contrat= $request->date_fin_contrat;
-              $employe->save();
-              return response()->json([
-                'status_code' => 200,
-                'status_message' => 'employe a été ajouté',
-                'data' => $employe,
-              ],200);
-            }  catch (Exception $e) {
-                return response()->json([
-                    'status_code' => 500,
-                    'status_message' => 'Erreur interne du serveur',
-                    'error' => $e->getMessage(),
-                ], 500);
-          }
-        }
-    }
-
-    public function update(EditEmployeRequest $request, $id)
-    {
-
         try {
-              $employe= Employe::find($id);
-              $employe->nom= $request->nom;
-              $employe->prenom= $request->prenom;
-              $employe->telephone= $request->telephone;
-              $employe->email= $request->email;
-              $employe->adresse= $request->adresse;
-              $employe->poste= $request->poste;
-              $employe->image = $request->image;
-              $employe->date_embauche = $request->date_embauche;
-              $employe->statut_emploie = $request->statut_emploie;
-              $employe->type_salaire = $request->type_salaire;
-              $employe->date_naissance = $request->date_naissance;
-              $employe->lieu_naissance = $request->lieu_naissance;
-              $employe->sexe = $request->sexe;
-              $employe->statut_marital= $request->statut_marital;
-              $employe->numero_securite_social = $request->numero_securite_social;
-              $employe->numero_CNI = $request->numero_CNI;
-              $employe->date_fin_contrat= $request->date_fin_contrat;
-              $employe->update();
+            $employe = new Employe();
 
-          return response()->json([
-            'status_code' => 200,
-            'status_message' => 'employe a été modifié',
-            'data' => $employe
-          ]);
+            // Initialize image filename as null
+            $fileName = null;
+
+            // Handle image upload
+            if ($request->file('image')) {
+                $file = $request->file('image');
+                $fileName = date('YmdHi') . $file->getClientOriginalName(); // Create a unique filename
+                $file->move(public_path('images'), $fileName); // Move the file to the specified directory
+            }
+
+            // Assign other attributes to the employe model
+            $employe->nom = $request->nom;
+            $employe->prenom = $request->prenom;
+            $employe->telephone = $request->telephone;
+            $employe->email = $request->email;
+            $employe->adresse = $request->adresse;
+            $employe->poste = $request->poste;
+            $employe->image = $fileName; // Assign the filename (or null) to the model
+            $employe->date_embauche = $request->date_embauche;
+            $employe->statut_emploie = $request->statut_emploie;
+            $employe->type_salaire = $request->type_salaire;
+            $employe->date_naissance = $request->date_naissance;
+            $employe->lieu_naissance = $request->lieu_naissance;
+            $employe->sexe = $request->sexe;
+            $employe->statut_marital = $request->statut_marital;
+            $employe->numero_securite_social = $request->numero_securite_social;
+            $employe->numero_CNI = $request->numero_CNI;
+            $employe->date_fin_contrat = $request->date_fin_contrat;
+
+            // Save the employe to the database
+            $employe->save();
+
+            return response()->json([
+                'status_code' => 200,
+                'status_message' => 'Employé a été ajouté',
+                'data' => $employe,
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status_code' => 500,
@@ -86,24 +61,76 @@ class EmployeController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
 
+
+    public function update(EditEmployeRequest $request, $id)
+{
+    try {
+        $employe = Employe::find($id);
+
+        // Initialize with the current image name
+        $fileName = $employe->image;
+
+        // Handle the image upload
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName(); // Create a new unique filename
+            $file->move(public_path('images'), $fileName); // Move the uploaded file
         }
-    public function index()
-    {
-        try {
-          return response()->json([
+
+        // Update the employe's attributes
+        $employe->nom = $request->nom;
+        $employe->prenom = $request->prenom;
+        $employe->telephone = $request->telephone;
+        $employe->email = $request->email;
+        $employe->adresse = $request->adresse;
+        $employe->poste = $request->poste;
+        $employe->image = $fileName; // Update the image attribute
+        $employe->date_embauche = $request->date_embauche;
+        $employe->statut_emploie = $request->statut_emploie;
+        $employe->type_salaire = $request->type_salaire;
+        $employe->date_naissance = $request->date_naissance;
+        $employe->lieu_naissance = $request->lieu_naissance;
+        $employe->sexe = $request->sexe;
+        $employe->statut_marital = $request->statut_marital;
+        $employe->numero_securite_social = $request->numero_securite_social;
+        $employe->numero_CNI = $request->numero_CNI;
+        $employe->date_fin_contrat = $request->date_fin_contrat;
+
+        // Save the updated employe data
+        $employe->save();
+
+        return response()->json([
             'status_code' => 200,
-            'status_message' => 'tous les employes ont été recupéré',
+            'status_message' => 'Employé a été modifié',
+            'data' => $employe,
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Erreur interne du serveur',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function index()
+{
+    try {
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Tous les employés ont été récupérés',
             'data' => Employe::all(),
-          ]);
-        }catch (Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Erreur interne du serveur',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-      }
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Erreur interne du serveur',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
       public function show(string $id)
       {
