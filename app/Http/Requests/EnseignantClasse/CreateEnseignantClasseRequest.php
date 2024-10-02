@@ -24,16 +24,18 @@ class CreateEnseignantClasseRequest extends FormRequest
     public function rules()
     {
         return [
-            'classe_id' => 'nullable|exists:classes,id', // Assurez-vous que la classe existe
-            'enseignant_id' => 'nullable|exists:enseignants,id', // Assurez-vous que l'enseignant existe
+            'classe_id' => 'required|integer',
+            'enseignant_id' => 'required|integer', // Assurez-vous que l'enseignant existe
         ];
     }
 
     public function messages()
     {
         return [
-            'classe_id.exists' => 'La classe sélectionnée n\'existe pas.',
-            'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
+            'classe_id.required' => 'L\'ID de la classe est obligatoire.',
+            'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.', // Classe obligatoire, doit exister dans la table classes
+            'enseignant_id.required' => 'L\'ID de la enseignant est obligatoire.',
+            'enseignant_id.integer' => 'L\'ID de la enseignant doit être un nombre entier.',
         ];
     }
     protected function failedValidation(Validator $validator)

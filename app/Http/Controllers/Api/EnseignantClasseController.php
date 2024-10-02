@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\EnseignantClasse\CreateEnseignantClasseRequest;
 use App\Http\Requests\EnseignantClasse\UpdateEnseignantClasseRequest;
+
 class EnseignantClasseController extends Controller
 {
     public function storeEnseignantClasse(CreateEnseignantClasseRequest $request)
@@ -24,7 +25,7 @@ class EnseignantClasseController extends Controller
             'status_message' => 'L\'enseignant de classe a été ajouté avec succès.',
             'data' => $enseignantclasse,
         ]);
-    } catch (\Exception $e) { 
+    } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de l\'enseignant de classe.',
@@ -60,8 +61,8 @@ public function updateEnseignantClasse(UpdateEnseignantClasseRequest $request, $
 public function index()
 {
     try {
-        // Récupération de tous les enseignants de classe
-        $enseignantsClasses = EnseignantClasse::all();
+        // Récupération de tous les enseignants de classe avec leurs relations
+        $enseignantsClasses = EnseignantClasse::with(['classe.salle', 'enseignant.user'])->get();
 
         return response()->json([
             'status_code' => 200,
@@ -77,11 +78,12 @@ public function index()
     }
 }
 
+
 public function show($id)
 {
     try {
-        // Récupération de l'enseignant de classe par ID
-        $enseignantClasse = EnseignantClasse::findOrFail($id);
+        // Récupération de l'enseignant de classe par ID avec les relations
+        $enseignantClasse = EnseignantClasse::with(['classe.salle', 'enseignant.user'])->findOrFail($id);
 
         return response()->json([
             'status_code' => 200,
@@ -101,6 +103,7 @@ public function show($id)
         ], 500);
     }
 }
+
 
 public function destroy($id)
 {

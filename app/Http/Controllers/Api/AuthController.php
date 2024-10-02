@@ -1876,7 +1876,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
  public function ListerEnseignant()
 {
     // Charger les enseignants avec leurs informations de User et Classes avec Salle
-    $enseignants = Enseignant::with(['user', 'classes.salle'])->get();
+    $enseignants = Enseignant::with(['user'])->get();
 
     // Créer une nouvelle structure de données sans duplications
     $enseignantsData = $enseignants->map(function ($enseignant) {
@@ -2446,7 +2446,7 @@ public function showUserApprenant($id)
 public function showEnseignant($id)
 {
     // Récupérer l'enseignant avec l'ID spécifié en incluant les informations de User et les classes associées
-    $enseignant = Enseignant::with(['user', 'classes.salle'])->find($id);
+    $enseignant = Enseignant::with(['user'])->find($id);
 
     // Vérifier si l'enseignant n'existe pas
     if (!$enseignant) {
@@ -2630,7 +2630,7 @@ public function showUserDirecteur($id)
 public function showUserEnseignant($id)
 {
     // Récupérer l'utilisateur avec l'ID spécifié qui a le rôle 'enseignant' et charger les relations nécessaires
-    $user = User::with(['enseignant', 'enseignant.classes.salle'])
+    $user = User::with(['enseignant',])
                 ->where('id', $id)
                 ->where('role_nom', 'enseignant')
                 ->first();
@@ -2876,7 +2876,7 @@ public function showUserTuteur($id)
 public function indexEnseignants()
 {
     // Charger les utilisateurs avec le rôle "enseignant" et leurs informations liées
-    $enseignants = User::with(['enseignant', 'enseignant.classes.salle'])
+    $enseignants = User::with(['enseignant',])
                         ->where('role_nom', 'enseignant')
                         ->get();
 
