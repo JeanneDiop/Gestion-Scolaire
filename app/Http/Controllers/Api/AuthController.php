@@ -1220,7 +1220,7 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
             'image' => $fileName, // Utilise le nom du fichier
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'statut_emploie' => $request->statut_emploie,
+            'statut' => $request->statut,
             'type_salaire' => $request->type_salaire,
             'statut_marital' => $request->statut_marital,
             'numero_securite_social' => $request->numero_securite_social,
@@ -1294,7 +1294,7 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'statut_emploie' => $request->statut_emploie,
+            'statut' => $request->statut,
             'type_salaire' => $request->type_salaire,
             'statut_marital' => $request->statut_marital,
             'numero_securite_social' => $request->numero_securite_social,
@@ -1368,7 +1368,7 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
             'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'statut_emploie' => $request->statut_emploie,
+            'statut' => $request->statut,
             'type_salaire' => $request->type_salaire,
             'statut_marital' => $request->statut_marital,
             'numero_securite_social' => $request->numero_securite_social,
@@ -1728,7 +1728,15 @@ public function ListeUtilisateur()
 public function ListerApprenant()
 {
     // Récupérer tous les apprenants avec les informations du tuteur, de la classe, et de l'utilisateur associé
-    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])->get();
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])->get();
+
+    // Vérifier si des apprenants sont présents
+    if ($apprenants->isEmpty()) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Aucun apprenant trouvé.'
+        ]);
+    }
 
     // Créer une nouvelle structure de données
     $apprenantsData = $apprenants->map(function ($apprenant) {
@@ -1756,12 +1764,11 @@ public function ListerApprenant()
         ];
 
         // Vérification du tuteur
-        if ($apprenant->tuteur) {
-            $tuteur = $apprenant->tuteur;
-            // Si l'utilisateur associé au tuteur existe, on fusionne les données du tuteur et de l'utilisateur
-            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        if ($apprenant->tuteur && $apprenant->tuteur->user) {
+            // Fusionner les données du tuteur et de l'utilisateur associé au tuteur
+            $data['tuteur'] = array_merge($apprenant->tuteur->toArray(), $apprenant->tuteur->user->toArray());
         } else {
-            $data['tuteur'] = null; // Si pas de tuteur, on définit à null
+            $data['tuteur'] = null;
         }
 
         // Vérification de la classe et de la salle
@@ -1769,26 +1776,18 @@ public function ListerApprenant()
             $data['classe'] = [
                 'id' => $apprenant->classe->id,
                 'nom_classe' => $apprenant->classe->nom,
-                'niveau_classe' => $apprenant->classe->niveau_classe, // Ajout du nom de la classe
+                'niveau_classe' => $apprenant->classe->niveau_classe,
                 'salle' => $apprenant->classe->salle ? [
                     'id' => $apprenant->classe->salle->id,
                     'nom' => $apprenant->classe->salle->nom,
-                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
-                ] : null, // Si pas de salle, on définit à null
-                'enseignant' => $apprenant->classe->enseignant ? [
-                    'id' => $apprenant->classe->enseignant->id,
-                    'nom' => $apprenant->classe->enseignant->user->nom,
-                    'prenom' => $apprenant->classe->enseignant->user->prenom,
-                    'telephone' => $apprenant->classe->enseignant->user->telephone,
-                    'email' => $apprenant->classe->enseignant->user->email,
-                    'specialite' => $apprenant->classe->enseignant->user->specialite,
-                ] : null, // Si pas d'enseignant, on définit à null
+                    'capacity' => $apprenant->classe->salle->capacity,
+                ] : null,
             ];
         } else {
-            $data['classe'] = null; // Si pas de classe, on définit à null
+            $data['classe'] = null;
         }
 
-        return $data; // Retour des données de l'apprenant formatées
+        return $data;
     });
 
     return response()->json([
@@ -1797,11 +1796,12 @@ public function ListerApprenant()
     ]);
 }
 
+
 //lister apprenant par niveau
 public function ListerApprenantParNiveau(Request $request, $niveauEducation)
 {
     // Récupérer les apprenants filtrés par niveau d'éducation
-    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])
                             ->where('niveau_education', $niveauEducation)
                             ->get();
 
@@ -1849,14 +1849,6 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
                     'nom' => $apprenant->classe->salle->nom,
                     'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
                 ] : null, // Si pas de salle, on définit à null
-                'enseignant' => $apprenant->classe->enseignant ? [
-                    'id' => $apprenant->classe->enseignant->id,
-                    'nom' => $apprenant->classe->enseignant->user->nom,
-                    'prenom' => $apprenant->classe->enseignant->user->prenom,
-                    'telephone' => $apprenant->classe->enseignant->user->telephone,
-                    'email' => $apprenant->classe->enseignant->user->email,
-                    'specialite' => $apprenant->classe->enseignant->user->specialite,
-                ] : null, // Si pas d'enseignant, on définit à null
             ];
         } else {
             $data['classe'] = null; // Si pas de classe, on définit à null
@@ -2044,7 +2036,7 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
 public function ListerTuteur()
 {
     // Charger les tuteurs avec leurs informations de User et leurs apprenants
-    $tuteurs = Tuteur::with(['user', 'apprenants.classe.salle', 'apprenants.classe.enseignant'])->get();
+    $tuteurs = Tuteur::with(['user', 'apprenants.classe.salle'])->get();
 
     // Créer une nouvelle structure de données sans duplications
     $tuteursData = $tuteurs->map(function ($tuteur) {
@@ -2086,16 +2078,7 @@ public function ListerTuteur()
                             'capacity' => $apprenant->classe->salle->capacity,
                             'type' => $apprenant->classe->salle->type,
                         ] : null,
-                        'enseignant' => $apprenant->classe->enseignant ? [
-                            'id' => $apprenant->classe->enseignant->id,
-                            'nom' => $apprenant->classe->enseignant->user->nom,
-                            'prenom' => $apprenant->classe->enseignant->user->prenom,
-                            'adresse' => $apprenant->classe->enseignant->user->adresse,
-                            'email' => $apprenant->classe->enseignant->user->email,
-                            'telephone' => $apprenant->classe->enseignant->user->telephone,
-                            'specialite' => $apprenant->classe->enseignant->specialite,
-                            'image' => $apprenant->classe->enseignant->image,
-                        ] : null,
+                    
                     ] : null,
                 ];
             }),
@@ -2156,7 +2139,7 @@ public function indexApprenants()
     $apprenants = User::with([
         'apprenant.tuteur.user', // Charger le tuteur et son utilisateur associé
         'apprenant.classe.salle', // Charger la salle associée
-        'apprenant.classe.enseignant.user' // Charger l'enseignant et son utilisateur associé
+
     ])->where('role_nom', 'apprenant')->get();
 
     // Créer une nouvelle structure de données similaire à showUser
@@ -2208,21 +2191,6 @@ public function indexApprenants()
                     'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
                     'type' => $apprenant->classe->salle->type, // Type de la salle
                 ] : null, // Si la salle n'existe pas, on met null
-                'enseignant' => $apprenant->classe->enseignant ? [
-                    'id' => $apprenant->classe->enseignant->id,
-                    'nom' => $apprenant->classe->enseignant->user->nom,
-                    'prenom' => $apprenant->classe->enseignant->user->prenom,
-                    'telephone' => $apprenant->classe->enseignant->user->telephone,
-                    'adresse' => $apprenant->classe->enseignant->user->adresse,
-                    'specialite' => $apprenant->classe->enseignant->user->specialite,
-                    'statut_marital' => $apprenant->classe->enseignant->user->statut_marital,
-                    'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
-                    'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
-                    'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
-                    'image' => $apprenant->classe->enseignant->user->image,
-                    'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
-                    'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
-                ] : null, // Si l'enseignant n'existe pas, on met null
             ];
         } else {
             $apprenantData['classe'] = null; // Si pas de classe, on met null
@@ -2246,7 +2214,7 @@ public function indexApprenants()
 public function showApprenant($id)
 {
     // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
-    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classe.enseignant.user'])
+    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])
         ->where('id', $id)
         ->first();
 
@@ -2301,21 +2269,6 @@ public function showApprenant($id)
                 'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
                 'type' => $apprenant->classe->salle->type, // Type de la salle
             ] : null, // Si la salle n'existe pas, on met null
-            'enseignant' => $apprenant->classe->enseignant ? [
-                'id' => $apprenant->classe->enseignant->id,
-                'nom' => $apprenant->classe->enseignant->user->nom,
-                'prenom' => $apprenant->classe->enseignant->user->prenom,
-                'telephone' => $apprenant->classe->enseignant->user->telephone,
-                'adresse' => $apprenant->classe->enseignant->user->adresse,
-                'specialite' => $apprenant->classe->enseignant->user->specialite,
-                'statut_marital' => $apprenant->classe->enseignant->user->statut_marital,
-                'date_naissance' => $apprenant->classe->enseignant->user->date_naissance,
-                'lieu_naissance' => $apprenant->classe->enseignant->user->lieu_naissance,
-                'numero_CNI' => $apprenant->classe->enseignant->user->numero_CNI,
-                'image' => $apprenant->classe->enseignant->user->image,
-                'numero_securite_social' => $apprenant->classe->enseignant->user->numero_securite_social,
-                'statut' => $apprenant->classe->enseignant->user->statut, // Statut de l'enseignant
-            ] : null, // Si l'enseignant n'existe pas, on met null
         ];
     } else {
         $apprenantData['classe'] = null; // Si pas de classe, on met null
@@ -2331,7 +2284,7 @@ public function showApprenant($id)
 public function showUserApprenant($id)
 {
     // Récupérer l'utilisateur avec l'ID spécifié, en incluant les relations avec les modèles 'apprenant', 'tuteur' et 'enseignant'
-    $user = User::with(['apprenant.classe.salle', 'apprenant.classe.enseignant.user', 'tuteur.user', 'enseignant.user'])
+    $user = User::with(['apprenant.classe.salle',  'tuteur.user', 'enseignant.user'])
         ->find($id);
 
     if (!$user) {
@@ -2375,21 +2328,6 @@ public function showUserApprenant($id)
                     'nom' => $apprenant->classe->salle->nom,
                     'capacity' => $apprenant->classe->salle->capacity,
                     'type' => $apprenant->classe->salle->type,
-                ] : null,
-                'enseignant' => $apprenant->classe->enseignant ? [
-                    'id' => $apprenant->classe->enseignant->id,
-                    'nom' => $apprenant->classe->enseignant->user->nom,
-                    'prenom' => $apprenant->classe->enseignant->user->prenom,
-                    'telephone' => $apprenant->classe->enseignant->user->telephone,
-                    'adresse' => $apprenant->classe->enseignant->user->adresse,
-                    'specialite' => $apprenant->classe->enseignant->specialite,
-                    'statut_marital' => $apprenant->classe->enseignant->statut_marital,
-                    'date_naissance' => $apprenant->classe->enseignant->date_naissance,
-                    'lieu_naissance' => $apprenant->classe->enseignant->lieu_naissance,
-                    'numero_CNI' => $apprenant->classe->enseignant->numero_CNI,
-                    'image' => $apprenant->classe->enseignant->image,
-                    'numero_securite_social' => $apprenant->classe->enseignant->numero_securite_social,
-                    'statut' => $apprenant->classe->enseignant->statut,
                 ] : null,
             ] : null,
         ];
@@ -2730,7 +2668,7 @@ public function showUserPersonnelAdministratif($id)
 public function showTuteur($id)
 {
     // Récupérer le tuteur avec l'ID spécifié et l'apprenant associé
-    $tuteur = Tuteur::with(['user', 'apprenants.classe.salle', 'apprenants.classe.enseignant'])->where('id', $id)->first();
+    $tuteur = Tuteur::with(['user', 'apprenants.classe.salle'])->where('id', $id)->first();
 
     if (!$tuteur) {
         return response()->json([
@@ -2777,16 +2715,6 @@ public function showTuteur($id)
                         'capacity' => $apprenant->classe->salle->capacity,
                         'type' => $apprenant->classe->salle->type,
                     ] : null,
-                    'enseignant' => $apprenant->classe->enseignant ? [
-                        'id' => $apprenant->classe->enseignant->id,
-                        'nom' => $apprenant->classe->enseignant->user->nom,
-                        'prenom' => $apprenant->classe->enseignant->user->prenom,
-                        'adresse'=>$apprenant->classe->enseignant->user->adresse,
-                        'email'=>$apprenant->classe->enseignant->user->email,
-                        'telephone'=>$apprenant->classe->enseignant->user->telephone,
-                        'specialite' => $apprenant->classe->enseignant->specialite,
-                        'image' => $apprenant->classe->enseignant->image,
-                    ] : null,
                 ] : null,
             ];
         }),
@@ -2801,7 +2729,7 @@ public function showTuteur($id)
 public function showUserTuteur($id)
 {
     // Récupérer l'utilisateur avec l'ID spécifié et les informations du tuteur associé
-    $user = User::with(['tuteur', 'tuteur.apprenants.classe.salle', 'tuteur.apprenants.classe.enseignant'])
+    $user = User::with(['tuteur', 'tuteur.apprenants.classe.salle'])
         ->where('id', $id)
         ->first();
 
@@ -2848,16 +2776,6 @@ public function showUserTuteur($id)
                             'nom' => $apprenant->classe->salle->nom,
                             'capacity' => $apprenant->classe->salle->capacity,
                             'type' => $apprenant->classe->salle->type,
-                        ] : null,
-                        'enseignant' => $apprenant->classe->enseignant ? [
-                            'id' => $apprenant->classe->enseignant->id,
-                            'nom' => $apprenant->classe->enseignant->user->nom,
-                            'prenom' => $apprenant->classe->enseignant->user->prenom,
-                            'adresse' => $apprenant->classe->enseignant->user->adresse,
-                            'email' => $apprenant->classe->enseignant->user->email,
-                            'telephone' => $apprenant->classe->enseignant->user->telephone,
-                            'specialite' => $apprenant->classe->enseignant->specialite,
-                            'image' => $apprenant->classe->enseignant->image,
                         ] : null,
                     ] : null,
                 ];
@@ -2963,7 +2881,7 @@ public function indexPersonnelAdministaratifs()
 public function indexTuteurs()
 {
     // Récupérer les tuteurs à partir de la table User
-    $tuteurs = User::where('role_nom', 'tuteur')->with(['tuteur.apprenants.classe.salle', 'tuteur.apprenants.classe.enseignant'])->get();
+    $tuteurs = User::where('role_nom', 'tuteur')->with(['tuteur.apprenants.classe.salle'])->get();
 
     // Créer une nouvelle structure de données
     $tuteursData = $tuteurs->map(function ($user) {
@@ -3000,16 +2918,6 @@ public function indexTuteurs()
                                 'nom' => $apprenant->classe->salle->nom,
                                 'capacity' => $apprenant->classe->salle->capacity,
                                 'type' => $apprenant->classe->salle->type,
-                            ] : null,
-                            'enseignant' => $apprenant->classe->enseignant ? [
-                                'id' => $apprenant->classe->enseignant->id,
-                                'nom' => $apprenant->classe->enseignant->user->nom,
-                                'prenom' => $apprenant->classe->enseignant->user->prenom,
-                                'adresse' => $apprenant->classe->enseignant->user->adresse,
-                                'email' => $apprenant->classe->enseignant->user->email,
-                                'telephone' => $apprenant->classe->enseignant->user->telephone,
-                                'specialite' => $apprenant->classe->enseignant->specialite,
-                                'image' => $apprenant->classe->enseignant->image,
                             ] : null,
                         ] : null,
                     ];

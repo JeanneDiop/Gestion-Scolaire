@@ -9,74 +9,40 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\EnseignantClasse\CreateEnseignantClasseRequest;
 use App\Http\Requests\EnseignantClasse\UpdateEnseignantClasseRequest;
+use App\Models\Enseignant;
+use App\Models\Classe;
 
 class EnseignantClasseController extends Controller
 {
-    public function storeEnseignantClasse(CreateEnseignantClasseRequest $request)
- {
-    try {
-        $enseignantclasse = new EnseignantClasse();
-        $enseignantclasse->enseignant_id = $request->enseignant_id;
-        $enseignantclasse->classe_id = $request->classe_id;
-        $enseignantclasse->save();
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'L\'enseignant de classe a été ajouté avec succès.',
-            'data' => $enseignantclasse,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de l\'enseignant de classe.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-public function updateEnseignantClasse(UpdateEnseignantClasseRequest $request, $id)
+    public function storeEnseignantClasse(CreateEnseignantClasseRequest $request, $enseignant_id)
 {
     try {
-        // Récupération de l'enseignant de classe à mettre à jour
-        $enseignantclasse = EnseignantClasse::findOrFail($id);
 
-        // Mise à jour des champs
-        $enseignantclasse->enseignant_id = $request->enseignant_id;
-        $enseignantclasse->classe_id = $request->classe_id;
-        $enseignantclasse->update();
+        $enseignant = Enseignant::find($enseignant_id);
+        $classe = Classe::find($request->classe_id);
+
+        if (!$enseignant || !$classe) {
+            return response()->json([
+                'status_code' => 404,
+                'status_message' => 'Enseignant ou classe non trouvé.',
+            ], 404);
+        }
+        $enseignant->classes()->attach($classe);
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'L\'enseignant de classe a été mis à jour avec succès.',
-            'data' => $enseignantclasse,
+            'status_message' => 'L\'enseignant a été associé à la classe avec succès.',
         ]);
+
     } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'enseignant de classe.',
+            'status_message' => 'Une erreur s\'est produite lors de l\'association de l\'enseignant à la classe.',
             'error' => $e->getMessage(),
         ], 500);
     }
 }
 
-public function index()
-{
-    try {
-        // Récupération de tous les enseignants de classe avec leurs relations
-        $enseignantsClasses = EnseignantClasse::with(['classe.salle', 'enseignant.user'])->get();
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Liste des enseignants de classe récupérée avec succès.',
-            'data' => $enseignantsClasses,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération des enseignants de classe.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
 
 
 public function show($id)

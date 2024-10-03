@@ -36,7 +36,7 @@ class UpdatePersonnelAdministratifRequest extends FormRequest
             'poste' => ['required', 'string'],
             'image' => ['nullable' ,'string'],
             'date_embauche' => ['required', 'date'],
-            'statut_emploie' => ['required', 'in:permanent,vacataire,contractuel,honoraire'],
+            'statut' => ['required', 'in:permanent,vacataire,contractuel,honoraire'],
             'type_salaire' => ['required', 'in:fixe,horaire'],
             'date_naissance' => ['required', 'date'],
             'lieu_naissance' => ['required', 'string'],
