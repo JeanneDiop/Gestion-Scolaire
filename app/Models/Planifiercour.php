@@ -20,10 +20,10 @@ class Planifiercour extends Model
         'annee_scolaire',
         'semestre',
     ];
-    public function classe(){
-        return $this->belongsTo(Classe::class);
-    }
     public function cours(){
         return $this->belongsTo(Cours::class);
+    }
+    public function classe(){
+        return $this->belongsTo(Classe::class);
     }
 }

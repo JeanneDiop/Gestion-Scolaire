@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\EnseignantClasse;
+namespace App\Http\Requests\Note;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-class UpdateEnseignantClasseRequest extends FormRequest
+class UpdateNoteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,10 @@ class UpdateEnseignantClasseRequest extends FormRequest
     public function rules()
     {
         return [
-            'enseignant_id' => 'nullable|exists:enseignants,id', // Peut être nul ou doit exister dans la table enseignants
-            'classe_id' => 'required|exists:classes,id', // Doit correspondre à un ID valide dans la table classes
+            'note' => 'required|numeric|min:0|max:20', // La note peut être décimale entre 0 et 20
+            'type_note' => 'nullable|in:devoir1,devoir2,examen', // Le type de note peut être nul ou doit être l'une des valeurs spécifiées
+            'date_note' => 'nullable|date', // La date de la note est optionnelle mais doit être au format date
+            'evaluation_id' => 'nullable|exists:evaluations,id', // Doit correspondre à un ID valide dans la table evaluations
         ];
     }
 
@@ -37,9 +39,13 @@ class UpdateEnseignantClasseRequest extends FormRequest
     public function messages()
     {
         return [
-            'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
-            'classe_id.required' => 'L\'ID de la classe est obligatoire.',
-            'classe_id.exists' => 'La classe sélectionnée n\'existe pas.',
+            'note.required' => 'La note est obligatoire.',
+            'note.numeric' => 'La note doit être un nombre valide, y compris les décimales.',
+            'note.min' => 'La note ne peut pas être inférieure à 0.',
+            'note.max' => 'La note ne peut pas dépasser 20.',
+            'type_note.in' => 'Le type de note doit être soit "devoir1", "devoir2" ou "examen".',
+            'date_note.date' => 'La date de la note doit être une date valide.',
+            'evaluation_id.exists' => 'L\'évaluation sélectionnée n\'existe pas.',
         ];
     }
     protected function failedValidation(Validator $validator)

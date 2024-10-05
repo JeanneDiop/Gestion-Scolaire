@@ -933,7 +933,7 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'image' => $fileName, // Mettre à jour avec la nouvelle image ou conserver l'ancienne
+            'image' => $fileName, 
             'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
             'numero_securite_social' => $request->numero_securite_social,
@@ -1867,7 +1867,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
 {
-    // Charger les enseignants avec leurs informations de User et Classes avec Salle
+    // Charger les enseignants avec leurs informations de User, Classes, et Salle
     $enseignants = Enseignant::with(['user'])->get();
 
     // Créer une nouvelle structure de données sans duplications
@@ -1885,6 +1885,8 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
             'statut' => $enseignant->statut,
             'date_embauche' => $enseignant->date_embauche,
             'date_fin_contrat' => $enseignant->date_fin_contrat,
+            
+            // Informations de l'utilisateur associé à l'enseignant
             'user' => $enseignant->user ? [
                 'id' => $enseignant->user->id,
                 'nom' => $enseignant->user->nom,
@@ -1896,7 +1898,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
                 'adresse' => $enseignant->user->adresse,
                 'role_nom' => $enseignant->user->role_nom,
             ] : null,
-
+ 
         ];
     });
 
@@ -1905,6 +1907,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
         'enseignants' => $enseignantsData,
     ]);
 }
+
 //lister personnel administratif dans sa table
 
 public function ListerPersonnelAdministratif()
@@ -1991,8 +1994,8 @@ public function ListerPersonnelAdministratifPoste(Request $request, $poste)
 
 public function ListerEnseignantNiveauEcole($niveauEcole)
 {
-    // Charger les enseignants filtrés par niveau d'école avec leurs informations de User et Classes avec Salle
-    $enseignants = Enseignant::with(['user', 'classes.salle'])
+    // Charger les enseignants filtrés par niveau d'école avec leurs informations de User, Classes et Salle
+    $enseignants = Enseignant::with(['user'])
         ->where('niveau_ecole', $niveauEcole)
         ->get();
 
@@ -2011,6 +2014,8 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
             'statut' => $enseignant->statut,
             'date_embauche' => $enseignant->date_embauche,
             'date_fin_contrat' => $enseignant->date_fin_contrat,
+            
+            // Informations de l'utilisateur associé à l'enseignant
             'user' => $enseignant->user ? [
                 'id' => $enseignant->user->id,
                 'nom' => $enseignant->user->nom,
@@ -2030,6 +2035,7 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
         'enseignants' => $enseignantsData,
     ]);
 }
+
 
 
 //----------------lister tuteur dans sa table
@@ -2078,7 +2084,6 @@ public function ListerTuteur()
                             'capacity' => $apprenant->classe->salle->capacity,
                             'type' => $apprenant->classe->salle->type,
                         ] : null,
-                    
                     ] : null,
                 ];
             }),
@@ -2383,7 +2388,7 @@ public function showUserApprenant($id)
 //----------info enseignant dans sa table
 public function showEnseignant($id)
 {
-    // Récupérer l'enseignant avec l'ID spécifié en incluant les informations de User et les classes associées
+    // Récupérer l'enseignant avec l'ID spécifié en incluant les informations de User, Classe et Salle associées
     $enseignant = Enseignant::with(['user'])->find($id);
 
     // Vérifier si l'enseignant n'existe pas
@@ -2394,7 +2399,7 @@ public function showEnseignant($id)
         ], 404);
     }
 
-    // Structurer les données de l'enseignant et de l'utilisateur
+    // Structurer les données de l'enseignant, de l'utilisateur, de la classe et de la salle
     $enseignantData = [
         'id' => $enseignant->id,
         'specialite' => $enseignant->specialite,
@@ -2408,6 +2413,8 @@ public function showEnseignant($id)
         'statut' => $enseignant->statut,
         'date_embauche' => $enseignant->date_embauche,
         'date_fin_contrat' => $enseignant->date_fin_contrat,
+        
+        // Informations de l'utilisateur associé à l'enseignant
         'user' => $enseignant->user ? [
             'id' => $enseignant->user->id,
             'nom' => $enseignant->user->nom,
@@ -2419,7 +2426,6 @@ public function showEnseignant($id)
             'adresse' => $enseignant->user->adresse,
             'role_nom' => $enseignant->user->role_nom,
         ] : null,
-
     ];
 
     return response()->json([
@@ -2427,6 +2433,7 @@ public function showEnseignant($id)
         'enseignant' => $enseignantData,
     ]);
 }
+
 //afficher les details du personneladministratif dans sa table
 public function showPersonnelAdministratif($id)
 {
@@ -2568,7 +2575,7 @@ public function showUserDirecteur($id)
 public function showUserEnseignant($id)
 {
     // Récupérer l'utilisateur avec l'ID spécifié qui a le rôle 'enseignant' et charger les relations nécessaires
-    $user = User::with(['enseignant',])
+    $user = User::with(['enseignant'])
                 ->where('id', $id)
                 ->where('role_nom', 'enseignant')
                 ->first();
@@ -2581,7 +2588,7 @@ public function showUserEnseignant($id)
         ], 404);
     }
 
-    // Structurer les données de l'enseignant et de l'utilisateur
+    // Structurer les données de l'enseignant, de l'utilisateur, de la classe et de la salle
     $enseignantData = [
         'id' => $user->id,
         'nom' => $user->nom,
@@ -2592,6 +2599,8 @@ public function showUserEnseignant($id)
         'etat' => $user->etat,
         'adresse' => $user->adresse,
         'role_nom' => $user->role_nom,
+
+        // Informations de l'enseignant
         'enseignant' => [
             'id' => $user->enseignant->id,
             'specialite' => $user->enseignant->specialite,
@@ -2613,6 +2622,7 @@ public function showUserEnseignant($id)
         'enseignant' => $enseignantData,
     ]);
 }
+
 //afficher les details du personnel administratif dans la table user
 public function showUserPersonnelAdministratif($id)
 {
@@ -2793,8 +2803,8 @@ public function showUserTuteur($id)
 //lister enseignants qui se trouve dans la table user
 public function indexEnseignants()
 {
-    // Charger les utilisateurs avec le rôle "enseignant" et leurs informations liées
-    $enseignants = User::with(['enseignant',])
+    // Charger les utilisateurs avec le rôle "enseignant" et leurs informations liées (enseignant, classe et salle)
+    $enseignants = User::with(['enseignant'])
                         ->where('role_nom', 'enseignant')
                         ->get();
 
@@ -2832,6 +2842,7 @@ public function indexEnseignants()
         'enseignants' => $enseignantsData,
     ]);
 }
+
 //listerpersonneladministratif dans la table user
 public function indexPersonnelAdministaratifs()
 {

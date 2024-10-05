@@ -10,6 +10,13 @@ use App\Http\Controllers\API\EmployeController;
 use App\Http\Controllers\API\CoursController;
 use App\Http\Controllers\API\PlanifiercourController;
 use App\Http\Controllers\API\EnseignantClasseController;
+use App\Http\Controllers\API\ClasseAssociationController;
+use App\Http\Controllers\API\EvaluationController;
+use App\Http\Controllers\API\ParcoursController;
+use App\Http\Controllers\API\NoteController;
+use App\Http\Controllers\API\ProgrammeController;
+use App\Http\Controllers\API\PresenceAbsenceController;
+
 
 
 /*
@@ -229,3 +236,85 @@ Route::delete('planifiercour/supprimer/{id}', [PlanifiercourController::class, '
 Route::get('planifiercour/lister', [PlanifiercourController::class, 'index']);
 //afficher cours
 Route::get('planifiercour/detail/{id}', [PlanifiercourController::class, 'show']);
+//gestion classeassociation-----------------
+Route::post('classeassocier/create', [ClasseAssociationController::class, 'store']);
+//modifier cours
+Route::put('classeassocier/edit/{id}', [ClasseAssociationController::class, 'update']);
+//supprimer  cours
+Route::delete('classeassocier/supprimer/{id}', [ClasseAssociationController::class, 'destroy']);
+//lister cours
+Route::get('classeassocier/lister', [ClasseAssociationController::class, 'index']);
+//afficher cours
+Route::get('classeassocier/detail/{id}', [ClasseAssociationController::class, 'show']);
+//gestion EnseignantClasse-----------------
+Route::post('enseignantclasse/create', [EnseignantClasseController::class, 'store']);
+//modifier enseignantclasse
+Route::put('enseignantclasse/edit/{id}', [EnseignantClasseController::class, 'update']);
+//supprimer  enseignantclasse
+Route::delete('enseignantclasse/supprimer/{id}', [EnseignantClasseController::class, 'destroy']);
+//lister enseignantclasse
+Route::get('enseignantclasse/lister', [EnseignantClasseController::class, 'index']);
+//afficher enseignantclasse
+Route::get('enseignantclasse/detail/{id}', [EnseignantClasseController::class, 'show']);
+//gestion Evaluation-----------------
+Route::post('evaluation/create', [EvaluationController::class, 'store']);
+//modifier evaluation
+Route::put('evaluation/edit/{id}', [EvaluationController::class, 'update']);
+//supprimer  evaluation
+Route::delete('evaluation/supprimer/{id}', [EvaluationController::class, 'destroy']);
+//lister evaluation
+Route::get('evaluation/lister', [EvaluationController::class, 'index']);
+//afficher evaluation
+Route::get('evaluation/detail/{id}', [EvaluationController::class, 'show']);
+//gestion Note-----------------
+Route::post('note/create', [NoteController::class, 'store']);
+//modifier note
+Route::put('note/edit/{id}', [NoteController::class, 'update']);
+//supprimer  note
+Route::delete('note/supprimer/{id}', [NoteController::class, 'destroy']);
+//lister note
+Route::get('note/lister', [NoteController::class, 'index']);
+//afficher note
+Route::get('note/detail/{id}', [NoteController::class, 'show']);
+//afficher note pour un apprenant
+Route::get('/apprenants/notes/{apprenantId}', [NoteController::class, 'showNotesByApprenant']);
+//afficher les notes dune classe
+Route::get('/classes/notes/{classeId}', [NoteController::class, 'showNotesByClasse']);
+//gestion Parcours-----------------
+Route::post('parcours/create', [ParcoursController::class, 'store']);
+//modifier parcours
+Route::put('parcours/edit/{id}', [ParcoursController::class, 'update']);
+//supprimer  parcours
+Route::delete('parcours/supprimer/{id}', [ParcoursController::class, 'destroy']);
+//lister parcours
+Route::get('parcours/lister', [ParcoursController::class, 'index']);
+//afficher parcours
+Route::get('parcours/detail/{id}', [ParcoursController::class, 'show']);
+//gestion Programme-----------------
+Route::post('programme/create', [ProgrammeController::class, 'store']);
+//modifier programme
+Route::put('programme/edit/{id}', [ProgrammeController::class, 'update']);
+//supprimer  programme
+Route::delete('programme/supprimer/{id}', [ProgrammeController::class, 'destroy']);
+//lister programme
+Route::get('programme/lister', [ProgrammeController::class, 'index']);
+//afficher programme
+Route::get('programme/detail/{id}', [ProgrammeController::class, 'show']);
+//gestion PresenceAbsence-----------------
+Route::post('presenceabsence/create', [PresenceAbsenceController::class, 'store']);
+//modifier presenceabsence
+Route::put('presenceabsence/edit/{id}', [PresenceAbsenceController::class, 'update']);
+//supprimer  presenceabsence
+Route::delete('presenceabsence/supprimer/{id}', [PresenceAbsenceController::class, 'destroy']);
+//lister presenceabsence
+Route::get('presenceabsence/lister', [PresenceAbsenceController::class, 'index']);
+//afficher presenceabsence
+Route::get('presenceabsence/detail/{id}', [PresenceAbsenceController::class, 'show']);
+//afficher present
+Route::get('present/detail/{id}', [PresenceAbsenceController::class, 'showpresent']);
+//afficher absent
+Route::get('absent/detail/{id}', [PresenceAbsenceController::class, 'showabsent']);
+//lister tous les absent
+Route::get('absent/lister', [PresenceAbsenceController::class, 'indexabsent']);
+//lister tous les present
+Route::get('present/lister', [PresenceAbsenceController::class, 'indexpresent']);

@@ -17,8 +17,6 @@ return new class extends Migration
         $table->string('nom');
         $table->string('description')->nullable();
         $table->string('niveau_education');
-        $table->string('matiere')->nullable();
-        $table->enum('type', ['cours', 'activité'])->default('cours');
         $table->time('duree');
         $table->enum('etat', ['encours', 'terminé', 'annulé'])->default('encours');
         $table->integer('credits')->nullable();

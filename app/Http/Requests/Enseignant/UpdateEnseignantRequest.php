@@ -46,6 +46,7 @@ class UpdateEnseignantRequest extends FormRequest
             'statut' => 'required|in:permanent,vacataire,contractuel,honoraire',
             'date_embauche' => 'required|date',
             'date_fin_contrat' => 'required|date',
+            'classe_id' => 'required|integer',
         ];
     }
 
@@ -122,6 +123,7 @@ class UpdateEnseignantRequest extends FormRequest
 
         'date_fin_contrat.required' => 'La date de fin de contrat est requise.',
         'date_fin_contrat.date' => 'La date de fin de contrat doit être une date valide.',
+    
         ];
     }
 

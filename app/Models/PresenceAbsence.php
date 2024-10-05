@@ -4,25 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Apprenant;
 use App\Models\Cours;
-use App\Models\Parcours;
-class Programme extends Model
+class PresenceAbsence extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'nom',
-        'description',
-        'niveau_education',
-        'credits',
-        'date_debut',
-        'date_fin',
+        'absent',
+        'present',
+        'date_present',
+        'date_absent',
+        'raison_absence',
     ];
-
+    public function apprenant(){
+        return $this->belongsTo(Apprenant::class);
+    }
     public function cours(){
         return $this->belongsTo(Cours::class);
-    }
-    public function parcours()
-    {
-        return $this->hasMany(Parcours::class);
     }
 }

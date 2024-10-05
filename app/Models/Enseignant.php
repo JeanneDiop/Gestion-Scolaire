@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\EnseignantClasse;
+use App\Models\ClasseAssociation;
 
 class Enseignant extends Model
 {
@@ -29,10 +30,16 @@ class Enseignant extends Model
     {
         return $this->belongsTo(User::class);
     }
-public function enseignantclasses()
-{
-    return $this->hasMany(EnseignantClasse::class);
-}
+
+    public function enseignantclasses()
+    {
+        return $this->hasMany(EnseignantClasse::class);
+    }
+
+    public function classeassociations()
+    {
+        return $this->hasMany(ClasseAssociation::class, 'enseignant_id');
+    }
 }
 
 

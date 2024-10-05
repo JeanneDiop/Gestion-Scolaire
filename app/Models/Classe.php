@@ -9,6 +9,8 @@ use App\Models\Apprenant;
 use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
 
+use App\Models\Enseignant;
+
 class Classe extends Model
 {
     use HasFactory;
@@ -27,12 +29,17 @@ class Classe extends Model
         return $this->hasMany(Apprenant::class);
     }
 
+    public function enseignants()
+    {
+        return $this->hasMany(Enseignant::class);
+    }
     public function planifiercours()
     {
         return $this->hasMany(Planifiercour::class);
     }
+   
 
-    public function enseignantclasses()
+ public function enseignantclasses()
     {
         return $this->hasMany(EnseignantClasse::class);
     }

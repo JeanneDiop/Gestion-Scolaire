@@ -4,106 +4,134 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\EnseignantClasse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\EnseignantClasse\CreateEnseignantClasseRequest;
-use App\Http\Requests\EnseignantClasse\UpdateEnseignantClasseRequest;
-use App\Models\Enseignant;
-use App\Models\Classe;
-
+use App\Models\EnseignantClasse;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 class EnseignantClasseController extends Controller
 {
-    public function storeEnseignantClasse(CreateEnseignantClasseRequest $request, $enseignant_id)
-{
-    try {
+    public function store(CreateEnseignantClasseRequest $request)
+    {
+        try {
+            $enseignantclasse = new EnseignantClasse();
+            $enseignantclasse->enseignant_id = $request->enseignant_id;
+            $enseignantclasse->classe_id = $request->classe_id;
+            $enseignantclasse->save();
 
-        $enseignant = Enseignant::find($enseignant_id);
-        $classe = Classe::find($request->classe_id);
-
-        if (!$enseignant || !$classe) {
             return response()->json([
-                'status_code' => 404,
-                'status_message' => 'Enseignant ou classe non trouvé.',
-            ], 404);
+                'status_code' => 200,
+                'status_message' => 'enseignantclasse a été ajoutée',
+                'data' =>  $enseignantclasse,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement du enseignantclasse',
+                'error' => $e->getMessage(),
+            ]);
         }
-        $enseignant->classes()->attach($classe);
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'L\'enseignant a été associé à la classe avec succès.',
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de l\'association de l\'enseignant à la classe.',
-            'error' => $e->getMessage(),
-        ], 500);
     }
-}
 
-
-
-public function show($id)
+    public function update(CreateEnseignantClasseRequest $request, $id)
 {
     try {
-        // Récupération de l'enseignant de classe par ID avec les relations
-        $enseignantClasse = EnseignantClasse::with(['classe.salle', 'enseignant.user'])->findOrFail($id);
+        // Récupérer l'association existante
+        $enseignantClasse = EnseignantClasse::findOrFail($id);
+
+        // Mettre à jour les informations de l'association
+        $enseignantClasse->enseignant_id = $request->enseignant_id;
+        $enseignantClasse->classe_id = $request->classe_id; // Corrigez la clé ici pour correspondre à 'classe_id'
+        $enseignantClasse->save();
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Enseignant de classe récupéré avec succès.',
+            'status_message' => 'L\'association enseignant-classe a été mise à jour avec succès',
             'data' => $enseignantClasse,
         ]);
     } catch (ModelNotFoundException $e) {
         return response()->json([
             'status_code' => 404,
-            'status_message' => 'Enseignant de classe non trouvé.',
+            'status_message' => 'Association non trouvée',
+            'error' => 'L\'association avec l\'ID spécifié n\'existe pas.',
         ], 404);
     } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération de l\'enseignant de classe.',
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'association',
             'error' => $e->getMessage(),
-        ], 500);
+        ]);
     }
 }
-
-
-public function destroy($id)
+public function index()
 {
-    DB::beginTransaction();
-
     try {
-        // Récupération de l'enseignant de classe à supprimer
-        $enseignantClasse = EnseignantClasse::findOrFail($id);
-
-        // Suppression de l'enseignant de classe
-        $enseignantClasse->delete();
-
-        DB::commit(); // Valide la transaction
+        // Récupérer toutes les associations avec les informations de l'enseignant, de la classe et de la salle
+        $enseignantClasses = EnseignantClasse::with(['enseignant', 'classe.salle'])->get();
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'L\'enseignant de classe a été supprimé avec succès.',
+            'status_message' => 'Toutes les associations enseignant-classe ont été récupérées avec succès',
+            'data' => $enseignantClasses,
         ]);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        DB::rollBack(); // Annule la transaction si le modèle n'est pas trouvé
-
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Enseignant de classe non trouvé.',
-        ], 404);
     } catch (\Exception $e) {
-        DB::rollBack(); // Annule la transaction en cas d'erreur
-
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur est survenue lors de la suppression de l\'enseignant de classe.',
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des associations',
             'error' => $e->getMessage(),
-        ], 500);
+        ]);
     }
 }
+
+public function show($id)
+{
+    try {
+        // Récupérer l'association spécifique avec les informations de l'enseignant, de la classe et de la salle
+        $enseignantClasse = EnseignantClasse::with(['enseignant', 'classe.salle'])->findOrFail($id);
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Association enseignant-classe récupérée avec succès',
+            'data' => $enseignantClasse,
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Association enseignant-classe non trouvée',
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération de l\'association',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+public function destroy($id)
+{
+    try {
+        // Trouver l'association par ID
+        $enseignantClasse = EnseignantClasse::findOrFail($id);
+
+        // Supprimer l'association
+        $enseignantClasse->delete();
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Association enseignant-classe supprimée avec succès',
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Association enseignant-classe non trouvée',
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la suppression de l\'association',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+
 
 }

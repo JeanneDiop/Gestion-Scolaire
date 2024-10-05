@@ -3,9 +3,9 @@
 namespace App\Http\Requests\EnseignantClasse;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Illuminate\Contracts\Validation\Validator;
 class CreateEnseignantClasseRequest extends FormRequest
 {
     /**
@@ -24,18 +24,22 @@ class CreateEnseignantClasseRequest extends FormRequest
     public function rules()
     {
         return [
-            'classe_id' => 'required|integer',
-            'enseignant_id' => 'required|integer', // Assurez-vous que l'enseignant existe
+            'enseignant_id' => 'nullable|exists:enseignants,id', // Peut être nul ou doit exister dans la table enseignants
+            'classe_id' => 'required|exists:classes,id', // Doit correspondre à un ID valide dans la table classes
         ];
     }
 
+    /**
+     * Définit les messages d'erreur personnalisés pour les règles de validation.
+     *
+     * @return array
+     */
     public function messages()
     {
         return [
+            'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
             'classe_id.required' => 'L\'ID de la classe est obligatoire.',
-            'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.', // Classe obligatoire, doit exister dans la table classes
-            'enseignant_id.required' => 'L\'ID de la enseignant est obligatoire.',
-            'enseignant_id.integer' => 'L\'ID de la enseignant doit être un nombre entier.',
+            'classe_id.exists' => 'La classe sélectionnée n\'existe pas.',
         ];
     }
     protected function failedValidation(Validator $validator)

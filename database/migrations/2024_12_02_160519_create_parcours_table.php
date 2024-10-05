@@ -13,6 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('parcours', function (Blueprint $table) {
+            $table->id();
             $table->string('nom')->nullable();
             $table->string('description')->nullable();
             $table->integer('credits')->nullable();

@@ -37,30 +37,53 @@ class ClasseController extends Controller
             ]);
         }
     }
-
-    public function indexClasse()
-    {
-        try {
-          return response()->json([
-            'status_code' => 200,
-            'status_message' => 'tous les classes ont été recupéré',
-            'data' => Classe::all(),
-          ]);
-        } catch (Exception $e) {
-          return response()->json($e);
-        }
-      }
-
-      public function showClasse(string $id)
+   public function indexClasse()
       {
           try {
-              $classe = Classe::findOrFail($id);
+              // Récupérer toutes les classes avec les informations de la salle associée
+              $classes = Classe::with('salle')->get();
 
-              return response()->json($classe);
-          } catch (Exception) {
-              return response()->json(['message' => 'Désolé, pas de classe trouvé.'], 404);
+              return response()->json([
+                  'status_code' => 200,
+                  'status_message' => 'Toutes les classes ont été récupérées',
+                  'data' => $classes,
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'status_code' => 500,
+                  'status_message' => 'Une erreur s\'est produite lors de la récupération des classes',
+                  'error' => $e->getMessage(),
+              ]);
           }
       }
+
+
+      public function showClasse($id)
+{
+    try {
+       
+        $classe = Classe::with('salle')->findOrFail($id);
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Détails de la classe récupérés avec succès',
+            'data' => $classe,
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Classe non trouvée',
+            'error' => 'La classe avec l\'ID spécifié n\'existe pas.',
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des détails de la classe',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+
 
     public function updateClasse(EditClasseRequest $request, $id)
     {
@@ -75,7 +98,7 @@ class ClasseController extends Controller
         $classe->update();
 
         // Récupération des données de l'enseignant et de la salle
-    
+
         $salle = Salle::find($request->salle_id); // Assurez-vous d'importer le modèle Salle
 
         DB::commit(); // Valide la transaction
@@ -96,49 +119,30 @@ class ClasseController extends Controller
         ], 500);
     }
 }
-
-public function destroyClasse(string $id, Request $request)
+public function destroy($id)
 {
     try {
-        // Trouver la classe à supprimer
+        // Récupérer la classe à supprimer
         $classe = Classe::findOrFail($id);
-
-        // Récupérer l'ID de la nouvelle classe depuis la requête
-        $nouvelleClasseId = $request->input('nouvelle_classe_id');
-
-        // Vérifier si la nouvelle classe existe
-        if (!Classe::find($nouvelleClasseId)) {
-            return response()->json([
-                'status_code' => 404,
-                'status_message' => 'Nouvelle classe non trouvée',
-            ], 404);
-        }
-
-        // Réaffecter les apprenants à la nouvelle classe
-        $classe->apprenants()->update(['classe_id' => $nouvelleClasseId]);
 
         // Supprimer la classe
         $classe->delete();
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Classe et ses apprenants ont été réaffectés et supprimés avec succès',
-            'data' => $classe
+            'status_message' => 'Classe supprimée avec succès',
         ]);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Classe non trouvée',
-            'error' => $e->getMessage()
-        ], 404);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Erreur interne du serveur',
-            'error' => $e->getMessage()
-        ], 500);
+            'status_message' => 'Une erreur s\'est produite lors de la suppression de la classe',
+            'error' => $e->getMessage(),
+        ]);
     }
 }
+
+
+
 
 
 

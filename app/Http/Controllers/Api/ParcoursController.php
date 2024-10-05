@@ -19,7 +19,6 @@ class ParcoursController extends Controller
             $parcours ->nom = $request->nom;
             $parcours ->description = $request->description;
             $parcours ->credits = $request->credits;
-            $parcours ->statut = $request->statut;
             $parcours ->date_creation = $request->date_creation;
             $parcours ->date_modification = $request->date_modification;
             $parcours ->apprenant_id = $request->apprenant_id;
@@ -48,7 +47,6 @@ class ParcoursController extends Controller
         $parcours->nom = $request->nom;
         $parcours->description = $request->description;
         $parcours->credits = $request->credits;
-        $parcours->statut = $request->statut;
         $parcours->date_modification = now();
         $parcours->apprenant_id = $request->apprenant_id;
         $parcours->programme_id = $request->programme_id;
@@ -70,10 +68,10 @@ class ParcoursController extends Controller
 public function show($id)
 {
     try {
-
         $parcours = Parcours::with([
             'apprenant.user',
-            'programme.cours.enseignant.user'
+            'apprenant.classe.salle', // Relation pour récupérer la salle à partir de la classe
+            'programme.cours.enseignant.user' // Relation pour récupérer l'enseignant et son utilisateur
         ])->findOrFail($id);
 
         return response()->json([
@@ -81,7 +79,7 @@ public function show($id)
             'status_message' => 'Détails du parcours récupérés avec succès',
             'data' => $parcours,
         ]);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la récupération des détails du parcours',
@@ -89,21 +87,23 @@ public function show($id)
         ]);
     }
 }
+
 public function index()
 {
     try {
-
+        // Récupérer tous les parcours avec les informations associées
         $parcours = Parcours::with([
-            'apprenant.user',
-            'programme.cours.enseignant.user'
+            'apprenant.user',                   // Récupérer l'utilisateur associé à l'apprenant
+            'apprenant.classe.salle',           // Récupérer la salle associée à la classe de l'apprenant
+            'programme.cours.enseignant.user'   // Récupérer l'utilisateur associé à l'enseignant
         ])->get();
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Liste des parcours récupérée avec succès',
+            'status_message' => 'Tous les parcours récupérés avec succès',
             'data' => $parcours,
         ]);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la récupération des parcours',
@@ -111,6 +111,7 @@ public function index()
         ]);
     }
 }
+
 
 public function destroy($id)
 {

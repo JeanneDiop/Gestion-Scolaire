@@ -32,7 +32,6 @@ class CreatePlanifierCourRequest extends FormRequest
             'statut' => 'nullable|in:prévu,annulé,reporté', // Statut optionnel, doit être parmi les valeurs définies
             'annee_scolaire' => 'required|string', // Année scolaire obligatoire, doit être un entier valide
             'semestre' => 'required|integer|min:1|max:2', // Semestre obligatoire, doit être soit 1 soit 2
-            'classe_id' => 'required|integer',
             'cours_id' => 'required|integer',
         ];
     }
@@ -63,8 +62,6 @@ class CreatePlanifierCourRequest extends FormRequest
             'semestre.integer' => 'Le semestre doit être un entier.',
             'semestre.min' => 'Le semestre doit être au moins 1.',
             'semestre.max' => 'Le semestre doit être au maximum 2.',
-            'classe_id.required' => 'L\'ID de la classe est obligatoire.',
-        'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.', // Classe obligatoire, doit exister dans la table classes
         'cours_id.required' => 'L\'ID de la cours est obligatoire.',
         'cours_id.integer' => 'L\'ID de la cours doit être un nombre entier.',
         ];

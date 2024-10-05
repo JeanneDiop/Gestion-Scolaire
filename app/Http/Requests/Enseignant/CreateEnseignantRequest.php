@@ -122,6 +122,8 @@ class CreateEnseignantRequest extends FormRequest
 
         'date_fin_contrat.required' => 'La date de fin de contrat est requise.',
         'date_fin_contrat.date' => 'La date de fin de contrat doit être une date valide.',
+        'classe_id.required' => 'L\'ID de la classe est obligatoire.',
+        'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.',
         ];
     }
 
