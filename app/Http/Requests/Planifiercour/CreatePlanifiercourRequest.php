@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 class CreatePlanifierCourRequest extends FormRequest
 {
     /**
@@ -29,7 +30,7 @@ class CreatePlanifierCourRequest extends FormRequest
             'heure_fin' => 'required|date_format:H:i|after:heure_debut', // Heure de fin doit être après l'heure de début
             'jour_semaine' => 'required|string', // Jour de la semaine obligatoire
            'duree' => 'nullable|regex:/^([0-9]+):([0-5][0-9])$/', // Durée optionnelle, doit être une chaîne (par exemple "2h" ou "30m")
-            'statut' => 'nullable|in:prévu,annulé,reporté', // Statut optionnel, doit être parmi les valeurs définies
+           'statut' => ['sometimes', 'string', Rule::in(['prévu', 'reporté','annulé'])], // Statut optionnel, doit être parmi les valeurs définies
             'annee_scolaire' => 'required|string', // Année scolaire obligatoire, doit être un entier valide
             'semestre' => 'required|integer|min:1|max:2', // Semestre obligatoire, doit être soit 1 soit 2
             'cours_id' => 'required|integer',
@@ -53,7 +54,9 @@ class CreatePlanifierCourRequest extends FormRequest
             'heure_fin.after' => 'L\'heure de fin doit être après l\'heure de début.',
             'jour_semaine.required' => 'Le jour de la semaine est obligatoire.',
             'duree.regex' => 'La durée doit être au format valide, comme "2h" ou "30m".',// Modifié pour refléter le type string
-            'statut.in' => 'Le statut doit être soit prévu, annulé ou reporté.',
+            'statut.sometimes' => 'statut est optionnel.',
+           'statut.string' => 'statut doit être une chaîne de caractères.',
+           'statut.in' => 'L\'état doit être soit "prévu" soit "annulé" soit "reporté".',
             'annee_scolaire.required' => 'L\'année scolaire est obligatoire.',
             'annee_scolaire.integer' => 'L\'année scolaire doit être un entier.',
             'annee_scolaire.min' => 'L\'année scolaire doit être supérieure ou égale à 1900.',

@@ -28,8 +28,8 @@ class CreateCoursRequest extends FormRequest
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
             'niveau_education' => 'required|string|max:255',
-           'duree' => 'required|regex:/^([0-9]+):([0-5][0-9])$/',
-           'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
+           'duree' => 'required|regex:/^([0-9]+):([0-5][0-9]):([0-5][0-9])$/',
+           'etat' => ['sometimes', 'string', Rule::in(['encours', 'terminé','annulé'])],
             'credits' => 'nullable|integer|min:0',
             'enseignant_id' => 'nullable|exists:enseignants,id',
         ];

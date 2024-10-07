@@ -21,7 +21,7 @@ class PlanifiercourController extends Controller
               $planifiercour->heure_fin= $request->heure_fin;
               $planifiercour->jour_semaine= $request->jour_semaine;
               $planifiercour->duree= $request->duree;
-              $planifiercour->statut= $request->statut;
+              $planifiercour->statut= $request->statut ?? 'prévu';
               $planifiercour->annee_scolaire = $request->annee_scolaire;
               $planifiercour->semestre = $request->semestre;
               $planifiercour->cours_id = $request->cours_id;
@@ -54,7 +54,7 @@ class PlanifiercourController extends Controller
         $planifiercour->heure_fin = $request->heure_fin;
         $planifiercour->jour_semaine = $request->jour_semaine;
         $planifiercour->duree = $request->duree;
-        $planifiercour->statut = $request->statut;
+        $planifiercour->statut= $request->statut ?? 'prévu';
         $planifiercour->annee_scolaire = $request->annee_scolaire;
         $planifiercour->semestre = $request->semestre;
         $planifiercour->cours_id = $request->cours_id;
