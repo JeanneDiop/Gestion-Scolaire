@@ -148,5 +148,32 @@ public function indexByNiveau()
         ], 500);
     }
 }
+public function destroy($id)
+{
+    try {
+       
+        $ecole = Ecole::findOrFail($id);
+
+      
+        $ecole->delete();
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'École supprimée avec succès',
+        ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'École non trouvée',
+            'error' => 'Aucune école ne correspond à cet ID',
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la suppression de l\'école',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
 }
