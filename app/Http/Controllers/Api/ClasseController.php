@@ -61,7 +61,7 @@ class ClasseController extends Controller
       public function showClasse($id)
 {
     try {
-       
+
         $classe = Classe::with('salle')->findOrFail($id);
 
         return response()->json([
@@ -135,9 +135,9 @@ public function destroy($id)
     } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la suppression de la classe',
+            'status_message' => 'vous ne pouvez pas supprimer la classe parceque ya des apprenants qui sont associés' ,
             'error' => $e->getMessage(),
-        ]);
+        ],500);
     }
 }
 

@@ -8,6 +8,7 @@ use App\Models\Salle;
 use App\Models\Apprenant;
 use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
+use App\Models\ApprenantClasse;
 
 use App\Models\Enseignant;
 
@@ -37,10 +38,16 @@ class Classe extends Model
     {
         return $this->hasMany(Planifiercour::class);
     }
-   
+
 
  public function enseignantclasses()
     {
         return $this->hasMany(EnseignantClasse::class);
     }
+
+
+ public function apprenantclasses()
+ {
+     return $this->hasMany(ApprenantClasse::class);
+ }
 }

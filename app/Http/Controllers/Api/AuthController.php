@@ -933,7 +933,7 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'image' => $fileName, 
+            'image' => $fileName,
             'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
             'numero_securite_social' => $request->numero_securite_social,
@@ -1052,11 +1052,8 @@ public function supprimerUserEnseignant(User $user)
             return response()->json([
                 'status' => 404,
                 'message' => 'Enseignant non trouvé'
-            ],404);
+            ], 404);
         }
-
-        // Mettre à jour les classes pour retirer la référence à cet enseignant
-        Classe::where('enseignant_id', $user->id)->update(['enseignant_id' => null]);
 
         // Supprimer l'utilisateur (cela supprime aussi l'enseignant via l'héritage)
         $user->delete();
@@ -1071,9 +1068,10 @@ public function supprimerUserEnseignant(User $user)
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la suppression de l\'enseignant',
             'error' => $e->getMessage()
-        ],500);
+        ], 500);
     }
 }
+
 
 
 //supprimer enseignant dans sa table
@@ -1091,13 +1089,10 @@ public function supprimerEnseignant(Enseignant $enseignant)
         // Accéder à l'utilisateur associé à cet enseignant
         $user = $enseignant->user; // Assurez-vous que la relation est définie dans le modèle Enseignant
 
-        // Mettre à jour les classes pour retirer la référence à cet enseignant
-        Classe::where('enseignant_id', $enseignant->id)->update(['enseignant_id' => null]);
-
-        // Supprimer l'enseignant
+        // Supprimer uniquement l'enseignant sans affecter les classes
         $enseignant->delete();
 
-        // Supprimer l'utilisateur (cela supprime aussi l'enseignant grâce à l'héritage)
+        // Supprimer l'utilisateur associé (cela supprime aussi l'enseignant grâce à l'héritage)
         if ($user) {
             $user->delete();
         }
@@ -1115,6 +1110,7 @@ public function supprimerEnseignant(Enseignant $enseignant)
         ], 500);
     }
 }
+
 
 //------------------- directeur-------------
 public function registerDirecteur(CreateDirecteurRequest $request)
@@ -1885,7 +1881,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
             'statut' => $enseignant->statut,
             'date_embauche' => $enseignant->date_embauche,
             'date_fin_contrat' => $enseignant->date_fin_contrat,
-            
+
             // Informations de l'utilisateur associé à l'enseignant
             'user' => $enseignant->user ? [
                 'id' => $enseignant->user->id,
@@ -1898,7 +1894,7 @@ public function ListerApprenantParNiveau(Request $request, $niveauEducation)
                 'adresse' => $enseignant->user->adresse,
                 'role_nom' => $enseignant->user->role_nom,
             ] : null,
- 
+
         ];
     });
 
@@ -2014,7 +2010,7 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
             'statut' => $enseignant->statut,
             'date_embauche' => $enseignant->date_embauche,
             'date_fin_contrat' => $enseignant->date_fin_contrat,
-            
+
             // Informations de l'utilisateur associé à l'enseignant
             'user' => $enseignant->user ? [
                 'id' => $enseignant->user->id,
@@ -2413,7 +2409,7 @@ public function showEnseignant($id)
         'statut' => $enseignant->statut,
         'date_embauche' => $enseignant->date_embauche,
         'date_fin_contrat' => $enseignant->date_fin_contrat,
-        
+
         // Informations de l'utilisateur associé à l'enseignant
         'user' => $enseignant->user ? [
             'id' => $enseignant->user->id,

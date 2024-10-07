@@ -11,6 +11,7 @@ use App\Models\PresenceAbsence;
 use App\Models\Evaluation;
 use App\Models\Parcours;
 use App\Models\ClasseAssociation;
+use App\Models\ApprenantClasse;
 
 class Apprenant extends Model
 {
@@ -54,4 +55,8 @@ class Apprenant extends Model
         return $this->hasMany(ClasseAssociation::class, 'apprenant_id');
     }
 
+    public function apprenantclasses()
+    {
+        return $this->hasMany(ApprenantClasse::class);
+    }
 }
