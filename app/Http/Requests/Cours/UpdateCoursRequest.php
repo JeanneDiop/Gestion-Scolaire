@@ -28,10 +28,10 @@ class UpdateCoursRequest extends FormRequest
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
             'niveau_education' => 'required|string|max:255',
-            'duree' => 'required|regex:/^([0-9]+):([0-5][0-9])$/',
-            'etat' => 'required|in:encours,terminé,annulé',
+           'duree' => 'required|regex:/^([0-9]+):([0-5][0-9])$/',
+           'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'credits' => 'nullable|integer|min:0',
-            'enseignant_id' => 'nullable|exists:enseignants,id', // Assurez-vous que l'enseignant existe
+            'enseignant_id' => 'nullable|exists:enseignants,id',
         ];
     }
 
@@ -45,10 +45,10 @@ class UpdateCoursRequest extends FormRequest
             'niveau_education.required' => 'Le niveau d\'éducation est obligatoire.',
             'niveau_education.string' => 'Le niveau d\'éducation doit être une chaîne de caractères.',
             'niveau_education.max' => 'Le niveau d\'éducation ne doit pas dépasser 255 caractères.',
-            'duree.required' => 'La durée est obligatoire.',
            'duree.regex' => 'La durée doit être au format valide, comme "2h" ou "30m".',
-            'etat.required' => 'L\'état est obligatoire.',
-            'etat.in' => 'L\'état doit être soit "encours", "terminé" ou "annulé".',
+           'etat.sometimes' => 'L\'état est optionnel.',
+           'etat.string' => 'L\'état doit être une chaîne de caractères.',
+           'etat.in' => 'L\'état doit être soit "actif" soit "inactif".',
             'credits.integer' => 'Les crédits doivent être un nombre entier.',
             'credits.min' => 'Les crédits doivent être supérieurs ou égaux à 0.',
             'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',

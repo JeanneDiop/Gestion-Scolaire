@@ -22,7 +22,7 @@ class CoursController extends Controller
             $cours->description = $request->description;
             $cours->niveau_education = $request->niveau_education;
             $cours->duree = $request->duree;
-            $cours->etat = $request->etat;
+            $cours->etat = $request->etat ?? 'encours';
             $cours->credits = $request->credits;
             $cours->enseignant_id = $request->enseignant_id;
             $cours->save();
@@ -95,8 +95,7 @@ class CoursController extends Controller
                   'nom' => $request->nom,
                   'description' => $request->description,
                   'niveau_education' => $request->niveau_education,
-                  'matiere' => $request->matiere,
-                  'type' => $request->type,
+                 'etat' => $request->etat ?? $cours->etat,
                   'duree' => $request->duree,
                   'credits' => $request->credits,
               ]);
