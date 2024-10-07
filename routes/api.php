@@ -16,6 +16,11 @@ use App\Http\Controllers\API\ParcoursController;
 use App\Http\Controllers\API\NoteController;
 use App\Http\Controllers\API\ProgrammeController;
 use App\Http\Controllers\API\PresenceAbsenceController;
+use App\Http\Controllers\API\ApprenantClasseController;
+use App\Http\Controllers\API\EcoleController;
+use App\Http\Controllers\API\NiveauController;
+use App\Http\Controllers\API\NiveauEcoleController;
+
 
 
 
@@ -318,3 +323,44 @@ Route::get('absent/detail/{id}', [PresenceAbsenceController::class, 'showabsent'
 Route::get('absent/lister', [PresenceAbsenceController::class, 'indexabsent']);
 //lister tous les present
 Route::get('present/lister', [PresenceAbsenceController::class, 'indexpresent']);
+//gestion ApprenantClasse-----------------
+Route::post('apprenantclasse/create', [ApprenantClasseController::class, 'store']);
+//modifier apprenantclasse
+Route::put('apprenantclasse/edit/{id}', [ApprenantClasseController::class, 'update']);
+//supprimer  apprenantclasse
+Route::delete('apprenantclasse/supprimer/{id}', [ApprenantClasseController::class, 'destroy']);
+//lister apprenantclasse
+Route::get('apprenantclasse/lister', [ApprenantClasseController::class, 'index']);
+//afficher apprenantclasse
+Route::get('apprenantclasse/detail/{id}', [ApprenantClasseController::class, 'show']);
+//gestion Ecole-----------------
+Route::post('ecole/create', [EcoleController::class, 'store']);
+//modifier ecole
+Route::put('ecole/edit/{id}', [EcoleController::class, 'update']);
+//supprimer  ecole
+Route::delete('ecole/supprimer/{id}', [EcoleController::class, 'destroy']);
+//lister ecole
+Route::get('ecole/lister', [EcoleController::class, 'index']);
+//afficher ecole
+Route::get('ecole/detail/{id}', [EcoleController::class, 'show']);
+
+//gestion niveau---------------------------------------------
+Route::post('niveau/create', [NiveauController::class, 'store']);
+//modifier niveau
+Route::put('niveau/edit/{id}', [NiveauController::class, 'update']);
+//supprimer  niveau
+Route::delete('niveau/supprimer/{id}', [NiveauController::class, 'destroy']);
+//lister niveau
+Route::get('niveau/lister', [NiveauController::class, 'index']);
+//afficher niveau
+Route::get('niveau/detail/{id}', [NiveauController::class, 'show']);
+//gestion niveauEcole---------------------------------------------
+Route::post('niveauecole/create', [NiveauEcoleController::class, 'store']);
+//modifier niveauecole
+Route::put('niveauecole/edit/{id}', [NiveauEcoleController::class, 'update']);
+//supprimer  niveauecole
+Route::delete('niveauecole/supprimer/{id}', [NiveauEcoleController::class, 'destroy']);
+//lister niveauecole
+Route::get('niveauecole/lister', [NiveauEcoleController::class, 'index']);
+//afficher niveauecole
+Route::get('niveauecole/detail/{id}', [NiveauEcoleController::class, 'show']);

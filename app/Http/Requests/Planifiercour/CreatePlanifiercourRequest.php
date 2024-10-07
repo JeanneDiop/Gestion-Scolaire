@@ -34,6 +34,7 @@ class CreatePlanifierCourRequest extends FormRequest
             'annee_scolaire' => 'required|string', // Année scolaire obligatoire, doit être un entier valide
             'semestre' => 'required|integer|min:1|max:2', // Semestre obligatoire, doit être soit 1 soit 2
             'cours_id' => 'required|integer',
+            
         ];
     }
 

@@ -57,6 +57,39 @@ public function update(UpdateClasseAssociationRequest $request, $id)
         ], 500);
     }
 }
+public function storeclasseassocier(CreateClasseAssociationRequest $request)
+{
+    try {
+        // Créer l'association de classe
+        $classeAssociation = ClasseAssociation::create([
+            'apprenant_id' => $request->apprenant_id,
+            'cours_id' => $request->cours_id,
+            'enseignant_id' => $request->enseignant_id,
+        ]);
+
+        // Mettre à jour les relations dans les modèles respectifs
+        $apprenant = Apprenant::findOrFail($request->apprenant_id);
+        $cours = Cours::findOrFail($request->cours_id);
+        $enseignant = Enseignant::findOrFail($request->enseignant_id);
+
+        // Attach l'apprenant au cours
+        $apprenant->cours()->attach($cours->id, ['enseignant_id' => $enseignant->id]);
+
+        // Optionnel : Vous pouvez également ajouter une association de cours à l'enseignant
+        $enseignant->cours()->attach($cours->id);
+
+        return response()->json([
+            'message' => 'Association créée avec succès',
+            'data' => $classeAssociation,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la création de l\'association',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
 public function show($id)
 {
     try {

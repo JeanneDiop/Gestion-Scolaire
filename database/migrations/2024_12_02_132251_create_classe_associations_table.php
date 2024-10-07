@@ -15,7 +15,7 @@ class CreateClasseAssociationsTable extends Migration
     {
         Schema::create('classe_associations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('apprenant_id');
+            $table->unsignedBigInteger('apprenant_id')->nullable();
             $table->unsignedBigInteger('cours_id');
             $table->unsignedBigInteger('enseignant_id');
             $table->foreign('apprenant_id')->references('id')->on('apprenants')->onDelete('cascade');

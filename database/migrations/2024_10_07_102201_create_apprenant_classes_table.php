@@ -3,7 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use App\Models\Apprenant;
+use App\Models\Classe;
 return new class extends Migration
 {
     /**
@@ -13,6 +14,8 @@ return new class extends Migration
     {
         Schema::create('apprenant_classes', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Apprenant::class)->nullable()->constrained()->onDelete('cascade');
+            $table->foreignIdFor(Classe::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

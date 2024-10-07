@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('niveaux', function (Blueprint $table) {
             $table->id();
+            $table->string('nom');
+            $table->string('nombre_enseignant');
+            $table->string('nombre_classe');
+            $table->string('nombre_eleve');
             $table->timestamps();
         });
     }
