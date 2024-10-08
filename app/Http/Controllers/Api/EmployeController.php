@@ -36,11 +36,11 @@ class EmployeController extends Controller
             $employe->poste = $request->poste;
             $employe->image = $fileName; // Assign the filename (or null) to the model
             $employe->date_embauche = $request->date_embauche;
-            $employe->statut_emploie = $request->statut_emploie;
+            $employe->statut = $request->statut;
             $employe->type_salaire = $request->type_salaire;
             $employe->date_naissance = $request->date_naissance;
             $employe->lieu_naissance = $request->lieu_naissance;
-            $employe->sexe = $request->sexe;
+            $employe->genre = $request->genre;
             $employe->statut_marital = $request->statut_marital;
             $employe->numero_securite_social = $request->numero_securite_social;
             $employe->numero_CNI = $request->numero_CNI;
@@ -88,11 +88,11 @@ class EmployeController extends Controller
         $employe->poste = $request->poste;
         $employe->image = $fileName; // Update the image attribute
         $employe->date_embauche = $request->date_embauche;
-        $employe->statut_emploie = $request->statut_emploie;
+        $employe->statut = $request->statut;
         $employe->type_salaire = $request->type_salaire;
         $employe->date_naissance = $request->date_naissance;
         $employe->lieu_naissance = $request->lieu_naissance;
-        $employe->sexe = $request->sexe;
+        $employe->genre= $request->genre;
         $employe->statut_marital = $request->statut_marital;
         $employe->numero_securite_social = $request->numero_securite_social;
         $employe->numero_CNI = $request->numero_CNI;

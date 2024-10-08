@@ -27,7 +27,7 @@ class CreateDirecteurRequest extends FormRequest
             'password' => 'nullable|required|min:8',
             'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone',],
             'adresse' => 'required|string|max:255',
-            'genre' => 'required|in:homme,femme',
+            'genre' => 'required|in:Homme,Femme',
             'etat' => 'nullable|string|in:actif,inactif',
             'statut_marital' => 'required|in:celibataire,marié,veuf,veuve,divorcé',
             'date_naissance' => 'required|date',
