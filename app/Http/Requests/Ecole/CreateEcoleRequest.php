@@ -26,7 +26,7 @@ class CreateEcoleRequest extends FormRequest
         return [
             'nom' => 'required|string|max:255',
             'adresse' => 'required|string|max:255',
-           'telephone' => ['required','regex:/^\+221(77|78|76|70|75|33)\d{7}$/','regex:/^(33)\d{7}$/','unique:ecoles,telephone',],
+           'telephone' => ['required','regex:/^\+221(77|78|76|70|75|33)\d{7}$/','unique:ecoles,telephone',],
            'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:ecoles,email',],
            'siteweb' => 'nullable|url|max:255|unique:ecoles,siteweb',
            'logo' => 'nullable|url|max:255|unique:ecoles,logo',

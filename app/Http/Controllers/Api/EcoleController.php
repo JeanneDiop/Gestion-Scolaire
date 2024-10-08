@@ -18,14 +18,14 @@ class EcoleController extends Controller
             $ecole = new Ecole();
             $ecole->nom = $request->nom;
             $ecole->adresse = $request->adresse;
-            $ecole->numero_telephone = $request->numero_telephone;
+            $ecole->telephone = $request->telephone;
             $ecole->email = $request->email;
             $ecole->siteweb = $request->siteweb;
             $ecole->logo= $request->logo;
             $ecole->annee_creation= $request->annee_creation;
             $ecole->type_ecole= $request->type_ecole;
             $ecole->niveau_education= $request->niveau_education;
-            $ecole->directeur_id = $request->directur_id;
+            $ecole->directeur_id = $request->directeur_id;
             $ecole->save();
 
             return response()->json([
@@ -40,7 +40,7 @@ class EcoleController extends Controller
                 'error' => $e->getMessage(),
             ],500);
         }
-    }  
+    }
 
 
 
@@ -53,7 +53,7 @@ class EcoleController extends Controller
         // Mettre à jour les champs avec les données de la requête
         $ecole->nom = $request->nom;
         $ecole->adresse = $request->adresse;
-        $ecole->numero_telephone = $request->numero_telephone;
+        $ecole->telephone = $request->telephone;
         $ecole->email = $request->email;
         $ecole->siteweb = $request->siteweb;
         $ecole->logo = $request->logo;
@@ -81,8 +81,8 @@ class EcoleController extends Controller
 public function show($id)
 {
     try {
-        // Récupérer l'école par son ID
-        $ecole = Ecole::findOrFail($id);
+        // Récupérer l'école par son ID avec les informations du directeur et de l'utilisateur
+        $ecole = Ecole::with(['directeur.user'])->findOrFail($id);
 
         return response()->json([
             'status_code' => 200,
@@ -104,18 +104,19 @@ public function show($id)
     }
 }
 
+
 public function index()
 {
     try {
-        // Récupérer toutes les écoles
-        $ecoles = Ecole::all();
+        // Récupérer toutes les écoles avec les informations des directeurs et des utilisateurs
+        $ecoles = Ecole::with(['directeur.user'])->get();
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Liste des écoles récupérée avec succès',
+            'status_message' => 'Écoles récupérées avec succès',
             'data' => $ecoles,
         ], 200);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la récupération des écoles',
@@ -123,22 +124,29 @@ public function index()
         ], 500);
     }
 }
+
 //lister les ecoles par niveau
 public function indexByNiveau()
 {
     try {
         // Récupérer toutes les écoles et les grouper par niveau d'éducation
-        $ecolesParNiveau = Ecole::select('niveau_education')
-            ->with(['ecoles' => function($query) {
-                $query->select('id', 'nom', 'niveau_education'); 
-            }])
+        $ecolesParNiveau = Ecole::with(['directeur.user']) // Assurez-vous d'inclure les relations nécessaires
             ->get()
             ->groupBy('niveau_education');
+
+        // Formater les résultats
+        $result = [];
+        foreach ($ecolesParNiveau as $niveau => $ecoles) {
+            $result[] = [
+                'niveau_education' => $niveau,
+                'ecoles' => $ecoles,
+            ];
+        }
 
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Liste des écoles par niveau récupérée avec succès',
-            'data' => $ecolesParNiveau,
+            'data' => $result,
         ], 200);
     } catch (\Exception $e) {
         return response()->json([
@@ -148,13 +156,15 @@ public function indexByNiveau()
         ], 500);
     }
 }
+
+
 public function destroy($id)
 {
     try {
-       
+
         $ecole = Ecole::findOrFail($id);
 
-      
+
         $ecole->delete();
 
         return response()->json([

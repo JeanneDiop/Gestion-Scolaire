@@ -134,6 +134,10 @@ Route::delete('/supprimerapprenant/{apprenant}', [AuthController::class, 'suppri
 Route::delete('/supprimeruserapprenant/{user}', [AuthController::class, 'supprimerUserApprenant']);
 //archiver ou desactiver un apprenant via sa table
 Route::post('archiverapprenant/{apprenant}',[AuthController::class,'archiverApprenant']);
+//afficher les infos d'un apprenant par rapport à sa statut de presence
+Route::get('/apprenant/details/{id}', [AuthController::class, 'getApprenantDetailsWithPresence']);
+//afficher ses infos par rapport à la note
+Route::get('/apprenants/notes/{id}', [AuthController::class, 'getApprenantDetailsWithNotes']);
 
 //----------------------gestion directeur---------------------
 //afficher info dun directeur
@@ -282,7 +286,7 @@ Route::get('note/lister', [NoteController::class, 'index']);
 //afficher note
 Route::get('note/detail/{id}', [NoteController::class, 'show']);
 //afficher note pour un apprenant
-Route::get('/apprenants/notes/{apprenantId}', [NoteController::class, 'showNotesByApprenant']);
+Route::get('/apprenants/note/{apprenantId}', [NoteController::class, 'showNotesByApprenant']);
 //afficher les notes dune classe
 Route::get('/classes/notes/{classeId}', [NoteController::class, 'showNotesByClasse']);
 //gestion Parcours-----------------
@@ -343,7 +347,8 @@ Route::delete('ecole/supprimer/{id}', [EcoleController::class, 'destroy']);
 Route::get('ecole/lister', [EcoleController::class, 'index']);
 //afficher ecole
 Route::get('ecole/detail/{id}', [EcoleController::class, 'show']);
-
+//lister les ecoles par niveau
+Route::get('/ecoles/niveau', [EcoleController::class, 'indexByNiveau']);
 //gestion niveau---------------------------------------------
 Route::post('niveau/create', [NiveauController::class, 'store']);
 //modifier niveau

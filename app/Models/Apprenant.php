@@ -38,9 +38,9 @@ class Apprenant extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function presenceabsences()
+    public function absencePresences()
     {
-        return $this->hasMany(PresenceAbsence::class);
+        return $this->hasMany(PresenceAbsence::class, 'apprenant_id');
     }
     public function evaluations()
     {
@@ -59,4 +59,5 @@ class Apprenant extends Model
     {
         return $this->hasMany(ApprenantClasse::class);
     }
+
 }

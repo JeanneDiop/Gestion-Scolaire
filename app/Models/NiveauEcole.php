@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Niveau;
 use App\Models\Ecole;
 class NiveauEcole extends Model
-{
+  {
     use HasFactory;
+    
     protected $fillable = [
         'ecole_id',
         'niveau_id',

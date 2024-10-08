@@ -45,10 +45,10 @@ class PlanifiercourController extends Controller
     public function update(UpdatePlanifiercourRequest $request, $id)
 {
     try {
-        // Récupération du cours à mettre à jour
+       
         $planifiercour = Planifiercour::findOrFail($id);
 
-        // Mise à jour des champs
+
         $planifiercour->date_cours = $request->date_cours;
         $planifiercour->heure_debut = $request->heure_debut;
         $planifiercour->heure_fin = $request->heure_fin;

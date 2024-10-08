@@ -76,14 +76,12 @@ class EvaluationController extends Controller
 public function show($id)
 {
     try {
-        // Récupérer l'évaluation avec les relations apprenant, classe, salle, cours et enseignant
         $evaluation = Evaluation::with([
-            'apprenant.user', // Récupérer l'apprenant et ses informations utilisateur
-            'apprenant.classe.salle', // Récupérer la classe et la salle associée à l'apprenant
-            'cours.enseignant.user' // Récupérer l'enseignant du cours et ses informations utilisateur
+            'apprenant.user',
+            'apprenant.classe.salle',
+            'cours.enseignant.user'
         ])->findOrFail($id);
 
-        // Retourner les informations de l'évaluation
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Détails de l\'évaluation récupérés avec succès',
@@ -101,14 +99,14 @@ public function show($id)
 public function index()
 {
     try {
-        // Récupérer toutes les évaluations avec les relations apprenant, classe, salle, cours, et enseignant
-        $evaluations = Evaluation::with([
-            'apprenant.user', // Récupérer les informations de l'apprenant et de l'utilisateur associé
-            'apprenant.classe.salle', // Récupérer la classe et la salle associée à l'apprenant
-            'cours.enseignant.user' // Récupérer le cours et l'enseignant du cours avec son utilisateur
-        ])->get(); // Récupère toutes les évaluations
 
-        // Retourner les informations des évaluations
+        $evaluations = Evaluation::with([
+            'apprenant.user',
+            'apprenant.classe.salle',
+            'cours.enseignant.user'
+        ])->get();
+
+
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Liste des évaluations récupérée avec succès',
@@ -128,10 +126,8 @@ public function index()
 public function destroy($id)
 {
     try {
-        // Trouver l'évaluation par son ID
-        $evaluation = Evaluation::findOrFail($id);
 
-        // Supprimer l'évaluation
+        $evaluation = Evaluation::findOrFail($id);
         $evaluation->delete();
 
         return response()->json([

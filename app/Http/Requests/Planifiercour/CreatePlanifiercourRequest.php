@@ -34,7 +34,7 @@ class CreatePlanifierCourRequest extends FormRequest
             'annee_scolaire' => 'required|string', // Année scolaire obligatoire, doit être un entier valide
             'semestre' => 'required|integer|min:1|max:2', // Semestre obligatoire, doit être soit 1 soit 2
             'cours_id' => 'required|integer',
-            
+            'classe_id' => 'required|integer',
         ];
     }
 
@@ -68,6 +68,8 @@ class CreatePlanifierCourRequest extends FormRequest
             'semestre.max' => 'Le semestre doit être au maximum 2.',
         'cours_id.required' => 'L\'ID de la cours est obligatoire.',
         'cours_id.integer' => 'L\'ID de la cours doit être un nombre entier.',
+        'classe_id.required' => 'L\'ID de la classe est obligatoire.',
+        'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.',
         ];
     }
     protected function failedValidation(Validator $validator)

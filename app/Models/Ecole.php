@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Directeur;
-use App\Models\NiveauEcole;
+use App\Models\Niveau;
 class Ecole extends Model
 {
     use HasFactory;
@@ -24,9 +24,9 @@ class Ecole extends Model
     {
         return $this->belongsTo(Directeur::class);
     }
-    public function niveauecole()
+    public function niveaux()
     {
-        return $this->hasMany(NiveauEcole::class);
+        return $this->belongsToMany(Niveau::class, 'niveau_ecole', 'ecole_id', 'niveau_id');
     }
     public function ecoles()
     {

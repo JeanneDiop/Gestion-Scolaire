@@ -15,6 +15,7 @@ use App\Http\Requests\Tuteur\CreateTuteurRequest;
 use App\Http\Requests\PersonnelAdministratif\CreatePersonnelAdministratifRequest;
 use App\Http\Requests\PersonnelAdministratif\UpdatePersonnelAdministratifRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\User\LogUserRequest;
 use App\Models\Classe;
 use App\Models\Role;
@@ -37,7 +38,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','getApprenantDetailsWithNotes', 'getApprenantDetailsWithPresence','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -1793,73 +1794,120 @@ public function ListerApprenant()
 }
 
 
-//lister apprenant par niveau
-public function ListerApprenantParNiveau(Request $request, $niveauEducation)
+public function getApprenantDetailsWithPresence($id)
 {
-    // Récupérer les apprenants filtrés par niveau d'éducation
-    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])
-                            ->where('niveau_education', $niveauEducation)
-                            ->get();
+    // Récupérer l'apprenant avec ses enregistrements de présence et absence
+    $apprenant = Apprenant::with(['absencePresences.cours'])
+        ->find($id);
 
-    // Créer une nouvelle structure de données
-    $apprenantsData = $apprenants->map(function ($apprenant) {
-        // Informations de base de l'apprenant
-        $data = [
+    // Vérifier si l'apprenant existe
+    if (!$apprenant) {
+        return response()->json([
+            'message' => "Aucun apprenant trouvé avec l'ID {$id}."
+        ], 404);
+    }
+
+    // Initialiser un tableau pour stocker les détails de présence/absence
+    $presenceDetails = [];
+
+    // Boucler à travers les enregistrements de présence/absence
+    foreach ($apprenant->absencePresences as $presenceAbsence) {
+        $statut = strtolower($presenceAbsence->present) === 'oui' ? 'Présent' : 'Absent';
+
+        // Vérifier si le statut est "Absent"
+        if ($statut === 'Absent') {
+            $presenceDetails[] = [
+                'statut' => $statut,
+                'date' => $presenceAbsence->date_absent,
+                'raison' => $presenceAbsence->raisonabsence,
+                'cours' => $presenceAbsence->cours ? $presenceAbsence->cours->nom : 'N/A',
+            ];
+        } else {
+            // Ajouter uniquement si le statut est "Présent"
+            $presenceDetails[] = [
+                'statut' => $statut,
+                'date' => $presenceAbsence->date_present,
+                'cours' => $presenceAbsence->cours ? $presenceAbsence->cours->nom : 'N/A',
+            ];
+        }
+    }
+
+    // Utiliser array_unique pour éviter les doublons (basé sur la date et le statut)
+    $presenceDetails = array_map("unserialize", array_unique(array_map("serialize", $presenceDetails)));
+
+    // Retourner les détails de l'apprenant avec ses informations de présence et absence
+    return [
+        'apprenant' => [
             'id' => $apprenant->id,
-            'date_naissance' => $apprenant->date_naissance,
+            'nom' => $apprenant->user->nom,
+            'prenom' => $apprenant->user->prenom,
+            'telephone' => $apprenant->user->telephone,
+            'email' => $apprenant->user->email,
+            'adresse' => $apprenant->user->adresse,
+            'genre' => $apprenant->user->genre,
+            'etat' => $apprenant->user->etat,
             'lieu_naissance' => $apprenant->lieu_naissance,
+            'date_naissance' => $apprenant->date_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
             'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
             'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
-            'user' => $apprenant->user ? [
-                'id' => $apprenant->user->id,
-                'nom' => $apprenant->user->nom,
-                'prenom' => $apprenant->user->prenom,
-                'telephone' => $apprenant->user->telephone,
-                'email' => $apprenant->user->email,
-                'genre' => $apprenant->user->genre,
-                'etat' => $apprenant->user->etat,
-                'adresse' => $apprenant->user->adresse,
-                'role_nom' => $apprenant->user->role_nom,
-            ] : null,
-        ];
-
-        // Vérification du tuteur
-        if ($apprenant->tuteur) {
-            $tuteur = $apprenant->tuteur;
-            // Si l'utilisateur associé au tuteur existe, on fusionne les données du tuteur et de l'utilisateur
-            $data['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
-        } else {
-            $data['tuteur'] = null; // Si pas de tuteur, on définit à null
-        }
-
-        // Vérification de la classe et de la salle
-        if ($apprenant->classe) {
-            $data['classe'] = [
-                'id' => $apprenant->classe->id,
-                'nom_classe' => $apprenant->classe->nom,
-                'niveau_classe' => $apprenant->classe->niveau_classe, // Ajout du nom de la classe
-                'salle' => $apprenant->classe->salle ? [
-                    'id' => $apprenant->classe->salle->id,
-                    'nom' => $apprenant->classe->salle->nom,
-                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
-                ] : null, // Si pas de salle, on définit à null
-            ];
-        } else {
-            $data['classe'] = null; // Si pas de classe, on définit à null
-        }
-
-        return $data; // Retour des données de l'apprenant formatées
-    });
-
-    return response()->json([
-        'status' => 200,
-        'apprenants' => $apprenantsData, // Retour des données des apprenants
-    ]);
+        ],
+        'presenceAbsenceDetails' => $presenceDetails
+    ];
 }
 
+//afficher les details de lapprenant par à ses notes
+public function getApprenantDetailsWithNotes($id)
+{
+    // Récupérer l'apprenant avec ses évaluations et notes
+    $apprenant = Apprenant::with(['evaluations.notes'])->find($id);
 
+    // Vérifier si l'apprenant existe
+    if (!$apprenant) {
+        return response()->json([
+            'message' => "Aucun apprenant trouvé avec l'ID {$id}."
+        ], 404);
+    }
+
+    // Initialiser un tableau pour stocker les détails des notes
+    $noteDetails = [];
+
+    // Boucler à travers les évaluations et leurs notes
+    foreach ($apprenant->evaluations as $evaluation) {
+        foreach ($evaluation->notes as $note) {
+            $noteDetails[] = [
+                'nom_evaluation' => $evaluation->nom_evaluation,
+                'niveau_education' => $evaluation->niveau_education,
+                'date_evaluation' => $evaluation->date_evaluation,
+                'type_note' => $note->type_note,
+                'note' => $note->note,
+                'date_note' => $note->date_note,
+            ];
+        }
+    }
+
+    // Retourner les détails de l'apprenant avec ses notes
+    return [
+        'apprenant' => [
+            'id' => $apprenant->id,
+            'nom' => $apprenant->user->nom,
+            'prenom' => $apprenant->user->prenom,
+            'telephone' => $apprenant->user->telephone,
+            'email' => $apprenant->user->email,
+            'adresse' => $apprenant->user->adresse,
+            'genre' => $apprenant->user->genre,
+            'etat' => $apprenant->user->etat,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'date_naissance' => $apprenant->date_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'niveau_education' => $apprenant->niveau_education,
+            'statut_marital' => $apprenant->statut_marital,
+        ],
+        'notes' => $noteDetails
+    ];
+}
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
 {
