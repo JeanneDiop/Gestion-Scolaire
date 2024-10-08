@@ -1819,7 +1819,7 @@ public function getApprenantDetailsWithPresence($id)
             $presenceDetails[] = [
                 'statut' => $statut,
                 'date' => $presenceAbsence->date_absent,
-                'raison' => $presenceAbsence->raisonabsence,
+                'raison' => $presenceAbsence->raison_absence,
                 'cours' => $presenceAbsence->cours ? $presenceAbsence->cours->nom : 'N/A',
             ];
         } else {
