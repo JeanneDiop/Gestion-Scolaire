@@ -150,22 +150,19 @@ public function showNotesByClasse($classeId)
     try {
         // Récupérer les notes de tous les apprenants dans la classe spécifiée avec les relations nécessaires
         $notes = Note::with([
-            'evaluation.cours.enseignant.user',  // Récupérer les informations de l'enseignant et son utilisateur
-            'evaluation.apprenant.user',         // Récupérer les informations de l'apprenant et son utilisateur
-            'evaluation.apprenant.tuteur.user',  // Récupérer les informations du tuteur
-            'evaluation.apprenant.classe.salle'  // Récupérer les informations de la salle
+            'evaluation.cours.enseignant.user',
+            'evaluation.apprenant.user',
+            'evaluation.apprenant.tuteur.user',
+            'evaluation.apprenant.classe.salle'  
         ])
         ->whereHas('evaluation.apprenant.classe', function($query) use ($classeId) {
             $query->where('id', $classeId);
         })
         ->get();
 
-        // Grouper les notes par apprenant
-        $groupedNotes = $notes->groupBy('evaluation.apprenant_id');
-
-        // Préparer la structure de données à retourner
-        $result = $groupedNotes->map(function ($apprenantNotes, $apprenantId) {
-            $apprenant = $apprenantNotes->first()->evaluation->apprenant; // On suppose que les apprenants sont les mêmes dans chaque note groupée
+        // Préparer la structure de données à retourner sans grouper les notes incorrectement
+        $result = $notes->map(function ($note) {
+            $apprenant = $note->evaluation->apprenant;
             return [
                 'apprenant' => [
                     'id' => $apprenant->id,
@@ -183,23 +180,21 @@ public function showNotesByClasse($classeId)
                     'niveau_education' => $apprenant->niveau_education,
                     'statut_marital' => $apprenant->statut_marital,
                 ],
-                'notes' => $apprenantNotes->map(function ($note) {
-                    return [
-                        'note' => $note->note, // Assurez-vous que 'note' est le bon attribut
-                        'cours' => [
-                            'nom' => $note->evaluation->cours->nom,
-                            'enseignant' => $note->evaluation->cours->enseignant->user->nom,
-                        ],
-                        'evaluation' => [
-                            'id' => $note->evaluation->id,
-                            'nom_evaluation' => $note->evaluation->nom_evaluation, // Assurez-vous que 'titre' est le bon attribut de l'évaluation
-                            'date_evaluation' => $note->evaluation->date_evaluation,   // Assurez-vous que 'date' est le bon attribut de l'évaluation
-                            'type_evaluation' => $note->evaluation->type_evaluation    // Exemple : type d'évaluation (examen, test, etc.)
-                        ]
-                    ];
-                }),
+                'note' => [
+                    'note_value' => $note->note, // Assurez-vous que 'note' est le bon attribut
+                    'cours' => [
+                        'nom' => $note->evaluation->cours->nom,
+                        'enseignant' => $note->evaluation->cours->enseignant->user->nom,
+                    ],
+                    'evaluation' => [
+                        'id' => $note->evaluation->id,
+                        'nom_evaluation' => $note->evaluation->nom_evaluation, // Assurez-vous que 'nom_evaluation' est le bon attribut de l'évaluation
+                        'date_evaluation' => $note->evaluation->date_evaluation,   // Assurez-vous que 'date_evaluation' est le bon attribut de l'évaluation
+                        'type_evaluation' => $note->evaluation->type_evaluation    // Exemple : type d'évaluation (examen, test, etc.)
+                    ]
+                ]
             ];
-        })->values(); // `values` pour réindexer les résultats
+        });
 
         return response()->json([
             'status_code' => 200,
@@ -214,7 +209,6 @@ public function showNotesByClasse($classeId)
         ], 500);
     }
 }
-
 
 public function destroy($id)
 {
