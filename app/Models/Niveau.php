@@ -8,6 +8,7 @@ use App\Models\Ecole;
 class Niveau extends Model
 {
     use HasFactory;
+    protected $table = 'niveaux';
     protected $fillable = [
         'nom',
         'nombre_enseignant',

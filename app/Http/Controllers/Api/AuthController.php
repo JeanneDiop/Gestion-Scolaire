@@ -1853,7 +1853,7 @@ public function getApprenantDetailsWithPresence($id)
             'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
         ],
-        'presenceAbsenceDetails' => $presenceDetails
+        'absence' => $presenceDetails
     ];
 }
 

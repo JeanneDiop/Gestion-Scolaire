@@ -9,14 +9,14 @@ use App\Models\Ecole;
 class NiveauEcole extends Model
   {
     use HasFactory;
-    
+
     protected $fillable = [
         'ecole_id',
         'niveau_id',
 
 
     ];
-    public function niveau()
+    public function niveaux()
     {
         return $this->belongsTo(Niveau::class);
     }

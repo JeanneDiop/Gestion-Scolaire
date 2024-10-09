@@ -145,25 +145,66 @@ public function showNotesByApprenant($apprenantId)
         }
     }
 //afficher les notes dune classe
-    public function showNotesByClasse($classeId)
+public function showNotesByClasse($classeId)
 {
     try {
         // Récupérer les notes de tous les apprenants dans la classe spécifiée avec les relations nécessaires
         $notes = Note::with([
-            'evaluation.cours.enseignant.user', // Récupérer les informations de l'enseignant et son utilisateur
-            'evaluation.apprenant.user',        // Récupérer les informations de l'apprenant et son utilisateur
-            'evaluation.apprenant.tuteur.user', // Récupérer les informations du tuteur
-            'evaluation.apprenant.classe.salle' // Récupérer les informations de la salle
+            'evaluation.cours.enseignant.user',  // Récupérer les informations de l'enseignant et son utilisateur
+            'evaluation.apprenant.user',         // Récupérer les informations de l'apprenant et son utilisateur
+            'evaluation.apprenant.tuteur.user',  // Récupérer les informations du tuteur
+            'evaluation.apprenant.classe.salle'  // Récupérer les informations de la salle
         ])
         ->whereHas('evaluation.apprenant.classe', function($query) use ($classeId) {
             $query->where('id', $classeId);
         })
         ->get();
 
+        // Grouper les notes par apprenant
+        $groupedNotes = $notes->groupBy('evaluation.apprenant_id');
+
+        // Préparer la structure de données à retourner
+        $result = $groupedNotes->map(function ($apprenantNotes, $apprenantId) {
+            $apprenant = $apprenantNotes->first()->evaluation->apprenant; // On suppose que les apprenants sont les mêmes dans chaque note groupée
+            return [
+                'apprenant' => [
+                    'id' => $apprenant->id,
+                    'nom' => $apprenant->user->nom,
+                    'prenom' => $apprenant->user->prenom,
+                    'telephone' => $apprenant->user->telephone,
+                    'email' => $apprenant->user->email,
+                    'adresse' => $apprenant->user->adresse,
+                    'genre' => $apprenant->user->genre,
+                    'etat' => $apprenant->user->etat,
+                    'lieu_naissance' => $apprenant->lieu_naissance,
+                    'date_naissance' => $apprenant->date_naissance,
+                    'numero_CNI' => $apprenant->numero_CNI,
+                    'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                    'niveau_education' => $apprenant->niveau_education,
+                    'statut_marital' => $apprenant->statut_marital,
+                ],
+                'notes' => $apprenantNotes->map(function ($note) {
+                    return [
+                        'note' => $note->note, // Assurez-vous que 'note' est le bon attribut
+                        'cours' => [
+                            'nom' => $note->evaluation->cours->nom,
+                            'enseignant' => $note->evaluation->cours->enseignant->user->nom,
+                        ],
+                        'evaluation' => [
+                            'id' => $note->evaluation->id,
+                            'nom_evaluation' => $note->evaluation->nom_evaluation, // Assurez-vous que 'titre' est le bon attribut de l'évaluation
+                            'date_evaluation' => $note->evaluation->date_evaluation,   // Assurez-vous que 'date' est le bon attribut de l'évaluation
+                            'type_evaluation' => $note->evaluation->type_evaluation    // Exemple : type d'évaluation (examen, test, etc.)
+                        ]
+                    ];
+                }),
+            ];
+        })->values(); // `values` pour réindexer les résultats
+
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Notes de la classe récupérées avec succès.',
-            'data' => $notes, // Les notes incluront déjà les données liées
+            'data' => $result,
         ], 200);
     } catch (Exception $e) {
         return response()->json([
@@ -173,6 +214,7 @@ public function showNotesByApprenant($apprenantId)
         ], 500);
     }
 }
+
 
 public function destroy($id)
 {
