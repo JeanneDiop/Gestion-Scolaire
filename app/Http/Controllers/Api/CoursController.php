@@ -41,54 +41,76 @@ class CoursController extends Controller
         }
     }
     public function index()
-{
-    try {
-
-        $cours = Cours::with(['enseignant.user', 'evaluations'])->get();
-
-        // Formater les résultats pour n'inclure que les évaluations
-        $result = $cours->map(function ($course) {
-            return [
-                'id' => $course->id,
-                'nom' => $course->nom,
-                'description' => $course->description,
-                'duree' => $course->duree,
-                'enseignant' => [
-                    'id' => $course->enseignant->user->id,
-                    'nom' => $course->enseignant->user->nom,
-                    'prenom' => $course->enseignant->user->prenom,
-                    'specialite' => $course->enseignant->specialite,
-                ],
-                'evaluations' => $course->evaluations->map(function ($evaluation) {
-                    return [
-                        'id' => $evaluation->id,
-                        'nom_evaluation' => $evaluation->nom_evaluation,
-                        'date_evaluation' => $evaluation->date_evaluation,
-                        'type_evaluation' => $evaluation->type_evaluation,
-                    ];
-                }),
-            ];
-        });
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Tous les cours ont été récupérés avec succès.',
-            'data' => $result,
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération des cours.',
-            'error' => $e->getMessage(),
-        ], 500);
+    {
+        try {
+        
+            $cours = Cours::with([
+                'enseignant.user', 
+                'evaluations.apprenant.classe.salle'
+            ])->get();
+    
+            $result = $cours->map(function ($course) {
+                return [
+                    'id' => $course->id,
+                    'nom' => $course->nom,
+                    'description' => $course->description,
+                    'duree' => $course->duree,
+                    'enseignant' => [
+                        'id' => $course->enseignant->user->id,
+                        'nom' => $course->enseignant->user->nom,
+                        'prenom' => $course->enseignant->user->prenom,
+                        'specialite' => $course->enseignant->specialite,
+                    ],
+                    'evaluations' => $course->evaluations->map(function ($evaluation) {
+                        $apprenant = $evaluation->apprenant;
+                        $classe = $apprenant->classe;
+                        $salle = $classe ? $classe->salle : null;
+    
+                        return [
+                            'id' => $evaluation->id,
+                            'nom_evaluation' => $evaluation->nom_evaluation,
+                            'date_evaluation' => $evaluation->date_evaluation,
+                            'type_evaluation' => $evaluation->type_evaluation,
+                            'apprenant' => [
+                                'id' => $apprenant->user->id,
+                                'nom' => $apprenant->user->nom,
+                                'prenom' => $apprenant->user->prenom,
+                                'classe' => [
+                                    'id' => $classe ? $classe->id : null,
+                                    'nom_classe' => $classe ? $classe->nom : null,
+                                    'salle' => $salle ? [
+                                        'id' => $salle->id,
+                                        'nom_salle' => $salle->nom,
+                                    ] : null
+                                ]
+                            ]
+                        ];
+                    }),
+                ];
+            });
+    
+            return response()->json([
+                'status_code' => 200,
+                'status_message' => 'Tous les cours ont été récupérés avec succès.',
+                'data' => $result,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Une erreur s\'est produite lors de la récupération des cours.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
-
 
 public function show($id)
 {
     try {
-        $cours = Cours::with(['enseignant.user', 'evaluations'])->findOrFail($id);
+        // Récupérer le cours avec l'enseignant, les évaluations, les apprenants, leurs classes et les salles associées
+        $cours = Cours::with([
+            'enseignant.user', 
+            'evaluations.apprenant.classe.salle'
+        ])->findOrFail($id);
 
         // Formater le résultat
         $result = [
@@ -103,11 +125,28 @@ public function show($id)
                 'specialite' => $cours->enseignant->specialite,
             ],
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
+                $apprenant = $evaluation->apprenant;
+                $classe = $apprenant->classe;
+                $salle = $classe ? $classe->salle : null;
+
                 return [
                     'id' => $evaluation->id,
                     'nom_evaluation' => $evaluation->nom_evaluation,
                     'date_evaluation' => $evaluation->date_evaluation,
                     'type_evaluation' => $evaluation->type_evaluation,
+                    'apprenant' => [
+                        'id' => $apprenant->user->id,
+                        'nom' => $apprenant->user->nom,
+                        'prenom' => $apprenant->user->prenom,
+                        'classe' => [
+                            'id' => $classe ? $classe->id : null,
+                            'nom_classe' => $classe ? $classe->nom : null,
+                            'salle' => $salle ? [
+                                'id' => $salle->id,
+                                'nom_salle' => $salle->nom
+                            ] : null
+                        ]
+                    ]
                 ];
             }),
         ];
@@ -130,6 +169,7 @@ public function show($id)
         ], 500);
     }
 }
+
 
 
       public function update(UpdateCoursRequest $request, $id)

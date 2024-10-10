@@ -8,6 +8,7 @@ use App\Models\ClasseAssociation;
 use App\Models\Apprenant;
 use App\Models\Enseignant;
 use App\Models\Cours;
+use Exception;
 use App\Http\Requests\ClasseAssociation\CreateClasseAssociationRequest;
 use App\Http\Requests\ClasseAssociation\UpdateClasseAssociationRequest;
 class ClasseAssociationController extends Controller
@@ -32,8 +33,9 @@ class ClasseAssociationController extends Controller
             // Mettre à jour l'apprenant
             $apprenant = Apprenant::find($request->apprenant_id);
             if ($apprenant) {
+                $apprenantUser = $apprenant->user;
                 $apprenant->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
-                $apprenant->save();
+                $apprenantUser->save();
             }
 
             // Mettre à jour le cours
@@ -46,11 +48,12 @@ class ClasseAssociationController extends Controller
             // Mettre à jour l'enseignant
             $enseignant = Enseignant::find($request->enseignant_id);
             if ($enseignant) {
-                // Accéder à l'utilisateur associé à l'enseignant
-                $enseignantUser = $enseignant->user; // Assurez-vous que cette relation est définie dans le modèle Enseignant
+                $enseignantUser = $enseignant->user; 
                 if ($enseignantUser) {
-                    $enseignantUser->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
+                    $enseignantUser->nom = 'Classe associée: ' . $classeAssociation->id;
                     $enseignantUser->save();
+                }
+            }
 
             return response()->json([
                 'message' => 'Association créée et les enregistrements mis à jour avec succès.',
@@ -62,14 +65,13 @@ class ClasseAssociationController extends Controller
                 'data' => $existingAssociation,
             ], 409); // 409 Conflict
         }
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return response()->json([
             'message' => 'Erreur lors de la création de l\'association',
             'error' => $e->getMessage(),
         ], 500);
     }
 }
-
 
 public function update(UpdateClasseAssociationRequest $request, $id)
 {
@@ -329,4 +331,5 @@ public function destroy($id)
     }
 }
 
-}
+    }
+
