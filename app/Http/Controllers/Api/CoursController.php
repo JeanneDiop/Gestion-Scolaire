@@ -43,13 +43,34 @@ class CoursController extends Controller
     public function index()
 {
     try {
-        // Récupération de tous les cours avec les informations des enseignants et des utilisateurs associés
-        $cours = Cours::with(['enseignant.user'])->get();
+
+        $cours = Cours::with(['enseignant.user', 'evaluations'])->get();
+
+        // Formater les résultats pour n'inclure que les évaluations
+        $result = $cours->map(function ($course) {
+            return [
+                'id' => $course->id,
+                'nom' => $course->nom, // Nom du cours
+                'enseignant' => [
+                    'id' => $course->enseignant->user->id,
+                    'nom' => $course->enseignant->user->nom,
+                    'specialite' => $course->enseignant->specialite,
+                ],
+                'evaluations' => $course->evaluations->map(function ($evaluation) {
+                    return [
+                        'id' => $evaluation->id,
+                        'nom_evaluation' => $evaluation->nom_evaluation,
+                        'date_evaluation' => $evaluation->date_evaluation,
+                        'type_evaluation' => $evaluation->type_evaluation,
+                    ];
+                }),
+            ];
+        });
 
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Tous les cours ont été récupérés avec succès.',
-            'data' => $cours,
+            'data' => $result,
         ], 200);
     } catch (\Exception $e) {
         return response()->json([
@@ -61,23 +82,46 @@ class CoursController extends Controller
 }
 
 
-      public function show(string $id)
+public function show($id)
 {
     try {
-        // Récupération du cours par ID avec les informations de l'enseignant et de l'utilisateur
-        $cours = Cours::with(['enseignant.user'])->findOrFail($id);
+        $cours = Cours::with(['enseignant.user', 'evaluations'])->findOrFail($id);
+
+        // Formater le résultat
+        $result = [
+            'id' => $cours->id,
+            'nom' => $cours->nom,
+            'enseignant' => [
+                'id' => $cours->enseignant->user->id,
+                'nom' => $cours->enseignant->user->nom,
+                'specialite' => $cours->enseignant->specialite,
+            ],
+            'evaluations' => $cours->evaluations->map(function ($evaluation) {
+                return [
+                    'id' => $evaluation->id,
+                    'nom_evaluation' => $evaluation->nom_evaluation,
+                    'date_evaluation' => $evaluation->date_evaluation,
+                    'type_evaluation' => $evaluation->type_evaluation,
+                ];
+            }),
+        ];
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Cours récupéré avec succès.',
-            'data' => $cours,
+            'status_message' => 'Le cours a été récupéré avec succès.',
+            'data' => $result,
         ], 200);
-    } catch (Exception $e) {
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
         return response()->json([
             'status_code' => 404,
-            'status_message' => 'Désolé, pas de cours trouvé.',
-            'error' => $e->getMessage(),
+            'status_message' => 'Cours non trouvé.',
         ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération du cours.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
 }
 
