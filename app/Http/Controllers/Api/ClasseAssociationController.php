@@ -5,33 +5,55 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClasseAssociation;
+use App\Models\Apprenant;
+use App\Models\Enseignant;
+use App\Models\Cours;
 use App\Http\Requests\ClasseAssociation\CreateClasseAssociationRequest;
 use App\Http\Requests\ClasseAssociation\UpdateClasseAssociationRequest;
 class ClasseAssociationController extends Controller
 {
     public function store(CreateClasseAssociationRequest $request)
-{
-    try {
+    {
+        try {
+            // Créer l'association
+            $classeAssociation = ClasseAssociation::create([
+                'apprenant_id' => $request->apprenant_id,
+                'cours_id' => $request->cours_id,
+                'enseignant_id' => $request->enseignant_id,
+            ]);
 
-        $classeAssociation = ClasseAssociation::create([
-            'apprenant_id' => $request->apprenant_id,
-            'cours_id' => $request->cours_id,
-            'enseignant_id' => $request->enseignant_id,
-        ]);
+            // Mettre à jour l'apprenant
+            $apprenant = Apprenant::find($request->apprenant_id);
+            if ($apprenant) {
+                $apprenant->nom_classe = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
+                $apprenant->save();
+            }
 
+            // Mettre à jour le cours
+            $cours = Cours::find($request->cours_id);
+            if ($cours) {
+                $cours->nom_classe = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
+                $cours->save();
+            }
 
-        return response()->json([
-            'message' => 'Association créée avec succès',
-            'data' => $classeAssociation,
-        ], 200);
-    } catch (\Exception $e) {
+            // Mettre à jour l'enseignant
+            $enseignant = Enseignant::find($request->enseignant_id);
+            if ($enseignant) {
+                $enseignant->nom_classe = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
+                $enseignant->save();
+            }
 
-        return response()->json([
-            'message' => 'Erreur lors de la création de l\'association',
-            'error' => $e->getMessage(),
-        ], 500);
+            return response()->json([
+                'message' => 'Association créée et les enregistrements mis à jour avec succès.',
+                'data' => $classeAssociation,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'association',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
 
 public function update(UpdateClasseAssociationRequest $request, $id)
 {

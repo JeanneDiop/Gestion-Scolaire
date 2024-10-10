@@ -245,6 +245,7 @@ Route::delete('planifiercour/supprimer/{id}', [PlanifiercourController::class, '
 Route::get('planifiercour/lister', [PlanifiercourController::class, 'index']);
 //afficher cours
 Route::get('planifiercour/detail/{id}', [PlanifiercourController::class, 'show']);
+
 //gestion classeassociation-----------------
 Route::post('classeassocier/create', [ClasseAssociationController::class, 'store']);
 //modifier cours
@@ -255,6 +256,7 @@ Route::delete('classeassocier/supprimer/{id}', [ClasseAssociationController::cla
 Route::get('classeassocier/lister', [ClasseAssociationController::class, 'index']);
 //afficher cours
 Route::get('classeassocier/detail/{id}', [ClasseAssociationController::class, 'show']);
+
 //gestion EnseignantClasse-----------------
 Route::post('enseignantclasse/create', [EnseignantClasseController::class, 'store']);
 //modifier enseignantclasse
@@ -275,6 +277,7 @@ Route::delete('evaluation/supprimer/{id}', [EvaluationController::class, 'destro
 Route::get('evaluation/lister', [EvaluationController::class, 'index']);
 //afficher evaluation
 Route::get('evaluation/detail/{id}', [EvaluationController::class, 'show']);
+
 //gestion Note-----------------
 Route::post('note/create', [NoteController::class, 'store']);
 //modifier note
@@ -289,6 +292,7 @@ Route::get('note/detail/{id}', [NoteController::class, 'show']);
 Route::get('/apprenants/note/{apprenantId}', [NoteController::class, 'showNotesByApprenant']);
 //afficher les notes dune classe
 Route::get('/classes/notes/{classeId}', [ClasseController::class, 'showNotes']);
+
 //gestion Parcours-----------------
 Route::post('parcours/create', [ParcoursController::class, 'store']);
 //modifier parcours

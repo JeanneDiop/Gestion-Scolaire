@@ -37,6 +37,98 @@ class NoteController extends Controller
         }
     }
 
+    public function update(UpdateNoteRequest $request, $id)
+{
+    try {
+        // Récupérer la note par son ID
+        $note = Note::findOrFail($id);
+
+        // Mettre à jour les attributs de la note
+        $note->note = $request->note;
+        $note->type_note = $request->type_note;
+        $note->date_note = $request->date_note;
+         $note->evaluation_id = $request->evaluation_id;
+
+        // Sauvegarder les modifications
+        $note->update();
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'La note a été mise à jour avec succès.',
+            'data' => $note,
+        ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Note non trouvée.',
+            'error' => $e->getMessage(),
+        ], 404);
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la note.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+    public function index()
+{
+    try {
+        // Récupérer toutes les notes avec les relations associées
+        $notes = Note::with([
+            'evaluation.apprenant.user',
+            'evaluation.apprenant.classe.salle',
+            'evaluation.cours.enseignant.user'
+        ])->get();
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Liste des notes récupérée avec succès.',
+            'data' => $notes,
+        ]);
+    } catch (\Exception $e) {
+        // Gérer les erreurs
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des notes.',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+
+public function show($id)
+{
+    try {
+        // Récupérer la note par son ID avec les relations associées
+        $note = Note::with([
+            'evaluation.apprenant.user',
+            'evaluation.apprenant.classe.salle',
+            'evaluation.cours.enseignant.user'
+        ])->findOrFail($id); // Cela lance une exception si la note n'est pas trouvée
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Note récupérée avec succès.',
+            'data' => $note,
+        ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Note non trouvée.',
+            'error' => $e->getMessage(),
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération de la note.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+//la fonction qui nous permet d'afficher tous les notes des apprenants d'une classe
     public function showNotesByClasse($classeId)
 {
     try {
