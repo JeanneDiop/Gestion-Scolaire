@@ -72,59 +72,139 @@ class NoteController extends Controller
     }
 }
 
-
-    public function index()
-{
-    try {
-        // Récupérer toutes les notes avec les relations associées
-        $notes = Note::with([
-            'evaluation.apprenant.user',
-            'evaluation.apprenant.classe.salle',
-            'evaluation.cours.enseignant.user'
-        ])->get();
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Liste des notes récupérée avec succès.',
-            'data' => $notes,
-        ]);
-    } catch (\Exception $e) {
-        // Gérer les erreurs
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération des notes.',
-            'error' => $e->getMessage(),
-        ]);
-    }
-}
-
 public function show($id)
 {
     try {
         // Récupérer la note par son ID avec les relations associées
-        $note = Note::with([
-            'evaluation.apprenant.user',
-            'evaluation.apprenant.classe.salle',
-            'evaluation.cours.enseignant.user'
-        ])->findOrFail($id); // Cela lance une exception si la note n'est pas trouvée
+        $note = Note::with(['evaluation.apprenant.user', 'evaluation.cours.enseignant.user'])
+            ->findOrFail($id); // Lève une exception 404 si la note n'est pas trouvée
 
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Note récupérée avec succès.',
-            'data' => $note,
-        ], 200);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Note non trouvée.',
-            'error' => $e->getMessage(),
-        ], 404);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération de la note.',
-            'error' => $e->getMessage(),
-        ], 500);
+        // Récupérer les informations de l'apprenant
+        $apprenant = $note->evaluation->apprenant;
+
+        // Construire la réponse avec les détails de la note
+        $result = [
+            'apprenant' => [
+                'id' => $apprenant->id,
+                'nom' => $apprenant->user->nom ?? null,
+                'prenom' => $apprenant->user->prenom ?? null,
+                'telephone' => $apprenant->user->telephone ?? null,
+                'email' => $apprenant->user->email ?? null,
+                'adresse' => $apprenant->user->adresse ?? null,
+                'genre' => $apprenant->user->genre ?? null,
+                'etat' => $apprenant->user->etat ?? null,
+                'lieu_naissance' => $apprenant->lieu_naissance,
+                'date_naissance' => $apprenant->date_naissance,
+                'numero_CNI' => $apprenant->numero_CNI,
+                'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                'niveau_education' => $apprenant->niveau_education,
+                'statut_marital' => $apprenant->statut_marital,
+            ],
+            'note' => [
+                'id' => $note->id,
+                'note' => $note->note,
+                'type_note' => $note->type_note,
+                'date_note' => $note->date_note,
+                'evaluation' => [
+                    'id' => $note->evaluation->id,
+                    'nom_evaluation' => $note->evaluation->nom_evaluation,
+                    'date_evaluation' => $note->evaluation->date_evaluation,
+                    'type_evaluation' => $note->evaluation->type_evaluation,
+                    'cours' => [
+                        'id' => $note->evaluation->cours->id,
+                        'nom' => $note->evaluation->cours->nom,
+                        'enseignant' => [
+                            'id' => $note->evaluation->cours->enseignant->id,
+                            'nom' => $note->evaluation->cours->enseignant->user->nom,
+                            'specialite' => $note->evaluation->cours->enseignant->specialite,
+                        ]
+                    ]
+                ],
+
+            ]
+        ];
+
+        return response()->json($result);
+    } catch (Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Une erreur s\'est produite Note non trouvée ou une erreur est survenue..',
+                'error' => $e->getMessage(),
+            ], 500);
+    }
+}
+
+
+
+public function index()
+{
+    try {
+        $notes = Note::with(['evaluation.apprenant.user', 'evaluation.cours.enseignant.user'])
+            ->get()
+            ->groupBy(function ($note) {
+                return $note->evaluation->apprenant->id;
+            });
+
+        // Formater les résultats pour éviter la répétition des données de l'apprenant
+        $result = [];
+
+        foreach ($notes as $apprenantId => $apprenantNotes) {
+            $apprenant = $apprenantNotes->first()->evaluation->apprenant;
+
+            // Récupérer les notes pour cet apprenant
+            $notesArray = $apprenantNotes->map(function ($note) {
+                return [
+                    'id' => $note->id,
+                    'note' => $note->note,
+                    'type_note' => $note->type_note,
+                    'date_note' => $note->date_note,
+                    'evaluation' => [
+                        'id' => $note->evaluation->id,
+                        'nom_evaluation' => $note->evaluation->nom_evaluation,
+                        'date_evaluation' => $note->evaluation->date_evaluation,
+                        'type_evaluation' => $note->evaluation->type_evaluation,
+                        'cours' => [
+                            'id' => $note->evaluation->cours->id,
+                            'nom' => $note->evaluation->cours->nom,
+                            'enseignant' => [
+                                'id' => $note->evaluation->cours->enseignant->id,
+                                'nom' => $note->evaluation->cours->enseignant->user->nom,
+                                'specialite' => $note->evaluation->cours->enseignant->specialite,
+                            ]
+                        ]
+                    ],
+                ];
+            });
+
+            // Ajouter l'apprenant et ses notes au résultat
+            $result[] = [
+                'apprenant' => [
+                    'id' => $apprenant->id,
+                    'nom' => $apprenant->user->nom ?? null,
+                    'prenom' => $apprenant->user->prenom ?? null,
+                    'telephone' => $apprenant->user->telephone ?? null,
+                    'email' => $apprenant->user->email ?? null,
+                    'adresse' => $apprenant->user->adresse ?? null,
+                    'genre' => $apprenant->user->genre ?? null,
+                    'etat' => $apprenant->user->etat ?? null,
+                    'lieu_naissance' => $apprenant->lieu_naissance,
+                    'date_naissance' => $apprenant->date_naissance,
+                    'numero_CNI' => $apprenant->numero_CNI,
+                    'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                    'niveau_education' => $apprenant->niveau_education,
+                    'statut_marital' => $apprenant->statut_marital,
+                ],
+                'notes' => $notesArray,
+            ];
+        }
+
+        return response()->json($result);
+    } catch (Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'error => Une erreur est survenue lors de la récupération des notes.',
+                'error' => $e->getMessage(),
+            ], 500);
     }
 }
 
