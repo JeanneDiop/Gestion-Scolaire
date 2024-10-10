@@ -141,6 +141,74 @@ public function destroy($id)
     }
 }
 
+public function showNotes($classeId)
+{
+    // Récupérer la classe avec les apprenants, leurs évaluations et les notes associées
+    $classe = Classe::with(['apprenants.evaluations.cours', 'apprenants.evaluations.notes'])
+        ->where('id', $classeId)
+        ->first();
+
+    // Vérifiez si la classe existe
+    if (!$classe) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Classe non trouvée.'
+        ]);
+    }
+
+    $notes = [];
+
+    // Parcourez les apprenants et leurs évaluations
+    foreach ($classe->apprenants as $apprenant) {
+        // Initialiser un tableau pour les informations de l'apprenant
+        $apprenantData = [
+            'id' => $apprenant->id,
+                        'nom' => $apprenant->user->nom ?? null,
+                        'prenom' => $apprenant->user->prenom ?? null,
+                        'telephone' => $apprenant->user->telephone ?? null,
+                        'email' => $apprenant->user->email ?? null,
+                        'adresse' => $apprenant->user->adresse ?? null,
+                        'genre' => $apprenant->user->genre ?? null,
+                        'etat' => $apprenant->user->etat ?? null,
+                        'lieu_naissance' => $apprenant->lieu_naissance,
+                        'date_naissance' => $apprenant->date_naissance,
+                        'numero_CNI' => $apprenant->numero_CNI,
+                        'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                        'niveau_education' => $apprenant->niveau_education,
+                        'statut_marital' => $apprenant->statut_marital,
+        ];
+
+        foreach ($apprenant->evaluations as $evaluation) {
+            // Vérifie si l'évaluation a des notes
+            foreach ($evaluation->notes as $note) {
+                $apprenantData['evaluations'][] = [
+                    'cours' => [
+                        'nom' => $evaluation->cours->nom,
+                    ],
+                    'note' => $note->note, // Récupérer la note de l'évaluation
+                    'evaluation' => [
+                        'id' => $evaluation->id,
+                        'nom_evaluation' => $evaluation->nom_evaluation,
+                        'date_evaluation' => $evaluation->date_evaluation,
+                        'type_evaluation' => $evaluation->type_evaluation,
+                    ]
+                ];
+            }
+        }
+
+        // Ajouter les données de l'apprenant au tableau des notes
+        $notes[] = $apprenantData;
+    }
+
+    return response()->json([
+        'status_code' => 200,
+        'status_message' => 'Notes récupérées avec succès.',
+        'data' => $notes
+    ]);
+}
+
+
+
 
 
 

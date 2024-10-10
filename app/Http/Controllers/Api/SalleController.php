@@ -70,7 +70,7 @@ class SalleController extends Controller
               $salle->nom = $request->nom;
               $salle->capacity = $request->capacity;
               $salle->type = $request->type;
-              $salle->update(); 
+              $salle->update();
 
               DB::commit(); // Valide la transaction
 
@@ -106,4 +106,10 @@ class SalleController extends Controller
         }
 
     }
+
+
+
+
+
+    
 }

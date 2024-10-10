@@ -53,7 +53,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'numero_CNI' => ['nullable', 'string', 'max:50'],
             'numero_carte_scolaire' => 'nullable|string|max:50',
             'niveau_education' => 'required|string|max:255',
-            'classe_id' => 'required|integer',
+            'classe_id' => 'nullable|integer',
             'image' => ['nullable' ,'string'],
 
             // Règles spécifiques au tuteur

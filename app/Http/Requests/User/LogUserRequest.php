@@ -48,3 +48,5 @@ class LogUserRequest extends FormRequest
         throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
     }
 }
+
+ 

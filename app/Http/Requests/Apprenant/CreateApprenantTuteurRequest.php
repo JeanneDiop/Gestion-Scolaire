@@ -54,7 +54,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'numero_CNI' => ['nullable', 'string', 'max:50', 'unique:apprenants,numero_CNI'],
             'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
             'niveau_education' => 'required|string|max:255',
-            'classe_id' => 'required|integer',
+            'classe_id' => 'nullable|integer',
             'image' => ['nullable' ,'string'],
 
             // Règles spécifiques au tuteur
@@ -81,7 +81,6 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
         ];
     }
-
     public function messages(): array
     {
         return [
@@ -109,9 +108,10 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.adresse.required' => 'Le champ adresse du tuteur est obligatoire.',
             'tuteur.genre.required' => 'Le champ genre du tuteur est obligatoire.',
             'tuteur.profession.required' => 'Le champ profession du tuteur est obligatoire.',
-            'tuteur.image.required' => 'Le champ image du tuteur est obligatoire.',
+            'tuteur.image.required' => 'L\'image est obligatoire.',
         ];
 }
+    
     protected function failedValidation(Validator $validator)
     {
         // Si la validation échoue, vous pouvez accéder aux erreurs

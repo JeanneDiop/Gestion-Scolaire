@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Evaluation;
+
 class Note extends Model
 {
     use HasFactory;
@@ -16,4 +17,6 @@ class Note extends Model
     public function evaluation(){
         return $this->belongsTo(Evaluation::class);
     }
+
+
 }

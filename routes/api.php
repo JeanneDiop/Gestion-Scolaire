@@ -288,7 +288,7 @@ Route::get('note/detail/{id}', [NoteController::class, 'show']);
 //afficher note pour un apprenant
 Route::get('/apprenants/note/{apprenantId}', [NoteController::class, 'showNotesByApprenant']);
 //afficher les notes dune classe
-Route::get('/classes/notes/{classeId}', [NoteController::class, 'showNotesByClasse']);
+Route::get('/classes/notes/{classeId}', [ClasseController::class, 'showNotes']);
 //gestion Parcours-----------------
 Route::post('parcours/create', [ParcoursController::class, 'store']);
 //modifier parcours

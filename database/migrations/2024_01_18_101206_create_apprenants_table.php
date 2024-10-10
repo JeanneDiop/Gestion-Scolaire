@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Classe;
+use App\Models\Tuteur;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,8 +24,8 @@ return new class extends Migration
             $table->string('numero_carte_scolaire')->unique()->nullable();
             $table->string('niveau_education');
             $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf'])->nullable();
-            $table->foreignId('tuteur_id')->constrained('tuteurs')->onDelete('set null')->nullable();
-            $table->foreignId('classe_id')->constrained('classes')->onDelete('cascade')->nullable();
+            $table->foreignIdFor(Classe::class)->constrained()->nullable()->onDelete('cascade');
+            $table->foreignIdFor(Tuteur::class)->nullable()->constrained()->onDelete('set null');
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });
