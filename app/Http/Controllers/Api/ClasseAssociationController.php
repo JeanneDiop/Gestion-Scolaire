@@ -46,9 +46,11 @@ class ClasseAssociationController extends Controller
             // Mettre à jour l'enseignant
             $enseignant = Enseignant::find($request->enseignant_id);
             if ($enseignant) {
-                $enseignant->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
-                $enseignant->save();
-            }
+                // Accéder à l'utilisateur associé à l'enseignant
+                $enseignantUser = $enseignant->user; // Assurez-vous que cette relation est définie dans le modèle Enseignant
+                if ($enseignantUser) {
+                    $enseignantUser->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
+                    $enseignantUser->save();
 
             return response()->json([
                 'message' => 'Association créée et les enregistrements mis à jour avec succès.',

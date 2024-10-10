@@ -50,10 +50,13 @@ class CoursController extends Controller
         $result = $cours->map(function ($course) {
             return [
                 'id' => $course->id,
-                'nom' => $course->nom, // Nom du cours
+                'nom' => $course->nom,
+                'description' => $course->description,
+                'duree' => $course->duree,
                 'enseignant' => [
                     'id' => $course->enseignant->user->id,
                     'nom' => $course->enseignant->user->nom,
+                    'prenom' => $course->enseignant->user->prenom,
                     'specialite' => $course->enseignant->specialite,
                 ],
                 'evaluations' => $course->evaluations->map(function ($evaluation) {
@@ -91,9 +94,12 @@ public function show($id)
         $result = [
             'id' => $cours->id,
             'nom' => $cours->nom,
+            'description' => $cours->description,
+            'duree' => $cours->duree,
             'enseignant' => [
                 'id' => $cours->enseignant->user->id,
                 'nom' => $cours->enseignant->user->nom,
+                'prenom' => $cours->enseignant->user->prenom,
                 'specialite' => $cours->enseignant->specialite,
             ],
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
