@@ -147,7 +147,7 @@ Route::get('/directeur/user/{id}',[AuthController::class,'showUserDirecteur']);
 //ajouter directeur
 Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
 //lister tous les directeurs dans sa table
-Route::get('/liste/directeur',[AuthController::class,'ListerDirecteur']);
+Route::get('/liste/directeur', [AuthController::class,'ListerDirecteur']);
 //lister tous les directeurs dans users
 Route::get('directeurs', [AuthController::class, 'indexDirecteurs']);
 //modifier directeur via user

@@ -15,15 +15,21 @@ class CreateClasseAssociationsTable extends Migration
     {
         Schema::create('classe_associations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('apprenant_id')->nullable();
+            $table->unsignedBigInteger('apprenant_id')->nullable(); 
             $table->unsignedBigInteger('cours_id');
             $table->unsignedBigInteger('enseignant_id');
+            $table->unsignedBigInteger('classe_id'); 
+            
+            
             $table->foreign('apprenant_id')->references('id')->on('apprenants')->onDelete('cascade');
             $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
             $table->foreign('enseignant_id')->references('id')->on('enseignants')->onDelete('cascade');
-            $table->unique(['apprenant_id', 'cours_id', 'enseignant_id']);
+            $table->foreign('classe_id')->references('id')->on('classes')->onDelete('cascade');
+            
+            // Contrainte d'unicité
+            $table->unique(['apprenant_id', 'cours_id', 'enseignant_id', 'classe_id']); 
+            
             $table->timestamps();
-
         });
     }
 

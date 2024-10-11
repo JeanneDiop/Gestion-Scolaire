@@ -1860,54 +1860,80 @@ public function getApprenantDetailsWithPresence($id)
 //afficher les details de lapprenant par à ses notes
 public function getApprenantDetailsWithNotes($id)
 {
-    // Récupérer l'apprenant avec ses évaluations et notes
-    $apprenant = Apprenant::with(['evaluations.notes'])->find($id);
+    try {
+        $apprenant = Apprenant::with([
+            'classe.salle',                
+            'evaluations.cours.enseignant.user'
+        ])->find($id);
 
-    // Vérifier si l'apprenant existe
-    if (!$apprenant) {
-        return response()->json([
-            'message' => "Aucun apprenant trouvé avec l'ID {$id}."
-        ], 404);
-    }
-
-    // Initialiser un tableau pour stocker les détails des notes
-    $noteDetails = [];
-
-    // Boucler à travers les évaluations et leurs notes
-    foreach ($apprenant->evaluations as $evaluation) {
-        foreach ($evaluation->notes as $note) {
-            $noteDetails[] = [
-                'nom_evaluation' => $evaluation->nom_evaluation,
-                'niveau_education' => $evaluation->niveau_education,
-                'date_evaluation' => $evaluation->date_evaluation,
-                'type_note' => $note->type_note,
-                'note' => $note->note,
-                'date_note' => $note->date_note,
-            ];
+        if (!$apprenant) {
+            return response()->json([
+                'message' => "Aucun apprenant trouvé avec l'ID {$id}."
+            ], 404);
         }
-    }
 
-    // Retourner les détails de l'apprenant avec ses notes
-    return [
-        'apprenant' => [
-            'id' => $apprenant->id,
-            'nom' => $apprenant->user->nom,
-            'prenom' => $apprenant->user->prenom,
-            'telephone' => $apprenant->user->telephone,
-            'email' => $apprenant->user->email,
-            'adresse' => $apprenant->user->adresse,
-            'genre' => $apprenant->user->genre,
-            'etat' => $apprenant->user->etat,
-            'lieu_naissance' => $apprenant->lieu_naissance,
-            'date_naissance' => $apprenant->date_naissance,
-            'numero_CNI' => $apprenant->numero_CNI,
-            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
-            'niveau_education' => $apprenant->niveau_education,
-            'statut_marital' => $apprenant->statut_marital,
-        ],
-        'notes' => $noteDetails
-    ];
+        // Initialiser un tableau pour stocker les détails des notes et des cours
+        $noteDetails = [];
+
+        // Boucler à travers les évaluations et leurs notes
+        foreach ($apprenant->evaluations as $evaluation) {
+            foreach ($evaluation->notes as $note) {
+                $noteDetails[] = [
+                    'nom_evaluation' => $evaluation->nom_evaluation,
+                    'niveau_education' => $evaluation->niveau_education,
+                    'date_evaluation' => $evaluation->date_evaluation,
+                    'type_note' => $note->type_note,
+                    'note' => $note->note,
+                    'date_note' => $note->date_note,
+                    'id' => $evaluation->cours->id ?? null,
+                    'cours_nom' => $evaluation->cours->nom ?? null,
+                    'enseignant_nom' => $evaluation->cours->enseignant->user->nom ?? null,
+                    'enseignant_prenom' => $evaluation->cours->enseignant->user->prenom ?? null,
+                    'enseignant_email' => $evaluation->cours->enseignant->user->email ?? null,
+                    'enseignant_telephone' => $evaluation->cours->enseignant->user->telephone ?? null
+                ];
+            }
+        }
+        return response()->json([
+            'apprenant' => [
+                'id' => $apprenant->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'adresse' => $apprenant->user->adresse,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'lieu_naissance' => $apprenant->lieu_naissance,
+                'date_naissance' => $apprenant->date_naissance,
+                'numero_CNI' => $apprenant->numero_CNI,
+                'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                'niveau_education' => $apprenant->niveau_education,
+                'statut_marital' => $apprenant->statut_marital,
+                'classe' => $apprenant->classe ? [
+                    'id' => $apprenant->classe->id,
+                    'nom' => $apprenant->classe->nom,
+                    'niveau_classe' => $apprenant->classe->niveau_classe,
+                    'salle' => $apprenant->classe->salle ? [
+                        'id' => $apprenant->classe->salle->id,
+                        'nom' => $apprenant->classe->salle->nom,
+                        'capacity' => $apprenant->classe->salle->capacity,
+                        'type' => $apprenant->classe->salle->type
+                    ] : null
+                ] : null,
+            ],
+            'notes' => $noteDetails
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Une erreur est survenue lors de la récupération des détails de l\'apprenant.',
+            'erreur' => $e->getMessage()
+        ], 500);
+    }
 }
+
+
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
 {

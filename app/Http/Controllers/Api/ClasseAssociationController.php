@@ -9,69 +9,53 @@ use App\Models\Apprenant;
 use App\Models\Enseignant;
 use App\Models\Cours;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\ClasseAssociation\CreateClasseAssociationRequest;
 use App\Http\Requests\ClasseAssociation\UpdateClasseAssociationRequest;
 class ClasseAssociationController extends Controller
 {
-    public function store(CreateClasseAssociationRequest $request)
-{
-    try {
-        // Vérifier si l'association existe déjà
-        $existingAssociation = ClasseAssociation::where('apprenant_id', $request->apprenant_id)
-            ->where('cours_id', $request->cours_id)
-            ->where('enseignant_id', $request->enseignant_id)
-            ->first();
+    public function storeAssociation(Request $request)
+    {
+        // Validation des données d'entrée
+        $request->validate([
+            'classe_id' => 'required|exists:classes,id',
+            'apprenant_id' => 'required|exists:apprenants,id',
+            'enseignant_id' => 'required|exists:enseignants,id',
+            'cours_id' => 'required|exists:cours,id',
+        ]);
 
-        if (!$existingAssociation) {
+        try {
             // Créer l'association
-            $classeAssociation = ClasseAssociation::create([
+            ClasseAssociation::create([
+                'classe_id' => $request->classe_id,
                 'apprenant_id' => $request->apprenant_id,
-                'cours_id' => $request->cours_id,
                 'enseignant_id' => $request->enseignant_id,
+                'cours_id' => $request->cours_id,
             ]);
 
-            // Mettre à jour l'apprenant
-            $apprenant = Apprenant::find($request->apprenant_id);
-            if ($apprenant) {
-                $apprenantUser = $apprenant->user;
-                $apprenant->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
-                $apprenantUser->save();
-            }
+            // Mettre à jour les tables respectives
+            $apprenant = Apprenant::findOrFail($request->apprenant_id);
+            $enseignant = Enseignant::findOrFail($request->enseignant_id);
+            $cours = Cours::findOrFail($request->cours_id);
 
-            // Mettre à jour le cours
-            $cours = Cours::find($request->cours_id);
-            if ($cours) {
-                $cours->nom = 'Classe associée: ' . $classeAssociation->id; // Exemple de mise à jour
-                $cours->save();
-            }
+            // Mise à jour de l'apprenant avec la classe associée
+            $apprenant->update(['classe_id' => $request->classe_id]);
 
-            // Mettre à jour l'enseignant
-            $enseignant = Enseignant::find($request->enseignant_id);
-            if ($enseignant) {
-                $enseignantUser = $enseignant->user; 
-                if ($enseignantUser) {
-                    $enseignantUser->nom = 'Classe associée: ' . $classeAssociation->id;
-                    $enseignantUser->save();
-                }
-            }
+            // Mise à jour de l'enseignant avec la classe associée
+            $enseignant->update(['classe_id' => $request->classe_id]);
 
-            return response()->json([
-                'message' => 'Association créée et les enregistrements mis à jour avec succès.',
-                'data' => $classeAssociation,
-            ], 200);
-        } else {
-            return response()->json([
-                'message' => 'L\'association existe déjà.',
-                'data' => $existingAssociation,
-            ], 409); // 409 Conflict
+            // Mise à jour du cours avec la classe associée
+            $cours->update(['classe_id' => $request->classe_id]);
+
+            return response()->json(['message' => 'Association créée avec succès.'], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Ressource non trouvée.'], 404);
+        } catch (\Exception $e) {
+            // Gérer d'autres exceptions
+            return response()->json(['error' => 'Une erreur s\'est produite : ' . $e->getMessage()], 500);
         }
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => 'Erreur lors de la création de l\'association',
-            'error' => $e->getMessage(),
-        ], 500);
     }
-}
+
 
 public function update(UpdateClasseAssociationRequest $request, $id)
 {
