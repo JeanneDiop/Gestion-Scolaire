@@ -37,25 +37,80 @@ class ClasseController extends Controller
             ]);
         }
     }
-   public function indexClasse()
-      {
-          try {
-              // Récupérer toutes les classes avec les informations de la salle associée
-              $classes = Classe::with('salle')->get();
+    public function indexClasse()
+    {
+        try {
+            $classes = Classe::with(['salle', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])->get();
 
-              return response()->json([
-                  'status_code' => 200,
-                  'status_message' => 'Toutes les classes ont été récupérées',
-                  'data' => $classes,
-              ]);
-          } catch (\Exception $e) {
-              return response()->json([
-                  'status_code' => 500,
-                  'status_message' => 'Une erreur s\'est produite lors de la récupération des classes',
-                  'error' => $e->getMessage(),
-              ]);
-          }
-      }
+            // Structurer les données de chaque classe
+            $classeData = $classes->map(function ($classe) {
+                return [
+                    'id' => $classe->id,
+                    'nom' => $classe->nom,
+                    'niveau_classe' => $classe->niveau_classe,
+                    'salle' => $classe->salle ? [
+                        'id' => $classe->salle->id,
+                        'nom' => $classe->salle->nom,
+                        'capacity' => $classe->salle->capacity,
+                        'type' => $classe->salle->type,
+                    ] : null,
+                    'apprenants' => $classe->apprenants->map(function ($apprenant) {
+                        return [
+                            'id' => $apprenant->id,
+                            'lieu_naissance' => $apprenant->lieu_naissance,
+                            'date_naissance' => $apprenant->date_naissance,
+                            'niveau_education' => $apprenant->niveau_education,
+                            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                            'numero_CNI' => $apprenant->numero_CNI,
+                            'statut_marital' => $apprenant->statut_marital,
+                            'image' => $apprenant->image,
+                            'user' => $apprenant->user ? [
+                                'id' => $apprenant->user->id,
+                                'nom' => $apprenant->user->nom,
+                                'prenom' => $apprenant->user->prenom,
+                                'telephone' => $apprenant->user->telephone,
+                                'email' => $apprenant->user->email,
+                                'etat' => $apprenant->user->etat,
+                                'genre' => $apprenant->user->genre,
+                                'adresse' => $apprenant->user->adresse,
+                            ] : null,
+                        ];
+                    }),
+                    'associations' => $classe->classeAssociations->map(function ($association) {
+                        return [
+                            'apprenant' => $association->apprenant ? [
+                                'id' => $association->apprenant->id,
+                                'nom' => $association->apprenant->user->nom,
+                                'prenom' => $association->apprenant->user->prenom,
+                            ] : null,
+                            'cours' => $association->cours ? [
+                                'id' => $association->cours->id,
+                                'nom' => $association->cours->nom,
+                            ] : null,
+                            'enseignant' => $association->enseignant ? [
+                                'id' => $association->enseignant->id,
+                                'nom' => $association->enseignant->user->nom,
+                                'prenom' => $association->enseignant->user->prenom,
+                                'specialite' => $association->enseignant->user->specialite,
+                            ] : null,
+                        ];
+                    }),
+                ];
+            });
+
+            return response()->json([
+                'status_code' => 200,
+                'status_message' => 'Toutes les classes ont été récupérées',
+                'data' => $classeData,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Une erreur s\'est produite lors de la récupération des classes',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
 
 
       public function showClasse($id)
