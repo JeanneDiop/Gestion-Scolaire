@@ -59,30 +59,63 @@ class ClasseController extends Controller
 
 
       public function showClasse($id)
-{
-    try {
+      {
+          try {
+              // Récupérer la classe avec les associations
+              $classe = Classe::with(['salle', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])
+                  ->findOrFail($id);
 
-        $classe = Classe::with('salle')->findOrFail($id);
+              // Structurer les données de la classe
+              $classeData = [
+                  'id' => $classe->id,
+                  'nom' => $classe->nom,
+                  'niveau_classe' => $classe->niveau_classe,
+                  'salle' => $classe->salle ? [
+                      'id' => $classe->salle->id,
+                      'nom' => $classe->salle->nom,
+                      'capacity' => $classe->salle->capacity,
+                      'type' => $classe->salle->type,
+                  ] : null,
+                  'associations' => $classe->classeAssociations->map(function ($association) {
+                      return [
+                          'apprenant' => $association->apprenant ? [
+                              'id' => $association->apprenant->id,
+                              'nom' => $association->apprenant->user->nom,
+                              'prenom' => $association->apprenant->user->prenom,
+                          ] : null,
+                          'cours' => $association->cours ? [
+                              'id' => $association->cours->id,
+                              'nom' => $association->cours->nom,
+                          ] : null,
+                          'enseignant' => $association->enseignant ? [
+                              'id' => $association->enseignant->id,
+                              'nom' => $association->enseignant->user->nom,
+                              'prenom' => $association->enseignant->user->prenom,
+                              'specialite' => $association->enseignant->user->specialite,
+                          ] : null,
+                      ];
+                  }),
+              ];
 
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Détails de la classe récupérés avec succès',
-            'data' => $classe,
-        ]);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Classe non trouvée',
-            'error' => 'La classe avec l\'ID spécifié n\'existe pas.',
-        ], 404);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération des détails de la classe',
-            'error' => $e->getMessage(),
-        ]);
-    }
-}
+              return response()->json([
+                  'status_code' => 200,
+                  'status_message' => 'Détails de la classe récupérés avec succès',
+                  'data' => $classeData, // Retourner les données structurées
+              ]);
+          } catch (ModelNotFoundException $e) {
+              return response()->json([
+                  'status_code' => 404,
+                  'status_message' => 'Classe non trouvée',
+                  'error' => 'La classe avec l\'ID spécifié n\'existe pas.',
+              ], 404);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'status_code' => 500,
+                  'status_message' => 'Une erreur s\'est produite lors de la récupération des détails de la classe',
+                  'error' => $e->getMessage(),
+              ]);
+          }
+      }
 
 
     public function updateClasse(EditClasseRequest $request, $id)

@@ -9,6 +9,7 @@ use App\Models\Apprenant;
 use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
 use App\Models\ApprenantClasse;
+use App\Models\ClasseAssociation;
 
 use App\Models\Enseignant;
 
@@ -49,5 +50,10 @@ class Classe extends Model
  public function apprenantclasses()
  {
      return $this->hasMany(ApprenantClasse::class);
+ }
+
+ public function classeassociations()
+ {
+     return $this->hasMany(ClasseAssociation::class, 'classe_id');
  }
 }

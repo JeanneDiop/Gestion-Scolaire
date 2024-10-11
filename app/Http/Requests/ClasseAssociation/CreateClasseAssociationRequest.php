@@ -22,6 +22,7 @@ class CreateClasseAssociationRequest extends FormRequest
                 'apprenant_id' => 'required|exists:apprenants,id',
                 'cours_id' => 'required|exists:cours,id',
                 'enseignant_id' => 'required|exists:enseignants,id',
+                'classe_id' => 'required|exists:classes,id',
             ];
         }
 
@@ -36,6 +37,8 @@ class CreateClasseAssociationRequest extends FormRequest
 
             'enseignant_id.required' => 'Le champ enseignant_id est requis.',
             'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
+            'classe_id.required' => 'Le champ classe_id est requis.',
+            'classe_id.exists' => 'Le classe sélectionné n\'existe pas.',
         ];
     }
     protected function failedValidation(Validator $validator)

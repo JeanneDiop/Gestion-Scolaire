@@ -14,105 +14,33 @@ use App\Http\Requests\ClasseAssociation\CreateClasseAssociationRequest;
 use App\Http\Requests\ClasseAssociation\UpdateClasseAssociationRequest;
 class ClasseAssociationController extends Controller
 {
-    public function storeAssociation(Request $request)
-    {
-        // Validation des données d'entrée
-        $request->validate([
-            'classe_id' => 'required|exists:classes,id',
-            'apprenant_id' => 'required|exists:apprenants,id',
-            'enseignant_id' => 'required|exists:enseignants,id',
-            'cours_id' => 'required|exists:cours,id',
-        ]);
-
-        try {
-            // Créer l'association
-            ClasseAssociation::create([
-                'classe_id' => $request->classe_id,
-                'apprenant_id' => $request->apprenant_id,
-                'enseignant_id' => $request->enseignant_id,
-                'cours_id' => $request->cours_id,
-            ]);
-
-            // Mettre à jour les tables respectives
-            $apprenant = Apprenant::findOrFail($request->apprenant_id);
-            $enseignant = Enseignant::findOrFail($request->enseignant_id);
-            $cours = Cours::findOrFail($request->cours_id);
-
-            // Mise à jour de l'apprenant avec la classe associée
-            $apprenant->update(['classe_id' => $request->classe_id]);
-
-            // Mise à jour de l'enseignant avec la classe associée
-            $enseignant->update(['classe_id' => $request->classe_id]);
-
-            // Mise à jour du cours avec la classe associée
-            $cours->update(['classe_id' => $request->classe_id]);
-
-            return response()->json(['message' => 'Association créée avec succès.'], 201);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => 'Ressource non trouvée.'], 404);
-        } catch (\Exception $e) {
-            // Gérer d'autres exceptions
-            return response()->json(['error' => 'Une erreur s\'est produite : ' . $e->getMessage()], 500);
-        }
-    }
-
-
-public function update(UpdateClasseAssociationRequest $request, $id)
+public function store(CreateClasseAssociationRequest $request)
 {
     try {
-        // Récupérer l'association de classe à mettre à jour
-        $classeAssociation = ClasseAssociation::findOrFail($id);
-
-        $classeAssociation->update([
-            'apprenant_id' => $request->apprenant_id,
-            'cours_id' => $request->cours_id,
-            'enseignant_id' => $request->enseignant_id,
-        ]);
-
-        return response()->json([
-            'message' => 'Association mise à jour avec succès',
-            'data' => $classeAssociation,
-        ], 200);
-    } catch (\Exception $e) {
-
-        return response()->json([
-            'message' => 'Erreur lors de la mise à jour de l\'association',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-public function storeclasseassocier(CreateClasseAssociationRequest $request)
-{
-    try {
-        // Créer l'association de classe
+        // Créer l'association
         $classeAssociation = ClasseAssociation::create([
+            'classe_id' => $request->classe_id,
             'apprenant_id' => $request->apprenant_id,
-            'cours_id' => $request->cours_id,
             'enseignant_id' => $request->enseignant_id,
+            'cours_id' => $request->cours_id,
         ]);
 
-        // Mettre à jour les relations dans les modèles respectifs
-        $apprenant = Apprenant::findOrFail($request->apprenant_id);
-        $cours = Cours::findOrFail($request->cours_id);
-        $enseignant = Enseignant::findOrFail($request->enseignant_id);
-
-        // Attach l'apprenant au cours
-        $apprenant->cours()->attach($cours->id, ['enseignant_id' => $enseignant->id]);
-
-        // Optionnel : Vous pouvez également ajouter une association de cours à l'enseignant
-        $enseignant->cours()->attach($cours->id);
+        // Optionnel : tu peux ajouter une variable pour stocker la classe associée
+        $classeAssociee = $request->classe_id;
 
         return response()->json([
-            'message' => 'Association créée avec succès',
-            'data' => $classeAssociation,
-        ], 200);
+            'message' => 'Association créée avec succès.',
+            'classeAssociation' => $classeAssociation,
+            'classeAssociee' => $classeAssociee // Pour référence future
+        ], 201);
     } catch (\Exception $e) {
         return response()->json([
-            'message' => 'Erreur lors de la création de l\'association',
-            'error' => $e->getMessage(),
+            'message' => 'Une erreur est survenue lors de la création de l\'association.',
+            'error' => $e->getMessage()
         ], 500);
     }
 }
+
 
 public function show($id)
 {

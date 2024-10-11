@@ -43,12 +43,12 @@ class CoursController extends Controller
     public function index()
     {
         try {
-        
+
             $cours = Cours::with([
-                'enseignant.user', 
+                'enseignant.user',
                 'evaluations.apprenant.classe.salle'
             ])->get();
-    
+
             $result = $cours->map(function ($course) {
                 return [
                     'id' => $course->id,
@@ -65,7 +65,7 @@ class CoursController extends Controller
                         $apprenant = $evaluation->apprenant;
                         $classe = $apprenant->classe;
                         $salle = $classe ? $classe->salle : null;
-    
+
                         return [
                             'id' => $evaluation->id,
                             'nom_evaluation' => $evaluation->nom_evaluation,
@@ -88,7 +88,7 @@ class CoursController extends Controller
                     }),
                 ];
             });
-    
+
             return response()->json([
                 'status_code' => 200,
                 'status_message' => 'Tous les cours ont été récupérés avec succès.',
@@ -103,16 +103,15 @@ class CoursController extends Controller
         }
     }
 
-public function show($id)
+    public function show($id)
 {
     try {
-        // Récupérer le cours avec l'enseignant, les évaluations, les apprenants, leurs classes et les salles associées
         $cours = Cours::with([
-            'enseignant.user', 
-            'evaluations.apprenant.classe.salle'
+            'enseignant.user',
+            'evaluations.apprenant.user', // Ici, on charge l'utilisateur de l'apprenant
+            'classeAssociations.classe' // Charger les classes associées
         ])->findOrFail($id);
 
-        // Formater le résultat
         $result = [
             'id' => $cours->id,
             'nom' => $cours->nom,
@@ -126,7 +125,7 @@ public function show($id)
             ],
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
                 $apprenant = $evaluation->apprenant;
-                $classe = $apprenant->classe;
+                $classe = $apprenant->classe; // Utiliser la relation classe de l'apprenant
                 $salle = $classe ? $classe->salle : null;
 
                 return [
@@ -149,6 +148,12 @@ public function show($id)
                     ]
                 ];
             }),
+            'classes_associées' => $cours->classeAssociations->map(function ($association) {
+                return [
+                    'classe_id' => $association->classe_id, // Afficher le classe_id
+                    'nom_classe' => $association->classe ? $association->classe->nom : null,
+                ];
+            }),
         ];
 
         return response()->json([
@@ -169,58 +174,6 @@ public function show($id)
         ], 500);
     }
 }
-
-
-
-      public function update(UpdateCoursRequest $request, $id)
-      {
-          DB::beginTransaction();
-
-          try {
-              // Récupération du cours
-              $cours = Cours::findOrFail($id);
-
-              // Mise à jour des données du cours
-              $cours->update([
-                  'nom' => $request->nom,
-                  'description' => $request->description,
-                  'niveau_education' => $request->niveau_education,
-                 'etat' => $request->etat ?? $cours->etat,
-                  'duree' => $request->duree,
-                  'credits' => $request->credits,
-              ]);
-
-              // Vérification si un enseignant est spécifié et existe
-              if ($request->enseignant_id) {
-                  $enseignant = Enseignant::find($request->enseignant_id);
-
-                  if (!$enseignant) {
-                      return response()->json([
-                          'status_code' => 404,
-                          'status_message' => 'L\'enseignant spécifié n\'a pas été trouvé.',
-                      ], 404);
-                  }
-              }
-
-              DB::commit(); // Valide la transaction
-
-              return response()->json([
-                  'status_code' => 200,
-                  'status_message' => 'Le cours a été modifié avec succès.',
-                  'data' => $cours,
-                  'enseignant' => $enseignant ?? null, // Retourne l'enseignant s'il est spécifié, sinon null
-              ]);
-          } catch (\Exception $e) {
-              DB::rollBack(); // Annule la transaction en cas d'erreur
-
-              return response()->json([
-                  'status_code' => 500,
-                  'status_message' => 'Une erreur est survenue lors de la mise à jour du cours.',
-                  'error' => $e->getMessage(),
-              ], 500);
-          }
-      }
-
 
       public function destroy($id)
 {

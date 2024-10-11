@@ -1862,7 +1862,7 @@ public function getApprenantDetailsWithNotes($id)
 {
     try {
         $apprenant = Apprenant::with([
-            'classe.salle',                
+            'classe.salle',
             'evaluations.cours.enseignant.user'
         ])->find($id);
 
@@ -1872,13 +1872,13 @@ public function getApprenantDetailsWithNotes($id)
             ], 404);
         }
 
-        // Initialiser un tableau pour stocker les détails des notes et des cours
         $noteDetails = [];
 
         // Boucler à travers les évaluations et leurs notes
         foreach ($apprenant->evaluations as $evaluation) {
             foreach ($evaluation->notes as $note) {
                 $noteDetails[] = [
+                    'id' => $evaluation->id,
                     'nom_evaluation' => $evaluation->nom_evaluation,
                     'niveau_education' => $evaluation->niveau_education,
                     'date_evaluation' => $evaluation->date_evaluation,
@@ -2289,7 +2289,7 @@ public function indexApprenants()
 public function showApprenant($id)
 {
     // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
-    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])
+    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe']) // Inclure classeAssociations
         ->where('id', $id)
         ->first();
 
@@ -2332,7 +2332,7 @@ public function showApprenant($id)
         $apprenantData['tuteur'] = null; // Si pas de tuteur, on définit à null
     }
 
-    // Vérification de la classe, de la salle et de l'enseignant
+    // Vérification de la classe principale
     if ($apprenant->classe) {
         $apprenantData['classe'] = [
             'id' => $apprenant->classe->id,
@@ -2348,6 +2348,14 @@ public function showApprenant($id)
     } else {
         $apprenantData['classe'] = null; // Si pas de classe, on met null
     }
+
+    // Ajout des classes associées
+    $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
+        return [
+            'classe_id' => $association->classe_id,
+            'nom_classe' => $association->classe ? $association->classe->nom : null,
+        ];
+    });
 
     return response()->json([
         'status' => 200,
@@ -2458,10 +2466,11 @@ public function showUserApprenant($id)
 //----------info enseignant dans sa table
 public function showEnseignant($id)
 {
-    // Récupérer l'enseignant avec l'ID spécifié en incluant les informations de User, Classe et Salle associées
-    $enseignant = Enseignant::with(['user'])->find($id);
+    // Récupérer l'enseignant avec l'ID spécifié
+    $enseignant = Enseignant::with(['user', 'classeAssociations.classe.salle']) // Inclure les classes et les salles associées
+        ->where('id', $id)
+        ->first();
 
-    // Vérifier si l'enseignant n'existe pas
     if (!$enseignant) {
         return response()->json([
             'status' => 404,
@@ -2469,22 +2478,10 @@ public function showEnseignant($id)
         ], 404);
     }
 
-    // Structurer les données de l'enseignant, de l'utilisateur, de la classe et de la salle
+    // Structurer les données de l'enseignant
     $enseignantData = [
         'id' => $enseignant->id,
         'specialite' => $enseignant->specialite,
-        'statut_marital' => $enseignant->statut_marital,
-        'date_naissance' => $enseignant->date_naissance,
-        'lieu_naissance' => $enseignant->lieu_naissance,
-        'niveau_ecole' => $enseignant->niveau_ecole,
-        'numero_CNI' => $enseignant->numero_CNI,
-        'image' => $enseignant->image,
-        'numero_securite_social' => $enseignant->numero_securite_social,
-        'statut' => $enseignant->statut,
-        'date_embauche' => $enseignant->date_embauche,
-        'date_fin_contrat' => $enseignant->date_fin_contrat,
-
-        // Informations de l'utilisateur associé à l'enseignant
         'user' => $enseignant->user ? [
             'id' => $enseignant->user->id,
             'nom' => $enseignant->user->nom,
@@ -2497,6 +2494,21 @@ public function showEnseignant($id)
             'role_nom' => $enseignant->user->role_nom,
         ] : null,
     ];
+
+    // Ajout des classes associées
+    $enseignantData['classes_associées'] = $enseignant->classeAssociations->map(function ($association) {
+        return [
+            'classe_id' => optional($association->classe)->id,
+            'nom_classe' => optional($association->classe)->nom,
+            'niveau_classe' => optional($association->classe)->niveau_classe,
+            'salle' => optional($association->classe->salle) ? [
+                'salle_id' => $association->classe->salle->id,
+                'nom_salle' => $association->classe->salle->nom,
+                'capacity' => $association->classe->salle->capacity, // Capacité de la salle
+                'type' => $association->classe->salle->type, // Type de la salle
+            ] : null, // Si la salle n'existe pas, on met null
+        ];
+    });
 
     return response()->json([
         'status' => 200,
