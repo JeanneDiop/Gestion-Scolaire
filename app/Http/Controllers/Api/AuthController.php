@@ -1724,21 +1724,18 @@ public function ListeUtilisateur()
 //lister tous les apprenants dans sa table
 public function ListerApprenant()
 {
-    // Récupérer tous les apprenants avec les informations du tuteur, de la classe, et de l'utilisateur associé
-    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle'])->get();
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe'])->get();
 
-    // Vérifier si des apprenants sont présents
     if ($apprenants->isEmpty()) {
         return response()->json([
             'status' => 404,
             'message' => 'Aucun apprenant trouvé.'
-        ]);
+        ], 404);
     }
 
-    // Créer une nouvelle structure de données
+    // Structurer les données pour chaque apprenant
     $apprenantsData = $apprenants->map(function ($apprenant) {
-        // Informations de base de l'apprenant
-        $data = [
+        $apprenantData = [
             'id' => $apprenant->id,
             'date_naissance' => $apprenant->date_naissance,
             'lieu_naissance' => $apprenant->lieu_naissance,
@@ -1761,38 +1758,46 @@ public function ListerApprenant()
         ];
 
         // Vérification du tuteur
-        if ($apprenant->tuteur && $apprenant->tuteur->user) {
-            // Fusionner les données du tuteur et de l'utilisateur associé au tuteur
-            $data['tuteur'] = array_merge($apprenant->tuteur->toArray(), $apprenant->tuteur->user->toArray());
+        if ($apprenant->tuteur) {
+            $tuteur = $apprenant->tuteur;
+            $apprenantData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
         } else {
-            $data['tuteur'] = null;
+            $apprenantData['tuteur'] = null;
         }
 
-        // Vérification de la classe et de la salle
+        // Vérification de la classe principale
         if ($apprenant->classe) {
-            $data['classe'] = [
+            $apprenantData['classe'] = [
                 'id' => $apprenant->classe->id,
-                'nom_classe' => $apprenant->classe->nom,
+                'nom' => $apprenant->classe->nom,
                 'niveau_classe' => $apprenant->classe->niveau_classe,
                 'salle' => $apprenant->classe->salle ? [
                     'id' => $apprenant->classe->salle->id,
                     'nom' => $apprenant->classe->salle->nom,
                     'capacity' => $apprenant->classe->salle->capacity,
+                    'type' => $apprenant->classe->salle->type,
                 ] : null,
             ];
         } else {
-            $data['classe'] = null;
+            $apprenantData['classe'] = null;
         }
 
-        return $data;
+        // Ajouter les classes associées
+        $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
+            return [
+                'classe_id' => $association->classe_id,
+                'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+            ];
+        });
+
+        return $apprenantData;
     });
 
     return response()->json([
         'status' => 200,
-        'apprenants' => $apprenantsData, // Retour des données des apprenants
-    ]);
+        'apprenants' => $apprenantsData,
+    ], 200);
 }
-
 
 public function getApprenantDetailsWithPresence($id)
 {
@@ -1937,12 +1942,19 @@ public function getApprenantDetailsWithNotes($id)
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
 {
-    // Charger les enseignants avec leurs informations de User, Classes, et Salle
-    $enseignants = Enseignant::with(['user'])->get();
+    // Charger les enseignants avec leurs informations utilisateur, classes et salles associées
+    $enseignants = Enseignant::with(['user', 'classeAssociations.classe.salle'])->get();
 
-    // Créer une nouvelle structure de données sans duplications
+    if ($enseignants->isEmpty()) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Aucun enseignant trouvé.',
+        ], 404);
+    }
+
+    // Structurer les données pour chaque enseignant
     $enseignantsData = $enseignants->map(function ($enseignant) {
-        return [
+        $enseignantData = [
             'id' => $enseignant->id,
             'specialite' => $enseignant->specialite,
             'statut_marital' => $enseignant->statut_marital,
@@ -1956,7 +1968,7 @@ public function getApprenantDetailsWithNotes($id)
             'date_embauche' => $enseignant->date_embauche,
             'date_fin_contrat' => $enseignant->date_fin_contrat,
 
-            // Informations de l'utilisateur associé à l'enseignant
+            // Informations de l'utilisateur associé
             'user' => $enseignant->user ? [
                 'id' => $enseignant->user->id,
                 'nom' => $enseignant->user->nom,
@@ -1968,8 +1980,23 @@ public function getApprenantDetailsWithNotes($id)
                 'adresse' => $enseignant->user->adresse,
                 'role_nom' => $enseignant->user->role_nom,
             ] : null,
-
         ];
+
+        // Ajout des classes associées
+        $enseignantData['classes_associées'] = $enseignant->classeAssociations->map(function ($association) {
+            return [
+                'classe_id' => optional($association->classe)->id,
+                'niveau_classe' => optional($association->classe)->niveau_classe,
+                'salle' => optional($association->classe->salle) ? [
+                    'salle_id' => $association->classe->salle->id,
+                    'nom_salle' => $association->classe->salle->nom,
+                    'capacity' => $association->classe->salle->capacity, // Capacité de la salle
+                    'type' => $association->classe->salle->type, // Type de la salle
+                ] : null, // Si la salle n'existe pas, on met null
+            ];
+        });
+
+        return $enseignantData;
     });
 
     return response()->json([
@@ -2353,7 +2380,7 @@ public function showApprenant($id)
     $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
         return [
             'classe_id' => $association->classe_id,
-            'nom_classe' => $association->classe ? $association->classe->nom : null,
+            'niveau_classe' => $association->classe ? $association->classe->niveau_classe: null,
         ];
     });
 
@@ -2499,7 +2526,6 @@ public function showEnseignant($id)
     $enseignantData['classes_associées'] = $enseignant->classeAssociations->map(function ($association) {
         return [
             'classe_id' => optional($association->classe)->id,
-            'nom_classe' => optional($association->classe)->nom,
             'niveau_classe' => optional($association->classe)->niveau_classe,
             'salle' => optional($association->classe->salle) ? [
                 'salle_id' => $association->classe->salle->id,

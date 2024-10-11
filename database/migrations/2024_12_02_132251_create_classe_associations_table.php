@@ -18,7 +18,7 @@ class CreateClasseAssociationsTable extends Migration
             $table->unsignedBigInteger('apprenant_id')->nullable();
             $table->unsignedBigInteger('cours_id');
             $table->unsignedBigInteger('enseignant_id');
-            $table->unsignedBigInteger('classe_id');
+            $table->unsignedBigInteger('classe_id')->nullable();
 
 
             $table->foreign('apprenant_id')->references('id')->on('apprenants')->onDelete('cascade');

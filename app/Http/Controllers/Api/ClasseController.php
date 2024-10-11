@@ -61,8 +61,8 @@ class ClasseController extends Controller
       public function showClasse($id)
       {
           try {
-              // Récupérer la classe avec les associations
-              $classe = Classe::with(['salle', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])
+
+              $classe = Classe::with(['salle', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])
                   ->findOrFail($id);
 
               // Structurer les données de la classe
@@ -76,25 +76,47 @@ class ClasseController extends Controller
                       'capacity' => $classe->salle->capacity,
                       'type' => $classe->salle->type,
                   ] : null,
-                  'associations' => $classe->classeAssociations->map(function ($association) {
+                  'apprenants' => $classe->apprenants->map(function ($apprenant) {
                       return [
-                          'apprenant' => $association->apprenant ? [
-                              'id' => $association->apprenant->id,
-                              'nom' => $association->apprenant->user->nom,
-                              'prenom' => $association->apprenant->user->prenom,
-                          ] : null,
-                          'cours' => $association->cours ? [
-                              'id' => $association->cours->id,
-                              'nom' => $association->cours->nom,
-                          ] : null,
-                          'enseignant' => $association->enseignant ? [
-                              'id' => $association->enseignant->id,
-                              'nom' => $association->enseignant->user->nom,
-                              'prenom' => $association->enseignant->user->prenom,
-                              'specialite' => $association->enseignant->user->specialite,
+                          'id' => $apprenant->id,
+                          'lieu_naissance' => $apprenant->lieu_naissance,
+                          'date_naissance' => $apprenant->date_naissance,
+                          'niveau_education' => $apprenant->niveau_education,
+                          'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                          'numero_CNI' => $apprenant->numero_CNI,
+                          'statut_marital' => $apprenant->statut_marital,
+                          'image' => $apprenant->image,
+                          'user' => $apprenant->user ? [
+                              'id' => $apprenant->user->id,
+                              'nom' => $apprenant->user->nom,
+                              'prenom' => $apprenant->user->prenom,
+                              'telephone' => $apprenant->user->telephone,
+                              'email' => $apprenant->user->email,
+                              'etat' => $apprenant->user->etat,
+                              'genre' => $apprenant->user->genre,
+                              'adresse' => $apprenant->user->adresse,
                           ] : null,
                       ];
                   }),
+                  'associations' => $classe->classeAssociations->map(function ($association) {
+                    return [
+                        'apprenant' => $association->apprenant ? [
+                            'id' => $association->apprenant->id,
+                            'nom' => $association->apprenant->user->nom,
+                            'prenom' => $association->apprenant->user->prenom,
+                        ] : null,
+                        'cours' => $association->cours ? [
+                            'id' => $association->cours->id,
+                            'nom' => $association->cours->nom,
+                        ] : null,
+                        'enseignant' => $association->enseignant ? [
+                            'id' => $association->enseignant->id,
+                            'nom' => $association->enseignant->user->nom,
+                            'prenom' => $association->enseignant->user->prenom,
+                            'specialite' => $association->enseignant->user->specialite,
+                        ] : null,
+                    ];
+                }),
               ];
 
               return response()->json([

@@ -19,10 +19,10 @@ class CreateClasseAssociationRequest extends FormRequest
         public function rules()
         {
             return [
-                'apprenant_id' => 'required|exists:apprenants,id',
+                'apprenant_id' => 'nullable|exists:apprenants,id',
                 'cours_id' => 'required|exists:cours,id',
                 'enseignant_id' => 'required|exists:enseignants,id',
-                'classe_id' => 'required|exists:classes,id',
+                'classe_id' => 'nullable|exists:classes,id',
             ];
         }
 
