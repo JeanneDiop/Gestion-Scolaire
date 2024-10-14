@@ -44,7 +44,7 @@ class Cours extends Model
     }
     public function classes()
     {
-        return $this->hasMany(Classe::class);
+        return $this->belongsTo(Classe::class);
     }
 
     public function classeassociations()

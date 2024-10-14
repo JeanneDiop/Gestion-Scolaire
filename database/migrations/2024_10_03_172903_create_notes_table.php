@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->double('note');
             $table->enum('type_note', ['devoir1', 'devoir2', 'examen'])->nullable();
+            $table->string('semestre')->nullable();
             $table->date('date_note')->nullable();
             $table->foreignIdFor(Evaluation::class)->nullable()->constrained()->onDelete('set null');
             $table->timestamps();

@@ -28,7 +28,7 @@ class Classe extends Model
         return $this->belongsTo(Salle::class);
     }
     public function cours(){
-        return $this->belongsTo(Cours::class);
+        return $this->hasMany(Cours::class);
     }
     public function apprenants()
     {

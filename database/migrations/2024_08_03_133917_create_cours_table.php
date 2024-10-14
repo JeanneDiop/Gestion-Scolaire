@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Enseignant;
+use App\Models\Classe;
 return new class extends Migration
 {
     /**
@@ -22,6 +23,7 @@ return new class extends Migration
         $table->integer('credits')->nullable();
         $table->integer('coefficient')->nullable();
         $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('set null');
+        $table->foreignIdFor(Classe::class)->nullable()->constrained()->onDelete('set null');
         $table->timestamps();
     });
 
