@@ -20,6 +20,9 @@ class Enseignant extends Model
         'niveau_ecole',
         'numero_securite_social',
         'statut',
+        'montant_salaire',
+        'cotisation_salariale',
+        'net_payer',
         'numero_CNI',
         'date_embauche',
         'date_fin_contrat'

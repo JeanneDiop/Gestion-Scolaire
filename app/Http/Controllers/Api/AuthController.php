@@ -869,6 +869,9 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'image' => $fileName, // Utiliser le nom du fichier image si l'image est uploadée
             'numero_securite_social' => $request->numero_securite_social,
             'statut' => $request->statut,
+            'montant_salaire' => $request->montant_salaire,
+            'cotisation_salariale' => $request->cotisation_salariale,
+            'net_payer' => $request->net_payer,
             'date_embauche' => $request->date_embauche,
             'date_fin_contrat' => $request->date_fin_contrat,
         ]);

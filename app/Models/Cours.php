@@ -8,6 +8,7 @@ use App\Models\Enseignant;
 use App\Models\Planifiercour;
 use App\Models\Evaluation;
 use App\Models\Programme;
+use App\Models\Classe;
 use App\Models\ClasseAssociation;
 class Cours extends Model
 {
@@ -40,6 +41,10 @@ class Cours extends Model
     public function programmes()
     {
         return $this->hasMany(Programme::class);
+    }
+    public function classes()
+    {
+        return $this->hasMany(Classe::class);
     }
 
     public function classeassociations()

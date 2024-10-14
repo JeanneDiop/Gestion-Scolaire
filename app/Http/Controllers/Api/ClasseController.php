@@ -7,10 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Classe;
 use App\Models\Enseignant;
 use App\Models\Salle;
+use App\Models\Cours;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\Classe\CreateClasseRequest;
+use App\Http\Requests\Classe\UpdateClasseCoursRequest;
+use App\Http\Requests\Classe\CreateClasseCoursRequest;
 use App\Http\Requests\Classe\EditClasseRequest;
 
 class ClasseController extends Controller
@@ -37,87 +40,192 @@ class ClasseController extends Controller
             ]);
         }
     }
-    public function indexClasse()
-    {
-        try {
-            $classes = Classe::with(['salle', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])->get();
 
-            // Structurer les données de chaque classe
-            $classeData = $classes->map(function ($classe) {
-                return [
-                    'id' => $classe->id,
-                    'nom' => $classe->nom,
-                    'niveau_classe' => $classe->niveau_classe,
-                    'salle' => $classe->salle ? [
-                        'id' => $classe->salle->id,
-                        'nom' => $classe->salle->nom,
-                        'capacity' => $classe->salle->capacity,
-                        'type' => $classe->salle->type,
-                    ] : null,
-                    'apprenants' => $classe->apprenants->map(function ($apprenant) {
-                        return [
-                            'id' => $apprenant->id,
-                            'lieu_naissance' => $apprenant->lieu_naissance,
-                            'date_naissance' => $apprenant->date_naissance,
-                            'niveau_education' => $apprenant->niveau_education,
-                            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
-                            'numero_CNI' => $apprenant->numero_CNI,
-                            'statut_marital' => $apprenant->statut_marital,
-                            'image' => $apprenant->image,
-                            'user' => $apprenant->user ? [
-                                'id' => $apprenant->user->id,
-                                'nom' => $apprenant->user->nom,
-                                'prenom' => $apprenant->user->prenom,
-                                'telephone' => $apprenant->user->telephone,
-                                'email' => $apprenant->user->email,
-                                'etat' => $apprenant->user->etat,
-                                'genre' => $apprenant->user->genre,
-                                'adresse' => $apprenant->user->adresse,
-                            ] : null,
-                        ];
-                    }),
-                    'associations' => $classe->classeAssociations->map(function ($association) {
-                        return [
-                            'apprenant' => $association->apprenant ? [
-                                'id' => $association->apprenant->id,
-                                'nom' => $association->apprenant->user->nom,
-                                'prenom' => $association->apprenant->user->prenom,
-                            ] : null,
-                            'cours' => $association->cours ? [
-                                'id' => $association->cours->id,
-                                'nom' => $association->cours->nom,
-                            ] : null,
-                            'enseignant' => $association->enseignant ? [
-                                'id' => $association->enseignant->id,
-                                'nom' => $association->enseignant->user->nom,
-                                'prenom' => $association->enseignant->user->prenom,
-                                'specialite' => $association->enseignant->user->specialite,
-                            ] : null,
-                        ];
-                    }),
-                ];
-            });
+    public function storeClasseCours(CreateClasseCoursRequest $request)
+{
+    try {
+        // Créer la classe d'abord, sans associer de cours pour le moment
+        $classe = new Classe();
+        $classe->nom = $request->nom;
+        $classe->niveau_classe = $request->niveau_classe;
+        $classe->salle_id = $request->salle_id;
+        $classe->save(); // Sauvegarder la classe sans le cours_id pour l'instant
 
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'Toutes les classes ont été récupérées',
-                'data' => $classeData,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de la récupération des classes',
-                'error' => $e->getMessage(),
-            ]);
-        }
+        // Créer le cours associé
+        $cours = new Cours();
+        $cours->nom = $request->cours_nom;
+        $cours->description = $request->cours_description;
+        $cours->niveau_education = $request->niveau_classe;
+        $cours->heure_allouée = $request->cours_heure_allouée;
+        $cours->etat = $request->cours_etat ?? 'encours';
+        $cours->credits = $request->cours_credits;
+        $cours->coefficient = $request->cours_coefficient;
+        $cours->enseignant_id = $request->enseignant_id;
+        $cours->save();
+
+        // Maintenant que le cours est créé, mettre à jour la classe avec le cours_id
+        $classe->cours_id = $cours->id;
+        $classe->save();
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Classe et cours ont été ajoutés avec succès',
+            'data' => [
+                'classe' => $classe,
+                'cours' => $cours,
+            ],
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe et du cours',
+            'error' => $e->getMessage(),
+        ]);
     }
+}
+public function updateClasseCours(UpdateClasseCoursRequest $request, $id)
+{
+    try {
+        // Trouver la classe par son ID
+        $classe = Classe::findOrFail($id);
+
+        // Mettre à jour les informations de la classe
+        $classe->nom = $request->nom;
+        $classe->niveau_classe = $request->niveau_classe;
+        $classe->salle_id = $request->salle_id;
+        $classe->save(); // Sauvegarder les modifications de la classe
+
+        // Trouver le cours associé à la classe
+        $cours = Cours::findOrFail($classe->cours_id);
+
+        // Mettre à jour les informations du cours
+        $cours->nom = $request->cours_nom;
+        $cours->description = $request->cours_description;
+        $cours->niveau_education = $request->niveau_classe;
+        $cours->heure_allouée = $request->cours_heure_allouée;
+        $cours->etat = $request->cours_etat ?? 'encours';
+        $cours->credits = $request->cours_credits;
+        $cours->coefficient = $request->cours_coefficient;
+        $cours->enseignant_id = $request->enseignant_id;
+        $cours->save(); // Sauvegarder les modifications du cours
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Classe et cours ont été mis à jour avec succès',
+            'data' => [
+                'classe' => $classe,
+                'cours' => $cours,
+            ],
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Classe ou cours non trouvé',
+            'error' => $e->getMessage(),
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la classe et du cours',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
+public function indexClasse()
+{
+    try {
+        $classes = Classe::with(['salle', 'cours.enseignant.user', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant.user'])->get();
+
+        // Structurer les données de chaque classe
+        $classeData = $classes->map(function ($classe) {
+            return [
+                'id' => $classe->id,
+                'nom' => $classe->nom,
+                'niveau_classe' => $classe->niveau_classe,
+                'salle' => $classe->salle ? [
+                    'id' => $classe->salle->id,
+                    'nom' => $classe->salle->nom,
+                    'capacity' => $classe->salle->capacity,
+                    'type' => $classe->salle->type,
+                ] : null,
+                'cours' => $classe->cours ? [
+                    'id' => $classe->cours->id,
+                    'nom' => $classe->cours->nom,
+                    'niveau_education' => $classe->cours->niveau_education,
+                    'description' => $classe->cours->description,
+                    'heure_allouée' => $classe->cours->heure_allouée,
+                    'credits' => $classe->cours->credits,
+                    'etat' => $classe->cours->etat,
+                    'enseignant' => $classe->cours->enseignant ? [
+                        'id' => $classe->cours->enseignant->id,
+                        'nom' => $classe->cours->enseignant->user->nom,
+                        'prenom' => $classe->cours->enseignant->user->prenom,
+                        'specialite' => $classe->cours->enseignant->specialite,
+                    ] : null,
+                ] : null,
+                'apprenants' => $classe->apprenants->map(function ($apprenant) {
+                    return [
+                        'id' => $apprenant->id,
+                        'lieu_naissance' => $apprenant->lieu_naissance,
+                        'date_naissance' => $apprenant->date_naissance,
+                        'niveau_education' => $apprenant->niveau_education,
+                        'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+                        'numero_CNI' => $apprenant->numero_CNI,
+                        'statut_marital' => $apprenant->statut_marital,
+                        'image' => $apprenant->image,
+                        'user' => $apprenant->user ? [
+                            'id' => $apprenant->user->id,
+                            'nom' => $apprenant->user->nom,
+                            'prenom' => $apprenant->user->prenom,
+                            'telephone' => $apprenant->user->telephone,
+                            'email' => $apprenant->user->email,
+                            'etat' => $apprenant->user->etat,
+                            'genre' => $apprenant->user->genre,
+                            'adresse' => $apprenant->user->adresse,
+                        ] : null,
+                    ];
+                }),
+                'associations' => $classe->classeAssociations->map(function ($association) {
+                    return [
+                        'apprenant' => $association->apprenant ? [
+                            'id' => $association->apprenant->id,
+                            'nom' => $association->apprenant->user->nom,
+                            'prenom' => $association->apprenant->user->prenom,
+                        ] : null,
+                        'cours' => $association->cours ? [
+                            'id' => $association->cours->id,
+                            'nom' => $association->cours->nom,
+                        ] : null,
+                        'enseignant' => $association->enseignant ? [
+                            'id' => $association->enseignant->id,
+                            'nom' => $association->enseignant->user->nom,
+                            'prenom' => $association->enseignant->user->prenom,
+                            'specialite' => $association->enseignant->specialite,
+                        ] : null,
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Toutes les classes ont été récupérées',
+            'data' => $classeData,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des classes',
+            'error' => $e->getMessage(),
+        ]);
+    }
+}
 
 
       public function showClasse($id)
       {
           try {
 
-              $classe = Classe::with(['salle', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])
+              $classe = Classe::with(['salle','cours.enseignant.user', 'apprenants.user', 'classeAssociations.apprenant', 'classeAssociations.cours', 'classeAssociations.enseignant'])
                   ->findOrFail($id);
 
               // Structurer les données de la classe
@@ -131,6 +239,21 @@ class ClasseController extends Controller
                       'capacity' => $classe->salle->capacity,
                       'type' => $classe->salle->type,
                   ] : null,
+                  'cours' => $classe->cours ? [
+                    'id' => $classe->cours->id,
+                    'nom' => $classe->cours->nom,
+                    'niveau_education' => $classe->cours->niveau_education,
+                    'description' => $classe->cours->description,
+                    'heure_allouée' => $classe->cours->heure_allouée,
+                    'credits' => $classe->cours->credits,
+                    'etat' => $classe->cours->etat,
+                    'enseignant' => $classe->cours->enseignant ? [
+                        'id' => $classe->cours->enseignant->id,
+                        'nom' => $classe->cours->enseignant->user->nom,
+                        'prenom' => $classe->cours->enseignant->user->prenom,
+                        'specialite' => $classe->cours->enseignant->specialite,
+                    ] : null,
+                ] : null,
                   'apprenants' => $classe->apprenants->map(function ($apprenant) {
                       return [
                           'id' => $apprenant->id,

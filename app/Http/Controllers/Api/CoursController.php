@@ -21,9 +21,10 @@ class CoursController extends Controller
             $cours->nom = $request->nom;
             $cours->description = $request->description;
             $cours->niveau_education = $request->niveau_education;
-            $cours->duree = $request->duree;
+            $cours->heure_allouée = $request->heure_allouée;
             $cours->etat = $request->etat ?? 'encours';
             $cours->credits = $request->credits;
+            $cours->coefficient = $request->coefficient;
             $cours->enseignant_id = $request->enseignant_id;
             $cours->save();
 

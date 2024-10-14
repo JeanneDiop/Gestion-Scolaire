@@ -24,6 +24,9 @@ return new class extends Migration
             $table->string('numero_securite_social')->unique();
             $table->string('niveau_ecole');
             $table->enum('statut', ['permanent', 'vacataire','contractuel','honoraire']);
+            $table->float('montant_salaire');
+            $table->float('cotisation_salariale')->nullable();
+            $table->float('net_payer')->nullable();
             $table->date('date_embauche');
             $table->date('date_fin_contrat');
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');

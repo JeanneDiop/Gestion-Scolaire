@@ -44,6 +44,9 @@ class CreateEnseignantRequest extends FormRequest
             'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
             'numero_securite_social' => 'required|string|unique:enseignants,numero_securite_social',
             'statut' => 'required|in:permanent,vacataire,contractuel,honoraire',
+            'montant_salaire' => 'required|numeric',
+            'cotisation_salariale' => 'nullable|numeric',
+            'net_payer' => 'nullable|numeric',
             'date_embauche' => 'required|date',
             'date_fin_contrat' => 'required|date',
         ];
@@ -55,9 +58,9 @@ class CreateEnseignantRequest extends FormRequest
      * @return array
      */
     public function messages()
-    {
-        return [
-           'nom.required' => 'Le nom est requis.',
+{
+    return [
+        'nom.required' => 'Le nom est requis.',
         'nom.string' => 'Le nom doit être une chaîne de caractères.',
         'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
 
@@ -74,7 +77,10 @@ class CreateEnseignantRequest extends FormRequest
 
         'password.required' => 'Le mot de passe est requis.',
         'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-         'image.required' => 'L\'image est obligatoire.',
+
+        'image.required' => 'L\'image est obligatoire.',
+        'image.string' => 'L\'image doit être une chaîne de caractères.',
+
         'telephone.required' => 'Le numéro de téléphone est requis.',
         'telephone.regex' => 'Le numéro de téléphone doit être au format valide (+22177XXXXXXX).',
         'telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
@@ -104,8 +110,8 @@ class CreateEnseignantRequest extends FormRequest
         'lieu_naissance.string' => 'Le lieu de naissance doit être une chaîne de caractères.',
         'lieu_naissance.max' => 'Le lieu de naissance ne peut pas dépasser 255 caractères.',
 
-        'niveau_ecole.required' => 'niveau_ecole est requise.',
-        'niveau_ecole.string' => 'niveau_ecole doit être une chaîne de caractères.',
+        'niveau_ecole.required' => 'Le niveau d\'école est requis.',
+        'niveau_ecole.string' => 'Le niveau d\'école doit être une chaîne de caractères.',
 
         'numero_CNI.max' => 'Le numéro CNI ne peut pas dépasser 50 caractères.',
         'numero_CNI.unique' => 'Ce numéro CNI est déjà utilisé.',
@@ -115,18 +121,22 @@ class CreateEnseignantRequest extends FormRequest
         'numero_securite_social.unique' => 'Ce numéro de sécurité sociale est déjà utilisé.',
 
         'statut.required' => 'Le statut est requis.',
-        'statut.in' => 'Le statut doit être soit "permanent", "vacataire", "contractuel" ou "honorariat".',
+        'statut.in' => 'Le statut doit être soit "permanent", "vacataire", "contractuel" ou "honoraire".',
+
+        'montant_salaire.required' => 'Le montant de salaire est requis.',
+        'montant_salaire.numeric' => 'Le montant de salaire doit être un nombre.',
+
+        'cotisation_salariale.numeric' => 'La cotisation salariale doit être un nombre.',
+
+        'net_payer.numeric' => 'Le montant à payer doit être un nombre.',
 
         'date_embauche.required' => 'La date d\'embauche est requise.',
         'date_embauche.date' => 'La date d\'embauche doit être une date valide.',
 
         'date_fin_contrat.required' => 'La date de fin de contrat est requise.',
         'date_fin_contrat.date' => 'La date de fin de contrat doit être une date valide.',
-        'classe_id.required' => 'L\'ID de la classe est obligatoire.',
-        'classe_id.integer' => 'L\'ID de la classe doit être un nombre entier.',
-        ];
-    }
-
+    ];
+}
     /**
      * Handle a failed validation attempt.
      *

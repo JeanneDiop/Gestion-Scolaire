@@ -17,9 +17,10 @@ return new class extends Migration
         $table->string('nom');
         $table->string('description')->nullable();
         $table->string('niveau_education');
-        $table->time('duree');
+        $table->time('heure_allouée');
         $table->enum('etat', ['encours', 'terminé', 'annulé'])->default('encours');
         $table->integer('credits')->nullable();
+        $table->integer('coefficient')->nullable();
         $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('set null');
         $table->timestamps();
     });

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Salle;
+use App\Models\Cours;
 use App\Models\Apprenant;
 use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
@@ -25,6 +26,9 @@ class Classe extends Model
 
     public function salle(){
         return $this->belongsTo(Salle::class);
+    }
+    public function cours(){
+        return $this->belongsTo(Cours::class);
     }
     public function apprenants()
     {

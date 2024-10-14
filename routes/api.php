@@ -184,6 +184,8 @@ Route::delete('/supprimeruserpersonnel/{user}', [AuthController::class, 'supprim
 Route::post('archiverpersonnel/{personneladministratif}',[AuthController::class,'archiverPersonnelAdministratif']);
 
 //--------------------gestion classe-----------------------
+Route::post('classecours/ajouter', [ClasseController::class, 'storeClasseCours']);
+Route::put('classecours/edit/{id}', [ClasseController::class, 'updateClasseCours']);
 Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
 //lister les classes
 Route::get('classe/lister', [ClasseController::class, 'indexClasse']);
@@ -215,6 +217,7 @@ Route::delete('employe/supprimer/{id}', [EmployeController::class, 'destroy']);
 Route::get('employe/lister', [EmployeController::class, 'index']);
 //afficher employe
 Route::get('employe/detail/{id}', [EmployeController::class, 'show']);
+
 //gestion cours-----------------------------------------------
 Route::post('cours/create', [CoursController::class, 'store']);
 //modifier cours
@@ -313,6 +316,7 @@ Route::delete('programme/supprimer/{id}', [ProgrammeController::class, 'destroy'
 Route::get('programme/lister', [ProgrammeController::class, 'index']);
 //afficher programme
 Route::get('programme/detail/{id}', [ProgrammeController::class, 'show']);
+
 //gestion PresenceAbsence-----------------
 Route::post('presenceabsence/create', [PresenceAbsenceController::class, 'store']);
 //modifier presenceabsence
@@ -341,6 +345,7 @@ Route::delete('apprenantclasse/supprimer/{id}', [ApprenantClasseController::clas
 Route::get('apprenantclasse/lister', [ApprenantClasseController::class, 'index']);
 //afficher apprenantclasse
 Route::get('apprenantclasse/detail/{id}', [ApprenantClasseController::class, 'show']);
+
 //gestion Ecole-----------------
 Route::post('ecole/create', [EcoleController::class, 'store']);
 //modifier ecole
@@ -353,6 +358,7 @@ Route::get('ecole/lister', [EcoleController::class, 'index']);
 Route::get('ecole/detail/{id}', [EcoleController::class, 'show']);
 //lister les ecoles par niveau
 Route::get('/ecoles/niveau', [EcoleController::class, 'indexByNiveau']);
+
 //gestion niveau---------------------------------------------
 Route::post('niveau/create', [NiveauController::class, 'store']);
 //modifier niveau
@@ -363,6 +369,7 @@ Route::delete('niveau/supprimer/{id}', [NiveauController::class, 'destroy']);
 Route::get('niveau/lister', [NiveauController::class, 'index']);
 //afficher niveau
 Route::get('niveau/detail/{id}', [NiveauController::class, 'show']);
+
 //gestion niveauEcole---------------------------------------------
 Route::post('niveauecole/create', [NiveauEcoleController::class, 'store']);
 //modifier niveauecole
