@@ -32,6 +32,7 @@ class CreateClasseCoursRequest extends FormRequest
             'cours' => 'required|array',
             'cours.*.nom' => 'required|string|max:255',
             'cours.*.description' => 'nullable|string',
+            'cours.*.education' => 'required|string',
             'cours.*.heure_allouée' =>'required|regex:/^([0-9]+):([0-5][0-9]):([0-5][0-9])$/',
             'cours.*.etat' => 'nullable|string|in:encours,terminé',
             'cours.*.credits' => 'nullable|integer|min:1',
@@ -65,6 +66,8 @@ class CreateClasseCoursRequest extends FormRequest
         'cours.*.nom.max' => 'Le nom du cours ne peut pas dépasser 255 caractères.',
 
         'cours.*.description.string' => 'La description du cours doit être une chaîne de caractères.',
+        'cours.*.niveau_education.required' => 'Le niveau_education du cours est requis.',
+        'cours.*.niveau_education.string' => 'Le niveau_education du cours doit être une chaîne de caractères.',
 
         'cours.*.heure_allouée.required' => 'L\'heure allouée au cours est requise.',
         'cours.*.heure_allouée.regex' => 'Le format de l\'heure allouée doit être sous le format HH:MM:SS.',

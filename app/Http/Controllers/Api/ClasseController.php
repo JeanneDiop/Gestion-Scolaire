@@ -58,7 +58,7 @@ class ClasseController extends Controller
             $cours = new Cours();
             $cours->nom = $coursData['nom'];
             $cours->description = $coursData['description'];
-            $cours->niveau_education = $request->niveau_classe;
+            $cours->niveau_education = $request->niveau_education;
             $cours->heure_allouée = $coursData['heure_allouée'];
             $cours->etat = $coursData['etat'] ?? 'encours';
             $cours->credits = $coursData['credits'];
