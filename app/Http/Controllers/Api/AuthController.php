@@ -198,7 +198,7 @@ public function registerTuteur(CreateTuteurRequest $request)
     }
 }
 
-public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
+public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 {
     DB::beginTransaction(); // Démarre la transaction
 
@@ -296,7 +296,7 @@ public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
 
 
 
-public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
+public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
 {
     DB::beginTransaction(); // Démarre la transaction
 
