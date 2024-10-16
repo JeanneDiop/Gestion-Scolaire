@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('numero_carte_scolaire')->unique()->nullable();
             $table->string('niveau_education');
             $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf'])->nullable();
-            $table->foreignIdFor(Classe::class)->constrained()->nullable()->onDelete('cascade');
+            $table->foreignIdFor(Classe::class)->nullable()->constrained()->onDelete('cascade');
             $table->foreignIdFor(Tuteur::class)->nullable()->constrained()->onDelete('set null');
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->timestamps();

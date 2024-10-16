@@ -99,7 +99,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'date_naissance.required' => 'Le champ date de naissance est obligatoire.',
             'lieu_naissance.required' => 'Le champ lieu de naissance est obligatoire.',
             'niveau_education.required' => 'Le champ niveau d\'éducation est obligatoire.',
-            'classe_id.required' => 'Le champ classe est obligatoire.',
+            'classe_id.integer' => 'Le champ classe doit etre un entier.',
             'image.required' => 'L\'image est obligatoire.',
 
             // Messages pour le tuteur

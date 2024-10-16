@@ -332,7 +332,7 @@ public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
             'image' => $apprenantImageFileName,
-            'classe_id' => $request->classe_id,
+            'classe_id' => $request->classe_id ?? null,
         ]);
 
         // Création du tuteur seulement si les informations de tuteur sont fournies
