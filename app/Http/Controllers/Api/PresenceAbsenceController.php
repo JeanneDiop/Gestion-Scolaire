@@ -13,68 +13,39 @@ class PresenceAbsenceController extends Controller
 {
     public function store(CreatePresenceAbsenceRequest $request)
     {
-        {
-            try {
-              $presenceabsence = new PresenceAbsence();
-              $presenceabsence->present= $request->present;
-              $presenceabsence->absent= $request->absent;
-              $presenceabsence->date_present= $request->date_present;
-              $presenceabsence->date_absent= $request->date_absent;
-              $presenceabsence->raison_absence= $request->raison_absence;
-              $presenceabsence->cours_id= $request->cours_id;
-              $presenceabsence->apprenant_id= $request->apprenant_id;
-              $presenceabsence->save();
-              return response()->json([
+        try {
+            dd($request->all());
+            $presenceabsence = new PresenceAbsence();
+            $presenceabsence->type_utilisateur = $request->type_utilisateur; 
+            $presenceabsence->statut = $request->statut ?? 'present';
+            $presenceabsence->date_present = $request->date_present;
+            $presenceabsence->date_absent = $request->date_absent;
+            $presenceabsence->heure_arrivee = $request->heure_arrivee;
+            $presenceabsence->duree_retard = $request->duree_retard;
+            $presenceabsence->raison_absence = $request->raison_absence;
+            if ($presenceabsence->type_utilisateur === 'apprenant') {
+                $presenceabsence->apprenant_id = $request->apprenant_id; 
+            } elseif ($presenceabsence->type_utilisateur === 'enseignant') {
+                $presenceabsence->enseignant_id = $request->enseignant_id; 
+            }
+            $presenceabsence->cours_id = $request->cours_id;
+            dd($presenceabsence);
+            $presenceabsence->save();
+    
+            return response()->json([
                 'status_code' => 200,
-                'status_message' => 'presenceabsence a été ajouté',
+                'status_message' => 'La présence/absence a été enregistrée',
                 'data' => $presenceabsence,
-              ],200);
-            }  catch (Exception $e) {
-                return response()->json([
-                    'status_code' => 500,
-                    'status_message' => 'Erreur interne du serveur',
-                    'error' => $e->getMessage(),
-                ], 500);
-          }
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Erreur interne du serveur',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
-    public function update(UpdatePresenceAbsenceRequest $request, $id)
-{
-    try {
 
-        $presenceabsence = PresenceAbsence::findOrFail($id);
-
-        // Mise à jour des attributs
-        $presenceabsence->present = $request->present;
-        $presenceabsence->absent = $request->absent;
-        $presenceabsence->date_present = $request->date_present;
-        $presenceabsence->date_absent = $request->date_absent;
-        $presenceabsence->raison_absence = $request->raison_absence;
-        $presenceabsence->cours_id = $request->cours_id;
-        $presenceabsence->apprenant_id = $request->apprenant_id;
-
-        // Sauvegarde des modifications
-        $presenceabsence->update();
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'presenceabsence a été mis à jour',
-            'data' => $presenceabsence,
-        ], 200);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'presenceabsence non trouvé',
-            'error' => $e->getMessage(),
-        ], 404);
-    } catch (Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Erreur interne du serveur',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
 
 public function indexabsent()
 {

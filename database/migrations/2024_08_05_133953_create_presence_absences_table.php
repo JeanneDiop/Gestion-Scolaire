@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Apprenant;
 use App\Models\Cours;
+use App\Models\Enseignant;
 
 return new class extends Migration
 {
@@ -15,13 +16,16 @@ return new class extends Migration
     {
         Schema::create('presence_absences', function (Blueprint $table) {
             $table->id();
-            $table->enum('absent', ['oui', 'non'])->default('oui')->nullable();
-            $table->enum('present', ['oui', 'non'])->default('oui')->nullable();
+            $table->enum('type_utilisateur', ['apprenant', 'enseignant'])->default('apprenant');
+            $table->enum('statut', ['present', 'absent', 'retard'])->default('present');
             $table->date('date_present')->nullable();
             $table->date('date_absent')->nullable();
-            $table->string('raison_absence');
-            $table->foreignIdFor(Apprenant::class)->constrained()->onDelete('cascade');
+            $table->time('heure_arrivee')->nullable();
+            $table->time('duree_retard')->nullable();
+            $table->string('raison_absence')->nullable();
+            $table->foreignIdFor(Apprenant::class)->nullable()->constrained()->onDelete('cascade');
             $table->foreignIdFor(Cours::class)->constrained()->onDelete('cascade');
+            $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

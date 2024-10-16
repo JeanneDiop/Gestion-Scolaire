@@ -16,6 +16,7 @@ use App\Models\ApprenantClasse;
 class Apprenant extends Model
 {
     use HasFactory;
+    protected $table = 'apprenants';
     protected $fillable = [
         'date_naissance',
         'lieu_naissance',

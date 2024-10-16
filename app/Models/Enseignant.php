@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\EnseignantClasse;
 use App\Models\ClasseAssociation;
+use App\Models\PresenceAbsence;
 
 class Enseignant extends Model
 {
@@ -37,6 +38,11 @@ class Enseignant extends Model
     public function enseignantclasses()
     {
         return $this->hasMany(EnseignantClasse::class);
+    }
+
+    public function presenceAbsences()
+    {
+        return $this->hasMany(PresenceAbsence::class);
     }
 
     public function classeassociations()

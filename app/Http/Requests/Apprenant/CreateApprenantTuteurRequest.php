@@ -25,6 +25,9 @@ class CreateApprenantTuteurRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user_id;
+        $tuteurId = $this->tuteur_id;
+
         return [
             // Règles communes pour Apprenant
             'nom' => 'required|string|max:255',
@@ -66,19 +69,19 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                'unique:users,email',
+                'unique:users,email,' . $userId,
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
+                'unique:users,telephone,' . $userId,
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:Homme,Femme',
             'tuteur.profession' => 'required|string',
             'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
-            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
+            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI,' . $tuteurId],
         ];
     }
     public function messages(): array

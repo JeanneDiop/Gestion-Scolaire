@@ -34,9 +34,9 @@ class CreateClasseCoursRequest extends FormRequest
             'cours.*.description' => 'nullable|string',
             'cours.*.heure_allouée' =>'required|regex:/^([0-9]+):([0-5][0-9]):([0-5][0-9])$/',
             'cours.*.etat' => 'nullable|string|in:encours,terminé',
-            'cours.*.credits' => 'required|integer|min:1',
-            'cours.*.coefficient' => 'required|numeric|min:1',
-            'cours.*.enseignant_id' => 'required|integer|exists:enseignants,id',
+            'cours.*.credits' => 'nullable|integer|min:1',
+            'cours.*.coefficient' => 'nullable|numeric|min:1',
+            'cours.*.enseignant_id' => 'nullable|integer|exists:enseignants,id',
         ];
     }
 
@@ -72,15 +72,12 @@ class CreateClasseCoursRequest extends FormRequest
         'cours.*.etat.string' => 'L\'état du cours doit être une chaîne de caractères.',
         'cours.*.etat.in' => 'L\'état du cours doit être "encours" ou "terminé".',
 
-        'cours.*.credits.required' => 'Le nombre de crédits est requis.',
         'cours.*.credits.integer' => 'Le nombre de crédits doit être un entier.',
         'cours.*.credits.min' => 'Le nombre de crédits doit être d\'au moins 1.',
 
-        'cours.*.coefficient.required' => 'Le coefficient du cours est requis.',
         'cours.*.coefficient.numeric' => 'Le coefficient doit être un nombre.',
         'cours.*.coefficient.min' => 'Le coefficient doit être d\'au moins 1.',
 
-        'cours.*.enseignant_id.required' => 'L\'ID de l\'enseignant est requis.',
         'cours.*.enseignant_id.integer' => 'L\'ID de l\'enseignant doit être un entier.',
         'cours.*.enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
     ];

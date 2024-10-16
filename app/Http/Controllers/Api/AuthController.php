@@ -198,7 +198,7 @@ public function registerTuteur(CreateTuteurRequest $request)
     }
 }
 
-public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
+public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
 {
     DB::beginTransaction(); // Démarre la transaction
 
@@ -293,6 +293,128 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
     }
 }
 
+
+
+
+public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
+{
+    DB::beginTransaction(); // Démarre la transaction
+
+    try {
+        // Création de l'utilisateur Apprenant
+        $userApprenant = User::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'genre' => $request->genre,
+            'etat' => 'actif',
+            'role_nom' => 'apprenant',
+        ]);
+
+        // Gestion du fichier image de l'apprenant
+        $apprenantImageFileName = null;
+        if ($request->file('image')) {
+            $apprenantFile = $request->file('image');
+            $apprenantFileName = date('YmdHi').$apprenantFile->getClientOriginalName();
+            $apprenantFile->move(public_path('images'), $apprenantFileName);
+            $apprenantImageFileName = $apprenantFileName;
+        }
+
+        // Création de l'apprenant
+        $apprenant = $userApprenant->apprenant()->create([
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'numero_CNI' => $request->numero_CNI,
+            'numero_carte_scolaire' => $request->numero_carte_scolaire,
+            'niveau_education' => $request->niveau_education,
+            'statut_marital' => $request->statut_marital,
+            'image' => $apprenantImageFileName,
+            'classe_id' => $request->classe_id,
+        ]);
+
+        // Création du tuteur seulement si les informations de tuteur sont fournies
+        if ($request->has('tuteur')) {
+            // Vérifier si le tuteur existe déjà par son email ou son numéro CNI
+            $userTuteur = User::where('email', $request->tuteur['email'])
+                ->orWhere('numero_CNI', $request->tuteur['numero_CNI'])
+                ->first();
+
+            // Si le tuteur n'existe pas, on le crée
+            if (!$userTuteur) {
+                $userTuteur = User::create([
+                    'nom' => $request->tuteur['nom'],
+                    'prenom' => $request->tuteur['prenom'],
+                    'email' => $request->tuteur['email'],
+                    'password' => Hash::make($request->tuteur['password']),
+                    'telephone' => $request->tuteur['telephone'],
+                    'adresse' => $request->tuteur['adresse'],
+                    'genre' => $request->tuteur['genre'],
+                    'etat' => data_get($request->tuteur, 'etat', 'actif'),
+                    'role_nom' => 'tuteur',
+                ]);
+
+                // Gestion du fichier image du tuteur
+                $tuteurImageFileName = null;
+                if ($request->file('tuteur.image')) {
+                    $tuteurFile = $request->file('tuteur.image');
+                    $tuteurFileName = date('YmdHi').$tuteurFile->getClientOriginalName();
+                    $tuteurFile->move(public_path('images'), $tuteurFileName);
+                    $tuteurImageFileName = $tuteurFileName;
+                }
+
+                // Création du tuteur
+                $tuteur = $userTuteur->tuteur()->create([
+                    'profession' => $request->tuteur['profession'],
+                    'statut_marital' => $request->tuteur['statut_marital'],
+                    'numero_CNI' => $request->tuteur['numero_CNI'],
+                    'image' => $tuteurImageFileName,
+                ]);
+            } else {
+                // Si le tuteur existe, on vérifie si le téléphone correspond
+                if ($userTuteur->telephone !== $request->tuteur['telephone']) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Le téléphone du tuteur ne correspond pas à celui existant.',
+                    ], 400);
+                }
+
+                // Récupération des informations du tuteur existant
+                $tuteur = $userTuteur->tuteur;
+            }
+
+            // Mise à jour de l'apprenant pour lui associer le tuteur
+            $apprenant->update([
+                'tuteur_id' => $tuteur->id
+            ]);
+        }
+
+        // Récupération des informations de la classe
+        $classe = Classe::find($request->classe_id);
+
+        DB::commit(); // Valide la transaction
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Apprenant et Tuteur créés avec succès',
+            'user_apprenant' => $userApprenant,
+            'apprenant' => $apprenant,
+            'user_tuteur' => isset($userTuteur) ? $userTuteur : null,
+            'tuteur' => isset($tuteur) ? $tuteur : null,
+            'classe' => $classe,
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack(); // Annule la transaction en cas d'erreur
+
+        return response()->json([
+            'status' => 500,
+            'message' => 'Une erreur est survenue lors de la création de l\'apprenant et du tuteur.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 //modifier apprenanttuteur---------------------------------
 
 public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id)
