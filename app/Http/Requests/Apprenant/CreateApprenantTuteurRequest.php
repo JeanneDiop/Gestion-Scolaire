@@ -25,8 +25,8 @@ class CreateApprenantTuteurRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->user_id;
-        $tuteurId = $this->tuteur_id;
+        //$userId = $this->user_id;
+        //$tuteurId = $this->tuteur_id;
 
         return [
             // Règles communes pour Apprenant
@@ -69,19 +69,19 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                'unique:users,email,' . $userId,
+                'unique:users,email',
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone,' . $userId,
+                'unique:users,telephone',
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:Homme,Femme',
             'tuteur.profession' => 'required|string',
             'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
-            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI,' . $tuteurId],
+            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
         ];
     }
     public function messages(): array
@@ -114,7 +114,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.image.required' => 'L\'image est obligatoire.',
         ];
 }
-    
+
     protected function failedValidation(Validator $validator)
     {
         // Si la validation échoue, vous pouvez accéder aux erreurs
