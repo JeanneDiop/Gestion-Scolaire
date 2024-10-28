@@ -38,6 +38,12 @@ class Apprenant extends Model
         'remarque_eleve',
         'acte_naissance',
         'autorisation_parentale',
+        'année_scolaire',
+        'niveau_entrée',
+        'statut_inscription',
+        'transport_scolaire',
+        'service_transport',
+        'programme_special',
         'tuteur_id',
         'classe_id'
     ];

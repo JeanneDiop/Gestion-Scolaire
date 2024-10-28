@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('profession');
             $table->string('nationalité');
             $table->string('image')->nullable();
-            $table->string('nombre_enfants_inscrits')->unique();
-            $table->string('numero_CNI')->unique();
+            $table->string('nombre_enfants_inscrits')->nullable();
+            $table->string('numero_CNI')->nullable()->unique();
             $table->enum('lien_parenté', ['père','mère','tuteur','autre']);
             $table->timestamps();
         });

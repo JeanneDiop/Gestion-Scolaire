@@ -67,6 +67,21 @@ class CreateApprenantTuteurRequest extends FormRequest
             'remarque_eleve' => 'nullable|string|max:255',
             'acte_naissance' => 'nullable|string|max:255',
             'autorisation_parentale' => 'nullable|string|max:255',
+            'année_inscription' => ['nullable', 'date'],
+            'niveau_entrée' => ['nullable', 'string', 'max:255'],
+            'statut_inscription' => ['nullable', 'in:Inscrit,En attente,Autre'],
+            'transport_scolaire' => ['required', 'in:Oui,Non'],
+            // Validation conditionnelle pour le service de transport
+            'service_transport' => [
+                'nullable', 
+                'string', 
+                function ($attribute, $value, $fail) {
+                    if ($this->input('transport_scolaire') === 'Oui' && empty($value)) {
+                        $fail('Le champ service de transport est requis si le transport scolaire est Oui.');
+                    }
+                }
+            ],
+            'programme_special' => ['nullable', 'string'],
             'tuteur_id' => 'nullable|exists:tuteurs,id',
             'classe_id' => 'nullable|exists:classes,id',
 
@@ -91,7 +106,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.genre' => 'required|string|in:Homme,Femme',
             'tuteur.profession' => 'required|string',
             'tuteur.nationalité' => 'required|string|max:255',
-            'tuteur.nombre_enfants_inscrits'  => 'required|string|unique:tuteurs,nombre_enfants_inscrits|max:255',
+            'tuteur.nombre_enfants_inscrits'  => 'nullable|string|unique:tuteurs,nombre_enfants_inscrits|max:255',
             'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
             'tuteur.image'=>  ['nullable', 'string'],
             'tuteur.lien_parenté'  => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
@@ -129,6 +144,15 @@ class CreateApprenantTuteurRequest extends FormRequest
         'numero_identification_eleve.required' => 'Le numéro d\'identification de l\'élève est obligatoire.',
         'numero_identification_eleve.unique' => 'Ce numéro d\'identification est déjà utilisé.',
         'image.max' => 'La taille de l\'image ne doit pas dépasser 255 caractères.',
+        'année_inscription.date' => 'La date d\'année d\'inscription doit être une date valide.',
+        'niveau_entrée.string' => 'Le champ niveau d\'entrée doit être une chaîne de caractères.',
+        'niveau_entrée.max' => 'Le champ niveau d\'entrée ne peut pas dépasser 255 caractères.',
+        'statut_inscription.in' => 'Le statut d\'inscription doit être Inscrit, En attente, ou Autre.',
+        'transport_scolaire.required' => 'Le champ transport scolaire est requis.',
+        'transport_scolaire.in' => 'Le champ transport scolaire doit être Oui ou Non.',
+        'service_transport.string' => 'Le champ service de transport doit être une chaîne de caractères.',
+        // Pas besoin de message spécifique pour service_transport car c'est géré par la logique conditionnelle
+        'programme_special.string' => 'Le champ programme spécial doit être une chaîne de caractères.',
 
         // Messages pour le tuteur
         'tuteur.nom.required' => 'Le nom du tuteur est obligatoire.',

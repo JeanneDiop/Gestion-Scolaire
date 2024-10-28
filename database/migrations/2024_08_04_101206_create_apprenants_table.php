@@ -32,6 +32,12 @@ return new class extends Migration
             $table->string('contact_urgence')->nullable();
             $table->string('note_resultat_anterieur')->nullable();
             $table->string('evaluations_specifiques')->nullable();
+            $table->date('année_inscription')->nullable();
+            $table->string('niveau_entrée')->nullable();
+            $table->enum('statut_inscription', ['Inscrit', 'En attente', 'Autre'])->nullable();
+            $table->enum('transport_scolaire', ['Oui', 'Non'])->nullable();
+            $table->string('service_transport')->nullable();
+            $table->string('programme_special')->nullable();
             $table->enum('langue_parlee_maison', ['Français', 'Anglais', 'Wolof', 'Sérère', 'Diola'])->nullable();
             $table->string('activités_extrascolaires')->nullable();
             $table->string('remarque_eleve')->nullable();

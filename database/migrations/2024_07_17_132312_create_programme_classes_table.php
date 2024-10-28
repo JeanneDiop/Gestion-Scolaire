@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('programme_classes', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->string('description')->nullable();
+            $table->string('cycle');
             $table->string('niveau_education');
             $table->string('niveau_classe');
-            $table->enum('periode', ['annuelle', 'semestre'])->nullable();
+            $table->string('année_scolaire');
+            $table->string('langue_enseignée');
             $table->timestamps();
         });
     }
