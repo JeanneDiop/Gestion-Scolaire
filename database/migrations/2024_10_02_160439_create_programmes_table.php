@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('nom')->nullable();
             $table->string('description')->nullable();
             $table->string('niveau_education')->nullable();
-            $table->integer('credits')->nullable();
-            $table->date('date_debut')->nullable();
-            $table->date('date_fin')->nullable();
+            $table->string('niveau_classe')->nullable();
             $table->foreignIdFor(Cours::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });

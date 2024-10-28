@@ -17,8 +17,15 @@ return new class extends Migration
             $table->string('cycle');
             $table->string('niveau_education');
             $table->string('niveau_classe');
-            $table->string('année_scolaire');
-            $table->string('langue_enseignée');
+            $table->string('annee_scolaire');
+            $table->string('langue_enseignee');
+            $table->string('objectif_generaux')->nullable();
+            $table->string('objectif_specifiques')->nullable();
+            $table->string('bareme')->nullable;
+            $table->enum('frequence_evaluation', ['Hebdomadaire', 'Mensuel', 'Trimestriel'])->nullable();
+            $table->enum('type_evaluation', ['Formative', 'Sommative'])->nullable;
+            $table->string('importer_programme')->nullable;
+            $table->string('exporter_')->nullable;
             $table->timestamps();
         });
     }

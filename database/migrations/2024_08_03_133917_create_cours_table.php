@@ -18,7 +18,10 @@ return new class extends Migration
         $table->string('nom');
         $table->string('description')->nullable();
         $table->string('niveau_education');
+        $table->string('niveau_classe');
         $table->string('heure_allouée');
+        $table->string('durée_recommander_sceance');
+        $table->string('categorie_cours');
         $table->enum('etat', ['encours', 'terminé', 'annulé'])->default('encours');
         $table->integer('credits')->nullable();
         $table->integer('coefficient')->nullable();
