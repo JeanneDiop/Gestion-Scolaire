@@ -15,14 +15,14 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $userData = [
-            'nom' => 'WADE',
-            'prenom' => 'Mariam',
+            'nom' => 'admin',
+            'prenom' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('passer1234'),
             'role_nom' => 'admin',
-            'adresse' => 'sicap',
+            'adresse' => 'admin',
             'telephone' => '+221778009876',
-            'genre' => 'femme'
+            'genre' => 'Femme'
         ];
         $user = User::create($userData);
 
