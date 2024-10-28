@@ -41,7 +41,7 @@ class CreateApprenantRequest extends FormRequest
            'numero_carte_scolaire' => 'nullable|string|max:50|unique:apprenants,numero_carte_scolaire',
            'niveau_education' => 'required|string|max:255',
            'tuteur.statut_marital' => ['nullable', 'string', Rule::in(['marié', 'celibataire','divorcé','veuve','veuf'])],
-            'classe_id' => 'nullable|integer',
+            'classe_id' => 'required|integer',
             'tuteur_id' => 'required|integer',
         ];
     }
