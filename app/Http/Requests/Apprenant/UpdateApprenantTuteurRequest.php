@@ -64,6 +64,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
                 'nullable',
                 'string',
                 'email',
+                'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/',
                 'max:255',
             ],
             'tuteur.password' => 'nullable|min:8',

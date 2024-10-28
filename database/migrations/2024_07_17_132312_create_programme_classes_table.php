@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\ProgrammeClasse;
+
 return new class extends Migration
 {
     /**
@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('classes', function (Blueprint $table) {
+        Schema::create('programme_classes', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
+            $table->string('description')->nullable();
             $table->string('niveau_education');
             $table->string('niveau_classe');
-            $table->foreignId('salle_id')->nullable()->constrained('salles')->onDelete('set null');
-            $table->foreignIdFor(ProgrammeClasse::class)->nullable()->constrained()->onDelete('set null');
+            $table->enum('periode', ['annuelle', 'semestre'])->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('classes');
+        Schema::dropIfExists('programme_classes');
     }
 };

@@ -19,32 +19,51 @@ class EmployeController extends Controller
 
             // Initialize image filename as null
             $fileName = null;
-
-            // Handle image upload
             if ($request->file('image')) {
                 $file = $request->file('image');
                 $fileName = date('YmdHi') . $file->getClientOriginalName(); // Create a unique filename
                 $file->move(public_path('images'), $fileName); // Move the file to the specified directory
             }
 
-            // Assign other attributes to the employe model
+            $cvFileName = null;
+            if ($request->file('cv_diplomes')) {
+            $cvFile = $request->file('cv_diplomes');
+            $cvFileName = date('YmdHi') . $cvFile->getClientOriginalName();
+            $cvFile->move(public_path('cv_diplomes'), $cvFileName);
+            }
             $employe->nom = $request->nom;
             $employe->prenom = $request->prenom;
             $employe->telephone = $request->telephone;
             $employe->email = $request->email;
             $employe->adresse = $request->adresse;
-            $employe->poste = $request->poste;
-            $employe->image = $fileName; // Assign the filename (or null) to the model
-            $employe->date_embauche = $request->date_embauche;
-            $employe->statut = $request->statut;
-            $employe->type_salaire = $request->type_salaire;
+            $employe->poste_occupé = $request->poste_occupé;
+            $employe->image = $fileName;
             $employe->date_naissance = $request->date_naissance;
             $employe->lieu_naissance = $request->lieu_naissance;
             $employe->genre = $request->genre;
-            $employe->statut_marital = $request->statut_marital;
-            $employe->numero_securite_social = $request->numero_securite_social;
+            $employe->nationalité = $request->nationalité;
             $employe->numero_CNI = $request->numero_CNI;
-            $employe->date_fin_contrat = $request->date_fin_contrat;
+            $employe->date_debut_service = $request->date_debut_service;
+            $employe->statut_employé = $request->statut_employé;
+            $employe->type_contrat = $request->type_contrat;
+            $employe->horaires_travail = $request->horaires_travail ?? null;
+            $employe->numero_identification_employe = $request->numero_identification_employe;
+            $employe->superviseur = $request->superviseur ?? null;
+            $employe->salaire_base = $request->salaire_base;
+            $employe->type_salaire = $request->type_salaire;
+            $employe->prime_indemnités = $request->prime_indemnités ?? null ;
+            $employe->cotisation_sociales = $request->cotisation_sociales ?? null;
+            $employe->part_employeur = $request->part_employeur ?? null;
+            $employe->retenue_salaire = $request->retenue_salaire ?? null;
+            $employe->mode_paiement = $request->mode_paiement;
+            $employe->banque_domiciliation = $request->banque_domiciliation ?? null;
+            $employe->numero_compte_bancaire = $request->numero_carte_bancaire ?? null;
+            $employe->cv_diplomes = $cvFileName ?? null;
+            $employe->contrat_travail= $request->contrat_travail ?? null;
+            $employe->ancienneté = $request->ancienneté ?? null;
+            $employe->evaluation_performance = $request->evaluation_performance ?? null;
+            $employe->commentaires_notes = $request->commentaires_notes ?? null;
+
 
             // Save the employe to the database
             $employe->save();
@@ -70,36 +89,55 @@ class EmployeController extends Controller
         $employe = Employe::find($id);
 
         // Initialize with the current image name
-        $fileName = $employe->image;
-
-        // Handle the image upload
+        $fileName = null;
         if ($request->file('image')) {
             $file = $request->file('image');
-            $fileName = date('YmdHi') . $file->getClientOriginalName(); // Create a new unique filename
-            $file->move(public_path('images'), $fileName); // Move the uploaded file
+            $fileName = date('YmdHi') . $file->getClientOriginalName(); // Create a unique filename
+            $file->move(public_path('images'), $fileName); // Move the file to the specified directory
         }
 
-        // Update the employe's attributes
+        $cvFileName = null;
+        if ($request->file('cv_diplomes')) {
+        $cvFile = $request->file('cv_diplomes');
+        $cvFileName = date('YmdHi') . $cvFile->getClientOriginalName();
+        $cvFile->move(public_path('cv_diplomes'), $cvFileName);
+        }
         $employe->nom = $request->nom;
         $employe->prenom = $request->prenom;
         $employe->telephone = $request->telephone;
         $employe->email = $request->email;
         $employe->adresse = $request->adresse;
-        $employe->poste = $request->poste;
-        $employe->image = $fileName; // Update the image attribute
-        $employe->date_embauche = $request->date_embauche;
-        $employe->statut = $request->statut;
-        $employe->type_salaire = $request->type_salaire;
+        $employe->poste_occupé = $request->poste_occupé;
+        $employe->image = $fileName;
         $employe->date_naissance = $request->date_naissance;
         $employe->lieu_naissance = $request->lieu_naissance;
-        $employe->genre= $request->genre;
-        $employe->statut_marital = $request->statut_marital;
-        $employe->numero_securite_social = $request->numero_securite_social;
+        $employe->genre = $request->genre;
+        $employe->nationalité = $request->nationalité;
         $employe->numero_CNI = $request->numero_CNI;
-        $employe->date_fin_contrat = $request->date_fin_contrat;
+        $employe->date_debut_service = $request->date_debut_service;
+        $employe->statut_employé = $request->statut_employé;
+        $employe->type_contrat = $request->type_contrat;
+        $employe->horaires_travail = $request->horaires_travail ?? null;
+        $employe->numero_identification_employe = $request->numero_identification_employe;
+        $employe->superviseur = $request->superviseur ?? null;
+        $employe->salaire_base = $request->salaire_base;
+        $employe->type_salaire = $request->type_salaire;
+        $employe->prime_indemnités = $request->prime_indemnités ?? null ;
+        $employe->cotisation_sociales = $request->cotisation_sociales ?? null;
+        $employe->part_employeur = $request->part_employeur ?? null;
+        $employe->retenue_salaire = $request->retenue_salaire ?? null;
+        $employe->mode_paiement = $request->mode_paiement;
+        $employe->banque_domiciliation = $request->banque_domiciliation ?? null;
+        $employe->numero_compte_bancaire = $request->numero_carte_bancaire ?? null;
+        $employe->cv_diplomes = $cvFileName ?? null;
+        $employe->contrat_travail= $request->contrat_travail ?? null;
+        $employe->ancienneté = $request->ancienneté ?? null;
+        $employe->evaluation_performance = $request->evaluation_performance ?? null;
+        $employe->commentaires_notes = $request->commentaires_notes ?? null;
+
 
         // Save the updated employe data
-        $employe->save();
+        $employe->update();
 
         return response()->json([
             'status_code' => 200,

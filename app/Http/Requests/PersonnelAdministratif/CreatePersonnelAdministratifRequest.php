@@ -22,28 +22,43 @@ class CreatePersonnelAdministratifRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
+            'nom' => ['required', 'string', 'max:255'],
+            'prenom' => ['required', 'string', 'max:255'],
+           'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone',],
             'email' => ['required', 'string', 'email','nullable', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:users,email',],
-            'password' => 'nullable|required|min:8',
-            'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone',],
-            'adresse' => 'required|string|max:255',
-            'genre' => 'required|in:Homme,Femme',
-            'etat' => 'nullable|string|in:actif,inactif',
-            'poste' => ['required', 'string'],
-            'image' => ['nullable' ,'string'],
-            'date_embauche' => ['required', 'date'],
-            'statut' => ['required', 'in:permanent,vacataire,contractuel,honoraire'],
-            'type_salaire' => ['required', 'in:fixe,horaire'],
+            'password' => 'required|min:8',
+            'adresse' => ['required', 'string'],
+            'genre' => ['required', 'in:Femme,Homme'],
             'date_naissance' => ['required', 'date'],
             'lieu_naissance' => ['required', 'string'],
-            'statut_marital' => ['required', 'in:marié,celibataire,divorcé,veuve,veuf'],
+            'poste_occupé' => ['required', 'string'],
+            'image' => ['nullable' ,'string'],
+            'date_debut_service' => ['required', 'date'],
+            'statut_employé' => ['required', 'in:Permanent,Temporaire,Vacataire'],
+            'type_contrat' => ['required', 'in:CDI,CDD,Contrat,Vacataire'],
+            'salaire_base' => ['required', 'string'],
+            'horaires_travail' => ['nullable', 'string'],
+            'type_salaire' => ['required', 'in:Mensuel,Horaire'],
+            'departement_service' => ['required', 'in:Administratif,Comptabilité,Maintenance'],
+            'prime_indemnités' => ['nullable', 'string'],
+            'cotisation_sociales' => ['nullable', 'string'],
+            'part_employeur' => ['nullable', 'string'],
+            'retenue_salaire' => ['nullable', 'string'],
+            'mode_paiement' => ['required', 'in:Virement,Bancaire,Espèce,Chèque'],
+            'banque_domiciliation' => ['nullable', 'string'],
+            'numero_compte_bancaire' => ['nullable', 'string'],
+            'cv_diplomes' => ['nullable', 'string'],
+            'contrat_travail' => ['nullable', 'string'],
+            'ancienneté' => ['nullable', 'string'],
+            'evaluation_performance' => ['nullable', 'numeric'],
+            'commentaires_notes' => ['nullable', 'string'],
             'numero_CNI' => ['string', 'unique:personnel_administratifs,numero_CNI'],
-            'numero_securite_social' => ['nullable','string', 'unique:personnel_administratifs,numero_securite_social'],
-            'date_fin_contrat' => ['required', 'date'],
+
+
         ];
     }
     public function messages(): array
@@ -94,6 +109,8 @@ class CreatePersonnelAdministratifRequest extends FormRequest
 
         'type_salaire.required' => 'Le champ type de salaire est requis.',
         'type_salaire.in' => 'Le type de salaire doit être soit fixe, soit horaire.',
+        'departement_service.required' => 'Le champ departement et service est requis.',
+        'departement_service.in' => 'Le departement et service doit être soit fixe, soit horaire.',
 
         'date_naissance.required' => 'Le champ date de naissance est requis.',
         'date_naissance.date' => 'Le champ date de naissance doit être une date valide.',
@@ -114,9 +131,14 @@ class CreatePersonnelAdministratifRequest extends FormRequest
         'date_fin_contrat.date' => 'Le champ date de fin de contrat doit être une date valide.',
     ];
 }
-    protected function failedValidation(Validator $validator)
-    {
-        $errors = $validator->errors()->toArray();
-        throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
-    }
+/**
+* @param Validator $validator
+* @return void
+* @throws HttpResponseException
+*/
+protected function failedValidation(Validator $validator)
+{
+   $errors = $validator->errors()->toArray();
+   throw new HttpResponseException(response()->json(['errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
+}
 }

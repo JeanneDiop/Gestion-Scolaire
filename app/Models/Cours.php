@@ -8,7 +8,8 @@ use App\Models\Enseignant;
 use App\Models\Planifiercour;
 use App\Models\Evaluation;
 use App\Models\Programme;
-use App\Models\Classe;
+use App\Models\PresenceAbsence;
+use App\Models\ProgrammeClasse;
 use App\Models\ClasseAssociation;
 class Cours extends Model
 {
@@ -17,11 +18,11 @@ class Cours extends Model
         'nom',
         'description',
         'niveau_education',
-        'matiere',
         'type',
         'duree',
         'etat',
         'credits',
+        'semestre',
     ];
     public function enseignant(){
         return $this->belongsTo(Enseignant::class);
@@ -32,7 +33,7 @@ class Cours extends Model
     }
     public function presenceabsences()
     {
-        return $this->hasMany(PresenceAbsence::class);
+        return $this->hasMany(PresenceAbsence::class ,'cours_id');
     }
     public function evaluations()
     {
@@ -42,11 +43,10 @@ class Cours extends Model
     {
         return $this->hasMany(Programme::class);
     }
-    public function classes()
+    public function programmeclasse()
     {
-        return $this->belongsTo(Classe::class);
+        return $this->belongsTo(ProgrammeClasse::class, 'cours_id');
     }
-
     public function classeassociations()
     {
         return $this->hasMany(ClasseAssociation::class, 'cours_id');

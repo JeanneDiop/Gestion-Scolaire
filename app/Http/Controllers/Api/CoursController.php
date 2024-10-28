@@ -41,22 +41,31 @@ class CoursController extends Controller
             ]);
         }
     }
-    public function index()
+
+public function index()
 {
     try {
         $cours = Cours::with([
             'enseignant.user',
             'evaluations.apprenant.user',
-            'classeAssociations.classe'
+            'classeAssociations.classe',
+            'programmeclasse'
         ])->get();
 
-        // Mapper les cours pour formater les données
         $result = $cours->map(function ($cours) {
             return [
                 'id' => $cours->id,
                 'nom' => $cours->nom,
                 'description' => $cours->description,
                 'duree' => $cours->duree,
+                'programme_classe' => $cours->programmeClasse ? [
+                    'id' => $cours->programmeClasse->id,
+                    'nom' => $cours->programmeClasse->nom,
+                    'description' => $cours->programmeClasse->description,
+                    'niveau_classe' => $cours->programmeClasse->niveau_classe,
+                    'niveau_education' => $cours->programmeClasse->niveau_education,
+                    'periode' => $cours->programmeClasse->periode,
+                ] : null,
                 'enseignant' => [
                     'id' => $cours->enseignant->user->id,
                     'nom' => $cours->enseignant->user->nom,
@@ -65,7 +74,7 @@ class CoursController extends Controller
                 ],
                 'evaluations' => $cours->evaluations->map(function ($evaluation) {
                     $apprenant = $evaluation->apprenant;
-                    $classe = $apprenant->classe; // Relation classe de l'apprenant
+                    $classe = $apprenant->classe; 
                     $salle = $classe ? $classe->salle : null;
 
                     return [
@@ -111,20 +120,28 @@ class CoursController extends Controller
     }
 }
 
-    public function show($id)
+public function show($id)
 {
     try {
         $cours = Cours::with([
             'enseignant.user',
-            'evaluations.apprenant.user', // Ici, on charge l'utilisateur de l'apprenant
-            'classeAssociations.classe' // Charger les classes associées
+            'evaluations.apprenant.user',
+            'classeAssociations.classe',
+            'programmeclasse'
         ])->findOrFail($id);
-
-        $result = [
+        $coursData = [
             'id' => $cours->id,
             'nom' => $cours->nom,
             'description' => $cours->description,
             'duree' => $cours->duree,
+            'programme_classe' => $cours->programmeClasse ? [
+                'id' => $cours->programmeClasse->id,
+                    'nom' => $cours->programmeClasse->nom,
+                    'description' => $cours->programmeClasse->description,
+                    'niveau_classe' => $cours->programmeClasse->niveau_classe,
+                    'niveau_education' => $cours->programmeClasse->niveau_education,
+                    'periode' => $cours->programmeClasse->periode,
+            ] : null,
             'enseignant' => [
                 'id' => $cours->enseignant->user->id,
                 'nom' => $cours->enseignant->user->nom,
@@ -133,8 +150,6 @@ class CoursController extends Controller
             ],
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
                 $apprenant = $evaluation->apprenant;
-                $classe = $apprenant->classe; // Utiliser la relation classe de l'apprenant
-                $salle = $classe ? $classe->salle : null;
 
                 return [
                     'id' => $evaluation->id,
@@ -145,74 +160,60 @@ class CoursController extends Controller
                         'id' => $apprenant->user->id,
                         'nom' => $apprenant->user->nom,
                         'prenom' => $apprenant->user->prenom,
-                        'classe' => [
-                            'id' => $classe ? $classe->id : null,
-                            'nom_classe' => $classe ? $classe->nom : null,
-                            'salle' => $salle ? [
-                                'id' => $salle->id,
-                                'nom_salle' => $salle->nom
-                            ] : null
-                        ]
+                        'classe' => $apprenant->classe ? [
+                            'id' => $apprenant->classe->id,
+                            'nom_classe' => $apprenant->classe->nom,
+                        ] : null
                     ]
                 ];
             }),
             'classes_associées' => $cours->classeAssociations->map(function ($association) {
                 return [
-                    'classe_id' => $association->classe_id, // Afficher le classe_id
-                    'nom_classe' => $association->classe ? $association->classe->nom : null,
+                    'classe_id' => $association->classe_id,
+                    'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
                 ];
             }),
         ];
 
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Le cours a été récupéré avec succès.',
-            'data' => $result,
+            'status_message' => 'Détails du cours récupérés avec succès.',
+            'data' => $coursData,
         ], 200);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    } catch (ModelNotFoundException $e) {
         return response()->json([
             'status_code' => 404,
-            'status_message' => 'Cours non trouvé.',
+            'status_message' => 'Cours non trouvé',
+            'error' => 'Le cours avec l\'ID spécifié n\'existe pas.',
         ], 404);
     } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la récupération du cours.',
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des détails du cours.',
             'error' => $e->getMessage(),
         ], 500);
     }
 }
-
-      public function destroy($id)
+public function destroy($id)
 {
-    DB::beginTransaction();
-
     try {
-        // Récupération du cours à supprimer
         $cours = Cours::findOrFail($id);
 
-        // Vérification si le cours a un enseignant associé
-        if ($cours->enseignant_id) {
-            // Mettre à null l'enseignant associé avant la suppression du cours
-            $cours->enseignant_id = null;
-            $cours->save();
-        }
-
-        // Suppression du cours
         $cours->delete();
-
-        DB::commit(); // Valide la transaction
-
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'Le cours a été supprimé avec succès.',
-        ]);
+            'status_message' => 'Cours supprimé avec succès.',
+        ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Cours non trouvé',
+            'error' => 'Le cours avec l\'ID spécifié n\'existe pas.',
+        ], 404);
     } catch (\Exception $e) {
-        DB::rollBack(); // Annule la transaction en cas d'erreur
-
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur est survenue lors de la suppression du cours.',
+            'status_message' => 'Une erreur s\'est produite lors de la suppression du cours.',
             'error' => $e->getMessage(),
         ], 500);
     }

@@ -8,25 +8,38 @@ use App\Models\User;
 use App\Models\EnseignantClasse;
 use App\Models\ClasseAssociation;
 use App\Models\PresenceAbsence;
+use App\Models\Cours;
 
 class Enseignant extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'specialite',
+        'matiere_enseignée',
         'image',
-        'statut_marital',
+        'numero_identification_enseignant',
         'date_naissance',
         'lieu_naissance',
-        'niveau_ecole',
-        'numero_securite_social',
-        'statut',
-        'montant_salaire',
-        'cotisation_salariale',
-        'net_payer',
+        'niveau_enseignant',
+        'nationalité',
+        'statut_enseignant',
+        'date_debut_service',
+        'type_contrat',
+        'heure_travail_hebdomadaire',
         'numero_CNI',
-        'date_embauche',
-        'date_fin_contrat'
+        'salaire_base',
+        'type_salaire',
+        'prime_indemnités',
+        'cotisation_sociales',
+        'part_employeur',
+        'retenue_salaire',
+        'mode_paiement',
+        'banque_domiciliation',
+        'numero_RIB',
+        'cv_diplomes',
+        'contrat_travail',
+        'ancienneté',
+        'evaluation_performance',
+        'commentaires_notes',
     ];
 
 
@@ -39,10 +52,14 @@ class Enseignant extends Model
     {
         return $this->hasMany(EnseignantClasse::class);
     }
-
-    public function presenceAbsences()
+    public function cours()
     {
-        return $this->hasMany(PresenceAbsence::class);
+        return $this->hasMany(Cours::class);
+    }
+
+    public function presenceabsences()
+    {
+        return $this->hasMany(PresenceAbsence::class, 'enseignant_id');
     }
 
     public function classeassociations()

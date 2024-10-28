@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('adresse');
             //$table->foreignIdFor(Role::class)->constrained()->onDelete('cascade');
             $table->string('role_nom');
-            $table->rememberToken();
             $table->timestamps();
         });
     }

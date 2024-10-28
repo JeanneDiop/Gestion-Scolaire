@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Salle;
-use App\Models\Cours;
 use App\Models\Apprenant;
 use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
 use App\Models\ApprenantClasse;
 use App\Models\ClasseAssociation;
+use App\Models\ProgrammeClasse;
 
 use App\Models\Enseignant;
 
@@ -19,6 +19,7 @@ class Classe extends Model
     use HasFactory;
     protected $fillable = [
         'nom',
+        'niveau_education',
         'niveau_classe',
 
     ];
@@ -27,8 +28,8 @@ class Classe extends Model
     public function salle(){
         return $this->belongsTo(Salle::class);
     }
-    public function cours(){
-        return $this->hasMany(Cours::class);
+    public function programmeclasse(){
+        return $this->belongsTo(ProgrammeClasse::class, 'classe_id');
     }
     public function apprenants()
     {

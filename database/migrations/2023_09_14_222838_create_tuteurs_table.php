@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->string('profession');
+            $table->string('nationalité');
             $table->string('image')->nullable();
-            $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf'])->nullable();
+            $table->string('nombre_enfants_inscrits')->unique();
             $table->string('numero_CNI')->unique();
+            $table->enum('lien_parenté', ['père','mère','tuteur','autre']);
             $table->timestamps();
         });
     }

@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('planifiercours', function (Blueprint $table) {
             $table->id();
             $table->date('date_cours');
-            $table->time('heure_debut');
-            $table->time('heure_fin');
+            $table->string('heure_debut');
+            $table->string('heure_fin');
             $table->string('jour_semaine');
-            $table->time('duree')->nullable();
+            $table->string('duree')->nullable();
             $table->enum('statut', ['prévu', 'annulé', 'reporté'])->default('prévu');
             $table->string('annee_scolaire');
             $table->integer('semestre');

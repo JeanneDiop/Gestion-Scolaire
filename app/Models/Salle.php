@@ -16,6 +16,6 @@ class Salle extends Model
     ];
 
     public function classes(){
-        return $this->hasmany(Classe::class);
+        return $this->hasMany(Classe::class);
 }
 }

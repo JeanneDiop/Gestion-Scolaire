@@ -15,7 +15,9 @@ class Tuteur extends Model
         'profession',
         'image',
         'numero_CNI',
-        'statut_marital',
+        'nationalité',
+        'nombre_enfants_inscrits',
+        'lien_parenté'
     ];
 
     public function user()

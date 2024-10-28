@@ -13,24 +13,34 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('enseignants', function (Blueprint $table) {
-
             $table->id();
-            $table->string('specialite');
-            $table->enum('statut_marital', ['marié', 'celibataire','divorcé','veuve','veuf']);
+            $table->string('matiere_enseignée');
+            $table->string('numero_identification_enseignant')->unique();
             $table->date('date_naissance');
             $table->string('lieu_naissance');
+            $table->string('nationalité')->nullable();
             $table->string('image')->nullable();
             $table->string('numero_CNI')->unique();
-            $table->string('numero_securite_social')->unique();
-            $table->string('niveau_ecole');
-            $table->enum('statut', ['permanent', 'vacataire','contractuel','honoraire']);
-            $table->float('montant_salaire');
-            $table->float('cotisation_salariale')->nullable();
-            $table->float('net_payer')->nullable();
-            $table->date('date_embauche');
-            $table->date('date_fin_contrat');
+            $table->string('niveau_enseignant');
+            $table->enum('statut_enseignant', ['Permanent', 'Vacataire','Temporaire']);
+            $table->date('date_debut_service');
+            $table->enum('type_contrat', ['CDI', 'CDD','Contrat','Vacataire']);
+            $table->string('heure_travail_hebdomadaire');
+            $table->string('salaire_base');
+            $table->enum('type_salaire', ['Mensuel', 'Horaire']);
+            $table->string('prime_indemnités')->nullable();
+            $table->string('cotisation_sociales')->nullable();
+            $table->string('part_employeur')->nullable();
+            $table->string('retenue_salaire')->nullable();
+            $table->enum('mode_paiement', ['Virement', 'Bancaire','Espèce','Chèque']);
+            $table->string('banque_domiciliation')->nullable();
+            $table->string('numero_RIB')->nullable();
+            $table->string('cv_diplomes')->nullable();
+            $table->string('contrat_travail')->nullable();
+            $table->string('ancienneté')->nullable();
+            $table->double('evaluation_performance')->nullable();
+            $table->string('commentaires_notes')->nullable();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
-            $table->rememberToken();
             $table->timestamps();
         });
     }

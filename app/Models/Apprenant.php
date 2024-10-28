@@ -22,9 +22,22 @@ class Apprenant extends Model
         'lieu_naissance',
         'numero_CNI',
         'image',
-        'numero_carte_scolaire',
+        'numero_identification_eleve',
         'niveau_education',
-        'statut_marital',
+        'regime_paiement',
+        'reduction_bourse',
+        'statut_paiement_actuel',
+        'references_factures',
+        'nationalité',
+        'conditions_medicales',
+        'contact_urgence',
+        'note_resultat_anterieur',
+        'evaluations_specifiques',
+        'langue_parlee_maison',
+        'activités_extraordinaires',
+        'remarque_eleve',
+        'acte_naissance',
+        'autorisation_parentale',
         'tuteur_id',
         'classe_id'
     ];
@@ -39,7 +52,7 @@ class Apprenant extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function absencePresences()
+    public function presenceabsences()
     {
         return $this->hasMany(PresenceAbsence::class, 'apprenant_id');
     }

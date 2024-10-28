@@ -20,13 +20,12 @@ return new class extends Migration
             $table->enum('statut', ['present', 'absent', 'retard'])->default('present');
             $table->date('date_present')->nullable();
             $table->date('date_absent')->nullable();
-            $table->time('heure_arrivee')->nullable();
-            $table->time('duree_retard')->nullable();
+            $table->string('heure_arrivee')->nullable();
+            $table->string('duree_retard')->nullable();
             $table->string('raison_absence')->nullable();
-            $table->foreignIdFor(Apprenant::class)->nullable()->constrained()->onDelete('cascade');
-            $table->foreignIdFor(Cours::class)->constrained()->onDelete('cascade');
-            $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('cascade');
-            $table->timestamps();
+            $table->foreignIdFor(Apprenant::class)->nullable()->constrained('apprenants')->onDelete('cascade');
+            $table->foreignIdFor(Cours::class)->constrained('cours')->onDelete('cascade');
+            $table->foreignIdFor(Enseignant::class)->nullable()->constrained('enseignants')->onDelete('cascade');
         });
     }
 

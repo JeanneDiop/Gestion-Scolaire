@@ -203,104 +203,55 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
     DB::beginTransaction(); // Démarre la transaction
 
     try {
-        // Création de l'utilisateur Apprenant
-        $userApprenant = User::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'telephone' => $request->telephone,
-            'adresse' => $request->adresse,
-            'genre' => $request->genre,
-            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
-            'role_nom' => 'apprenant',
-        ]);
-
-        // Création de l'utilisateur Tuteur
-        $userTuteur = User::create([
-            'nom' => $request->tuteur['nom'],
-            'prenom' => $request->tuteur['prenom'],
-            'email' => $request->tuteur['email'],
-            'password' => Hash::make($request->tuteur['password']),
-            'telephone' => $request->tuteur['telephone'],
-            'adresse' => $request->tuteur['adresse'],
-            'genre' => $request->tuteur['genre'],
-            'etat' => data_get($request->tuteur, 'etat', 'actif'), // Utilisez 'actif' par défaut si etat n'est pas fourni
-            'role_nom' => 'tuteur',
-        ]);
-
-        // Gestion du fichier image du tuteur
+        // Gestion de l'image du tuteur
         $tuteurImageFileName = null;
         if ($request->file('tuteur.image')) {
-            $tuteurFile = $request->file('tuteur.image');
-            $tuteurFileName = date('YmdHi').$tuteurFile->getClientOriginalName();
-            $tuteurFile->move(public_path('images'), $tuteurFileName);
-            $tuteurImageFileName = $tuteurFileName;
+            $tuteurImageFileName = $this->handleImageUpload($request->file('tuteur.image'));
         }
 
-        // Création du tuteur
+        // Création de l'utilisateur Tuteur
+        $userTuteur = User::firstOrCreate(
+            ['email' => $request->tuteur['email']],
+            [
+                'nom' => $request->tuteur['nom'],
+                'prenom' => $request->tuteur['prenom'],
+                'password' => Hash::make($request->tuteur['password']),
+                'telephone' => $request->tuteur['telephone'],
+                'adresse' => $request->tuteur['adresse'],
+                'genre' => $request->tuteur['genre'],
+                'etat' => data_get($request->tuteur, 'etat', 'actif'),
+                'role_nom' => 'tuteur',
+            ]
+        );
+
+        // Vérification si l'utilisateur a été créé
+        if (!$userTuteur->wasRecentlyCreated) {
+            // L'utilisateur existe déjà, on peut récupérer son ID
+            $userTuteur = User::where('email', $request->tuteur['email'])->first();
+        }
+
+        // Création ou récupération du tuteur
         $tuteur = $userTuteur->tuteur()->create([
             'profession' => $request->tuteur['profession'],
-            'statut_marital' => $request->tuteur['statut_marital'],
+            'nationalité' => $request->tuteur['nationalité'],
+            'nombre_enfants_inscrits' => $request->tuteur['nombre_enfants_inscrits'],
+            'lien_parenté' => $request->tuteur['lien_parenté'],
             'numero_CNI' => $request->tuteur['numero_CNI'],
-            'image' => $tuteurImageFileName, // Utiliser le nom du fichier image du tuteur s'il est défini
+            'image' => $tuteurImageFileName,
         ]);
 
-        // Gestion du fichier image de l'apprenant
+        // Gestion de l'image de l'apprenant
         $apprenantImageFileName = null;
         if ($request->file('image')) {
-            $apprenantFile = $request->file('image');
-            $apprenantFileName = date('YmdHi').$apprenantFile->getClientOriginalName();
-            $apprenantFile->move(public_path('images'), $apprenantFileName);
-            $apprenantImageFileName = $apprenantFileName;
+            $apprenantImageFileName = $this->handleImageUpload($request->file('image'));
         }
 
-        // Création de l'apprenant avec le tuteur_id
-        $apprenant = $userApprenant->apprenant()->create([
-            'date_naissance' => $request->date_naissance,
-            'lieu_naissance' => $request->lieu_naissance,
-            'numero_CNI' => $request->numero_CNI,
-            'numero_carte_scolaire' => $request->numero_carte_scolaire,
-            'niveau_education' => $request->niveau_education,
-            'statut_marital' => $request->statut_marital,
-            'image' => $apprenantImageFileName, // Utiliser le nom du fichier image de l'apprenant s'il est défini
-            'classe_id' => $request->classe_id,
-            'tuteur_id' => $tuteur->id, // Associer l'ID du tuteur à l'apprenant
-        ]);
+        // Gestion de l'acte de naissance de l'apprenant
+        $acteNaissanceFileName = null;
+        if ($request->file('acte_naissance')) {
+            $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
+        }
 
-        // Récupération des informations de la classe
-        $classe = Classe::find($request->classe_id);
-
-        DB::commit(); // Valide la transaction
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Apprenant et Tuteur créés avec succès',
-            'user_apprenant' => $userApprenant,
-            'apprenant' => $apprenant,
-            'user_tuteur' => $userTuteur,
-            'tuteur' => $tuteur,
-            'classe' => $classe,
-        ]);
-    } catch (\Exception $e) {
-        DB::rollBack(); // Annule la transaction en cas d'erreur
-
-        return response()->json([
-            'status' => 500,
-            'message' => 'Une erreur est survenue lors de la création de l\'apprenant et du tuteur.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-
-
-
-
-public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
-{
-    DB::beginTransaction(); // Démarre la transaction
-
-    try {
         // Création de l'utilisateur Apprenant
         $userApprenant = User::create([
             'nom' => $request->nom,
@@ -314,85 +265,31 @@ public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
             'role_nom' => 'apprenant',
         ]);
 
-        // Gestion du fichier image de l'apprenant
-        $apprenantImageFileName = null;
-        if ($request->file('image')) {
-            $apprenantFile = $request->file('image');
-            $apprenantFileName = date('YmdHi').$apprenantFile->getClientOriginalName();
-            $apprenantFile->move(public_path('images'), $apprenantFileName);
-            $apprenantImageFileName = $apprenantFileName;
-        }
-
-        // Création de l'apprenant
+        // Création de l'apprenant avec l'association du tuteur et tous les champs supplémentaires
         $apprenant = $userApprenant->apprenant()->create([
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'numero_CNI' => $request->numero_CNI,
-            'numero_carte_scolaire' => $request->numero_carte_scolaire,
+            'numero_CNI' => $request->numero_CNI ?? null,
             'niveau_education' => $request->niveau_education,
-            'statut_marital' => $request->statut_marital,
             'image' => $apprenantImageFileName,
+            'nationalité' =>$request->nationalité,
+            'acte_naissance' => $acteNaissanceFileName,
             'classe_id' => $request->classe_id ?? null,
+            'tuteur_id' => $tuteur->id,// Association avec le tute
+            'numero_identification_eleve' => $request->numero_identification_eleve ?? null,
+            'regime_paiement' => $request->regime_paiement,
+            'reduction_bourse' => $request->reduction_bourse,
+            'statut_paiement_actuel' => $request->statut_paiement_actuel,
+            'references_factures' => $request->references_factures,
+            'conditions_medicales' => $request->conditions_medicales,
+            'contact_urgence' => $request->contact_urgence,
+            'note_resultat_anterieur' => $request->note_resultat_anterieur,
+            'evaluations_specifiques' => $request->evaluations_specifiques,
+            'langue_parlee_maison' => $request->langue_parlee_maison,
+            'activites_extraordinaires' => $request->activites_extraordinaires,
+            'remarque_eleve' => $request->remarque_eleve,
+            'autorisation_parentale' => $request->autorisation_parentale,
         ]);
-
-        // Création du tuteur seulement si les informations de tuteur sont fournies
-        if ($request->has('tuteur')) {
-            // Vérifier si le tuteur existe déjà par son email ou son numéro CNI
-            $userTuteur = User::where('email', $request->tuteur['email'])
-                ->orWhere('numero_CNI', $request->tuteur['numero_CNI'])
-                ->first();
-
-            // Si le tuteur n'existe pas, on le crée
-            if (!$userTuteur) {
-                $userTuteur = User::create([
-                    'nom' => $request->tuteur['nom'],
-                    'prenom' => $request->tuteur['prenom'],
-                    'email' => $request->tuteur['email'],
-                    'password' => Hash::make($request->tuteur['password']),
-                    'telephone' => $request->tuteur['telephone'],
-                    'adresse' => $request->tuteur['adresse'],
-                    'genre' => $request->tuteur['genre'],
-                    'etat' => data_get($request->tuteur, 'etat', 'actif'),
-                    'role_nom' => 'tuteur',
-                ]);
-
-                // Gestion du fichier image du tuteur
-                $tuteurImageFileName = null;
-                if ($request->file('tuteur.image')) {
-                    $tuteurFile = $request->file('tuteur.image');
-                    $tuteurFileName = date('YmdHi').$tuteurFile->getClientOriginalName();
-                    $tuteurFile->move(public_path('images'), $tuteurFileName);
-                    $tuteurImageFileName = $tuteurFileName;
-                }
-
-                // Création du tuteur
-                $tuteur = $userTuteur->tuteur()->create([
-                    'profession' => $request->tuteur['profession'],
-                    'statut_marital' => $request->tuteur['statut_marital'],
-                    'numero_CNI' => $request->tuteur['numero_CNI'],
-                    'image' => $tuteurImageFileName,
-                ]);
-            } else {
-                // Si le tuteur existe, on vérifie si le téléphone correspond
-                if ($userTuteur->telephone !== $request->tuteur['telephone']) {
-                    return response()->json([
-                        'status' => 400,
-                        'message' => 'Le téléphone du tuteur ne correspond pas à celui existant.',
-                    ], 400);
-                }
-
-                // Récupération des informations du tuteur existant
-                $tuteur = $userTuteur->tuteur;
-            }
-
-            // Mise à jour de l'apprenant pour lui associer le tuteur
-            $apprenant->update([
-                'tuteur_id' => $tuteur->id
-            ]);
-        }
-
-        // Récupération des informations de la classe
-        $classe = Classe::find($request->classe_id);
 
         DB::commit(); // Valide la transaction
 
@@ -401,9 +298,8 @@ public function registerApprenantTuteurs(CreateApprenantTuteurRequest $request)
             'message' => 'Apprenant et Tuteur créés avec succès',
             'user_apprenant' => $userApprenant,
             'apprenant' => $apprenant,
-            'user_tuteur' => isset($userTuteur) ? $userTuteur : null,
-            'tuteur' => isset($tuteur) ? $tuteur : null,
-            'classe' => $classe,
+            'user_tuteur' => $userTuteur,
+            'tuteur' => $tuteur,
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -490,9 +386,9 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'numero_carte_scolaire' => $request->numero_carte_scolaire,
             'niveau_education' => $request->niveau_education,
             'statut_marital' => $request->statut_marital,
-            'image' => $apprenantImageFileName, // Utilise l'image mise à jour ou conserve l'actuelle
+            'image' => $apprenantImageFileName,
             'classe_id' => $request->classe_id,
-            'tuteur_id' => $tuteur->id, // Associe l'ID du tuteur à l'apprenant
+            'tuteur_id' => $tuteur->id,
         ]);
 
         // Récupération des informations de la classe
@@ -530,7 +426,7 @@ public function supprimerTuteur(Tuteur $tuteur)
         if (!$tuteur) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Tuteur non trouvé'
+                'message' => 'Tuteur non trouvé',
             ],404);
         }
 
@@ -563,41 +459,35 @@ public function supprimerTuteur(Tuteur $tuteur)
 public function supprimerUserTuteur(User $user)
 {
     try {
-        // Vérifier si l'utilisateur est bien un tuteur
         if (!$user->tuteur) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Tuteur non trouvé'
+                'message' => 'Tuteur non trouvé',
             ]);
         }
-
-        // Récupérer le tuteur associé à l'utilisateur
         $tuteur = $user->tuteur;
-
-        // Vérifier si le tuteur est encore assigné à des apprenants
         if ($tuteur->apprenants()->count() > 0) {
             return response()->json([
                 'status' => 400,
-                'message' => 'Le tuteur est encore assigné à des apprenants et ne peut pas être supprimé.'
+                'message' => 'Le tuteur est encore assigné à des apprenants et ne peut pas être supprimé.',
             ]);
         }
 
-        // Supprimer l'utilisateur (cela supprime aussi le tuteur via l'héritage)
         $user->delete();
-
         return response()->json([
             'status' => 200,
-            'message' => 'Le tuteur et l\'utilisateur associé ont été supprimés avec succès.'
-        ]);
+            'message' => 'Le tuteur et l\'utilisateur associé ont été supprimés avec succès.',
+        ],200);
 
     } catch (Exception $e) {
         return response()->json([
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la suppression du tuteur.',
-            'error' => $e->getMessage()
-        ],500);
+            'error' => $e->getMessage(),
+        ], 500);
     }
 }
+
 ///---------------Apprenant-----------------------------
 public function registerApprenant(CreateApprenantRequest $request)
 {
@@ -617,15 +507,34 @@ public function registerApprenant(CreateApprenantRequest $request)
             'role_nom' => 'apprenant',
         ]);
 
+        $fileName = null;
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = date('YmdHi') . $file->getClientOriginalName();
+            $file->move(public_path('images'), $fileName);
+        }
         // Création de l'apprenant
         $apprenant = $user->apprenant()->create([
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
             'numero_CNI' => $request->numero_CNI,
-            'numero_carte_scolaire' => $request->numero_carte_scolaire,
-            'niveau_education' =>$request->niveau_education,
-            'statut_marital' => $request->statut_marital,
-            'image' => $request->image,
+            'image' => $fileName,
+            'numero_identification_eleve' => $request->numero_identification_eleve,
+            'niveau_education' => $request->niveau_education,
+            'regime_paiement' => $request->regime_paiement,
+            'reduction_bourse' => $request->reduction_bourse,
+            'statut_paiement_actuel' => $request->statut_paiement_actuel,
+            'reference_factures' => $request->reference_factures,
+            'nationalité' => $request->nationalité,
+            'conditions_medicales' => $request->conditions_medicales,
+            'contact_urgence' => $request->contact_urgence,
+            'note_resultat_anterieur' => $request->note_resultat_anterieur,
+            'evaluations_specifiques' => $request->evaluations_specifiques,
+            'langue_parlee_maison' => $request->langue_parlee_maison,
+            'activités_extraordinaires' => $request->activités_extraordinaires,
+            'remarque_eleve' => $request->remarque_eleve,
+            'acte_naissance' => $request->acte_naissance,
+            'autorisation_parentale' => $request->autorisation_parentale,
             'tuteur_id' => $request->tuteur_id,
             'classe_id' => $request->classe_id,
         ]);
@@ -642,7 +551,7 @@ public function registerApprenant(CreateApprenantRequest $request)
             'user' => $user,
             'apprenant' => $apprenant,
             'tuteur' => $tuteur,
-            'classe' => $classe
+            'classe' => $classe,
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -959,7 +868,25 @@ public function registerEnseignant(CreateEnseignantRequest $request)
     DB::beginTransaction(); // Démarre la transaction
 
     try {
-        // Création de l'utilisateur
+        // Gestion de l'image de l'enseignant
+        $enseignantImageFileName = null;
+        if ($request->file('image')) {
+            $enseignantImageFileName = $this->handleImageUpload($request->file('image'));
+        }
+
+        // Gestion du CV de l'enseignant
+        $cvFileName = null;
+        if ($request->file('cv_diplomes')) {
+            $cvFileName = $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes');
+        }
+
+        // Gestion de l'acte de naissance de l'enseignant (si applicable)
+        $acteNaissanceFileName = null;
+        if ($request->file('acte_naissance')) {
+            $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
+        }
+
+        // Création de l'utilisateur enseignant
         $user = User::create([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -968,34 +895,39 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
             'genre' => $request->genre,
-            'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
+            'etat' => data_get($request, 'etat', 'actif'),
             'role_nom' => 'enseignant',
         ]);
 
-        // Gestion du fichier image de l'enseignant
-        $fileName = null;
-        if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = date('YmdHi') . $file->getClientOriginalName();
-            $file->move(public_path('images'), $fileName);
-        }
-
-        // Création de l'enseignant
+        // Création de l'enseignant avec les informations spécifiques
         $enseignant = $user->enseignant()->create([
-            'specialite' => $request->specialite,
-            'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
-            'image' => $fileName, // Utiliser le nom du fichier image si l'image est uploadée
-            'numero_securite_social' => $request->numero_securite_social,
-            'statut' => $request->statut,
-            'montant_salaire' => $request->montant_salaire,
-            'cotisation_salariale' => $request->cotisation_salariale,
-            'net_payer' => $request->net_payer,
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'image' => $enseignantImageFileName,
+            'cv_diplomes' => $cvFileName,
+            'acte_naissance' => $acteNaissanceFileName, // Ajout de l'acte de naissance
+            'matiere_enseignée' => $request->matiere_enseignée,
+            'numero_identification_enseignant' => $request->numero_identification_enseignant,
+            'niveau_enseignant' => $request->niveau_enseignant,
+            'nationalité' => $request->nationalité ?? null,
+            'statut_enseignant' => $request->statut_enseignant,
+            'date_debut_service' => $request->date_debut_service,
+            'type_contrat' => $request->type_contrat ?? null,
+            'heure_travail_hebdomadaire' => $request->heure_travail_hebdomadaire,
+            'salaire_base' => $request->salaire_base,
+            'type_salaire' => $request->type_salaire,
+            'prime_indemnités' => $request->prime_indemnités ?? null,
+            'cotisation_sociales' => $request->cotisation_sociales ?? null,
+            'part_employeur' => $request->part_employeur ?? null,
+            'retenue_salaire' => $request->retenue_salaire ?? null,
+            'mode_paiement' => $request->mode_paiement,
+            'banque_domiciliation' => $request->banque_domiciliation ?? null,
+            'numero_RIB' => $request->numero_RIB ?? null,
+            'contrat_travail' => $request->contrat_travail ?? null,
+            'ancienneté' => $request->ancienneté ?? null,
+            'evaluation_performance' => $request->evaluation_performance ?? null,
+            'commentaires_notes' => $request->commentaires_notes ?? null,
         ]);
 
         DB::commit(); // Valide la transaction
@@ -1004,7 +936,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'status' => 200,
             'message' => 'Enseignant créé avec succès',
             'user' => $user,
-            'enseignant' => $enseignant
+            'enseignant' => $enseignant,
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -1019,15 +951,15 @@ public function registerEnseignant(CreateEnseignantRequest $request)
 
 public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
 {
-    // Démarrer une transaction
+
     DB::beginTransaction();
 
     try {
-        // Récupérer l'utilisateur et vérifier s'il est associé à un enseignant
+
         $user = User::with('enseignant')->find($userId);
 
         if (!$user || !$user->enseignant) {
-            DB::rollBack(); // Annuler la transaction en cas de problème
+            DB::rollBack();
             return response()->json([
                 'status' => 404,
                 'message' => 'Enseignant non trouvé.',
@@ -1046,26 +978,52 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
         ]);
 
         // Gestion de l'image si elle est téléchargée
-        $fileName = $user->enseignant->image; // Conserver l'image actuelle si aucune nouvelle image n'est fournie
+        $enseignantImageFileName = null;
         if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = date('YmdHi') . $file->getClientOriginalName();
-            $file->move(public_path('images'), $fileName);
+            $enseignantImageFileName = $this->handleImageUpload($request->file('image'));
+        }
+
+        // Gestion du CV de l'enseignant
+        $cvFileName = null;
+        if ($request->file('cv_diplomes')) {
+            $cvFileName = $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes');
+        }
+
+        // Gestion de l'acte de naissance de l'enseignant (si applicable)
+        $acteNaissanceFileName = null;
+        if ($request->file('acte_naissance')) {
+            $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
         }
 
         // Mise à jour des informations spécifiques de l'enseignant
         $user->enseignant->update([
-            'specialite' => $request->specialite,
-            'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'image' => $fileName,
-            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
-            'numero_securite_social' => $request->numero_securite_social,
-            'statut' => $request->statut,
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'image' => $enseignantImageFileName,
+            'cv_diplomes' => $cvFileName,
+            'acte_naissance' => $acteNaissanceFileName, // Ajout de l'acte de naissance
+            'matiere_enseignée' => $request->matiere_enseignée,
+            'numero_identification_enseignant' => $request->numero_identification_enseignant,
+            'niveau_enseignant' => $request->niveau_enseignant,
+            'nationalité' => $request->nationalité ?? null,
+            'statut_enseignant' => $request->statut_enseignant,
+            'date_debut_service' => $request->date_debut_service,
+            'type_contrat' => $request->type_contrat ?? null,
+            'heure_travail_hebdomadaire' => $request->heure_travail_hebdomadaire,
+            'salaire_base' => $request->salaire_base,
+            'type_salaire' => $request->type_salaire,
+            'prime_indemnités' => $request->prime_indemnités ?? null,
+            'cotisation_sociales' => $request->cotisation_sociales ?? null,
+            'part_employeur' => $request->part_employeur ?? null,
+            'retenue_salaire' => $request->retenue_salaire ?? null,
+            'mode_paiement' => $request->mode_paiement,
+            'banque_domiciliation' => $request->banque_domiciliation ?? null,
+            'numero_RIB' => $request->numero_RIB ?? null,
+            'contrat_travail' => $request->contrat_travail ?? null,
+            'ancienneté' => $request->ancienneté ?? null,
+            'evaluation_performance' => $request->evaluation_performance ?? null,
+            'commentaires_notes' => $request->commentaires_notes ?? null,
         ]);
 
         // Valider la transaction
@@ -1074,8 +1032,7 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
         return response()->json([
             'status' => 200,
             'message' => 'Enseignant mis à jour avec succès.',
-            'user' => $user,
-            'enseignant' => $user->enseignant,
+            'enseignant' => $user,
         ]);
 
     } catch (\Exception $e) {
@@ -1095,23 +1052,16 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
 //modifier enseignant dans sa table
 public function updateEnseignant(UpdateEnseignantRequest $request, $id)
 {
-    // Démarrer une transaction
     DB::beginTransaction();
 
     try {
-        // Récupérer l'enseignant et son utilisateur associé via l'ID
         $enseignant = Enseignant::with('user')->find($id);
 
-        // Vérifier si l'enseignant existe
         if (!$enseignant) {
-            DB::rollBack(); // Annuler la transaction
-            return response()->json([
-                'status' => 404,
-                'message' => 'Enseignant non trouvé.',
-            ], 404);
+            DB::rollBack();
+            return response()->json(['status' => 404, 'message' => 'Enseignant non trouvé.'], 404);
         }
 
-        // Mise à jour des informations de l'utilisateur associé à cet enseignant
         $enseignant->user->update([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -1119,46 +1069,78 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
             'genre' => $request->genre,
-            'etat' => $request->etat ?: $enseignant->user->etat, // Conserver l'état actuel si aucun nouvel état n'est fourni
+            'etat' => $request->etat ?: $enseignant->user->etat,
         ]);
 
-        // Gestion de l'image si elle est téléchargée
-        $fileName = $enseignant->image; // Conserver l'image actuelle si aucune nouvelle image n'est fournie
+        // Gestion de l'image
+        $enseignantImageFileName = null;
         if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = date('YmdHi') . $file->getClientOriginalName();
-            $file->move(public_path('images'), $fileName);
+            $enseignantImageFileName = $this->handleImageUpload($request->file('image'));
+        }
+
+        // Gestion du CV de l'enseignant
+        $cvFileName = null;
+        if ($request->file('cv_diplomes')) {
+            $cvFileName = $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes');
+        }
+
+        // Gestion de l'acte de naissance de l'enseignant (si applicable)
+        $acteNaissanceFileName = null;
+        if ($request->file('acte_naissance')) {
+            $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
         }
 
         // Mise à jour des informations spécifiques de l'enseignant
         $enseignant->update([
-            'specialite' => $request->specialite,
-            'statut_marital' => $request->statut_marital,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'image' => $fileName, // Mettre à jour avec la nouvelle image ou conserver l'ancienne
-            'niveau_ecole' => $request->niveau_ecole,
             'numero_CNI' => $request->numero_CNI,
-            'numero_securite_social' => $request->numero_securite_social,
-            'statut' => $request->statut,
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'image' => $enseignantImageFileName,
+            'cv_diplomes' => $cvFileName,
+            'acte_naissance' => $acteNaissanceFileName,
+            'matiere_enseignée' => $request->matiere_enseignée,
+            'numero_identification_enseignant' => $request->numero_identification_enseignant,
+            'niveau_enseignant' => $request->niveau_enseignant,
+            'nationalité' => $request->nationalité ?? null,
+            'statut_enseignant' => $request->statut_enseignant,
+            'date_debut_service' => $request->date_debut_service,
+            'type_contrat' => $request->type_contrat ?? null,
+            'heure_travail_hebdomadaire' => $request->heure_travail_hebdomadaire,
+            'salaire_base' => $request->salaire_base,
+            'type_salaire' => $request->type_salaire,
+            'prime_indemnités' => $request->prime_indemnités ?? null,
+            'cotisation_sociales' => $request->cotisation_sociales ?? null,
+            'part_employeur' => $request->part_employeur ?? null,
+            'retenue_salaire' => $request->retenue_salaire ?? null,
+            'mode_paiement' => $request->mode_paiement,
+            'banque_domiciliation' => $request->banque_domiciliation ?? null,
+            'numero_RIB' => $request->numero_RIB ?? null,
+            'contrat_travail' => $request->contrat_travail ?? null,
+            'ancienneté' => $request->ancienneté ?? null,
+            'evaluation_performance' => $request->evaluation_performance ?? null,
+            'commentaires_notes' => $request->commentaires_notes ?? null,
         ]);
 
-        // Valider la transaction
         DB::commit();
 
         return response()->json([
             'status' => 200,
             'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
-            'enseignant' => $enseignant,
             'user' => $enseignant->user,
+            'enseignant' => $enseignant->only([
+                'id', 'matiere_enseignée', 'numero_identification_enseignant', 'date_naissance',
+                'lieu_naissance', 'nationalité', 'image', 'numero_CNI', 'niveau_enseignant',
+                'statut_enseignant', 'date_debut_service', 'type_contrat',
+                'heure_travail_hebdomadaire', 'salaire_base', 'type_salaire',
+                'prime_indemnités', 'cotisation_sociales', 'part_employeur',
+                'retenue_salaire', 'mode_paiement', 'banque_domiciliation',
+                'numero_RIB', 'cv_diplomes', 'contrat_travail', 'ancienneté',
+                'evaluation_performance', 'commentaires_notes'
+            ]),
         ]);
 
-    } catch (\Exception $e) {
-        // Annuler la transaction en cas d'erreur
+    } catch (\Throwable $e) {
         DB::rollBack();
-
         return response()->json([
             'status' => 500,
             'message' => 'Une erreur est survenue lors de la mise à jour de l\'enseignant.',
@@ -1166,7 +1148,6 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
         ], 500);
     }
 }
-
 
 
 //Supprimer enseignant via la table user
@@ -1338,17 +1319,36 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
 
         // Créer un nouvel enregistrement pour le personnel administratif
         $personneladministratif = $user->personneladministratif()->create([
-            'poste' => $request->poste,
-            'image' => $fileName, // Utilise le nom du fichier
+            'poste_occupé' => $request->poste_occupé,
+            'image' => $fileName,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
-            'statut' => $request->statut,
             'type_salaire' => $request->type_salaire,
-            'statut_marital' => $request->statut_marital,
-            'numero_securite_social' => $request->numero_securite_social,
             'numero_CNI' => $request->numero_CNI,
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'date_naissance' =>$request->date_naissance,
+            'nationalité'=>$request->nationalité ??null,
+           'date_debut_service'=>$request->date_debut_service ?? null,
+            'statut_employé'=>$request->statut_employé,
+            'type_contrat' =>$request->type_contrat,
+            'departement_service' =>$request->departement_service,
+             'horaire_travail' =>$request->horaire_travail ?? null,
+             'numero_identification_employe' =>$request->numero_identification_employe,
+             'superviseur' =>$request->superviseur ?? null,
+             'salaire_base' =>$request->salaire_base,
+             'prime_indemnités' =>$request->prime_indemnités ?? null,
+            'cotisation_sociales' =>$request->cotisation_sociales ?? null,
+            'departement_service' =>$request->departement_service,
+            'part_employeur' =>$request->part_employeur ?? null,
+           'retenue_salaire' =>$request->retenue_salaire ?? null,
+           'mode_paiement' =>$request->mode_paiement,
+            'banque_domiciliation' =>$request->banque_domiciliation ?? null,
+            'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
+            'cv_diplomes' =>$request->cv_diplomes ?? null,
+            'contrat_travail' =>$request->contrat_travail ?? null,
+            'ancienneté' =>$request->ancienneté ?? null,
+            'evaluation_performance' =>$request->evaluation_performance ?? null,
+            'commentaires_notes' =>$request->commentaires_notes ?? null
+
         ]);
 
         // Valider la transaction
