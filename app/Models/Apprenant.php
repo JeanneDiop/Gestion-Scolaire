@@ -38,7 +38,7 @@ class Apprenant extends Model
         'remarque_eleve',
         'acte_naissance',
         'autorisation_parentale',
-        'année_scolaire',
+        'année_inscription',
         'niveau_entrée',
         'statut_inscription',
         'transport_scolaire',

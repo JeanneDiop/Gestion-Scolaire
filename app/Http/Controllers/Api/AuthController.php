@@ -289,7 +289,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'activites_extraordinaires' => $request->activites_extraordinaires ?? null,
             'remarque_eleve' => $request->remarque_eleve ?? null,
             'autorisation_parentale' => $request->autorisation_parentale ?? null,
-            'année_scolaire' => $request->année_scoliare ?? null,
+            'année_inscription' => $request->année_inscription ?? null,
             'niveau_entrée' => $request->niveau_entrée ?? null,
             'statut_inscription' => $request->statut_inscription ?? null,
             'transport_scolaire' => $request->transport_scolaire, // Ici, il est pris tel quel
@@ -374,7 +374,7 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'nombre_enfants_inscrits' => $request->tuteur['nombre_enfants_inscrits'] ??  null,
             'lien_parenté' => $request->tuteur['lien_parenté'],
             'numero_CNI' => $request->tuteur['numero_CNI'] ?? null,
-            'image' => $tuteurImageFileName, 
+            'image' => $tuteurImageFileName,
         ]);
 
         // Gestion de l'image de l'apprenant (si un fichier est fourni)
@@ -414,9 +414,8 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'activites_extraordinaires' => $request->activites_extraordinaires ?? null,
             'remarque_eleve' => $request->remarque_eleve ?? null,
             'autorisation_parentale' => $request->autorisation_parentale ?? null,
-            'année_scolaire' => $request->année_scoliare ?? null,
+            'année_inscription' => $request->année_inscription?? null,
             'niveau_entrée' => $request->niveau_entrée ?? null,
-            'statut_inscription' => $request->statut_inscription ?? null,
             'statut_inscription' => $request->statut_inscription ?? null,
             'transport_scolaire' => $request->transport_scolaire, // Ici, il est pris tel quel
             'service_transport' => ($request->transport_scolaire === 'Oui') ? $request->service_transport : null,
@@ -1483,7 +1482,7 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'status' => 200,
             'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
             'personnel_administratif' => $personneladministratif,
-        
+
         ]);
 
     } catch (\Exception $e) {
@@ -1950,7 +1949,7 @@ public function ListerApprenant()
             'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
             'remarque_eleve' =>$apprenant->remarque_eleve,
             'autorisation_parentale' => $apprenant->autorisation_parentale,
-            'année_scolaire' => $apprenant->année_scolaire,
+            'année_inscription' => $apprenant->année_inscription,
             'niveau_entrée' => $apprenant->niveau_entrée,
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
@@ -2555,7 +2554,7 @@ public function indexApprenants()
             'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
             'remarque_eleve' =>$apprenant->remarque_eleve,
             'autorisation_parentale' => $apprenant->autorisation_parentale,
-            'année_scolaire' => $apprenant->année_scolaire,
+            'année_inscription' => $apprenant->année_inscription,
             'niveau_entrée' => $apprenant->niveau_entrée,
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
@@ -2654,7 +2653,7 @@ public function showApprenant($id)
             'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
             'remarque_eleve' =>$apprenant->remarque_eleve,
             'autorisation_parentale' => $apprenant->autorisation_parentale,
-            'année_scolaire' => $apprenant->année_scolaire,
+            'année_inscription' => $apprenant->année_inscription,
             'niveau_entrée' => $apprenant->niveau_entrée,
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
@@ -2688,7 +2687,7 @@ public function showApprenant($id)
             'id' => $apprenant->classe->id,
             'nom' => $apprenant->classe->nom, // Nom de la classe
             'niveau_classe' => $apprenant->classe->niveau_classe,
-            'niveau_education' => $apprenant->classe->niveau_education, 
+            'niveau_education' => $apprenant->classe->niveau_education,
             'salle' => $apprenant->classe->salle ? [
                 'id' => $apprenant->classe->salle->id,
                 'nom' => $apprenant->classe->salle->nom,
@@ -2767,7 +2766,7 @@ public function showUserApprenant($id)
             'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
             'remarque_eleve' =>$apprenant->remarque_eleve,
             'autorisation_parentale' => $apprenant->autorisation_parentale,
-            'année_scolaire' => $apprenant->année_scolaire,
+            'année_inscription' => $apprenant->année_inscription,
             'niveau_entrée' => $apprenant->niveau_entrée,
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
@@ -3120,7 +3119,7 @@ public function showUserEnseignant($id)
             'ancienneté' =>$user->enseignant->ancienneté,
             'evaluation_performance' => $user->enseignant->evaluation_performance,
             'commentaires_notes' => $user->enseignant->commentaires_notes,
-            
+
         ]
     ];
 
