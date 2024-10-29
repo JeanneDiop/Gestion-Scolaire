@@ -11,6 +11,7 @@ use App\Models\Programme;
 use App\Models\PresenceAbsence;
 use App\Models\ProgrammeClasse;
 use App\Models\ClasseAssociation;
+use App\Models\Competence;
 class Cours extends Model
 {
     use HasFactory;
@@ -50,6 +51,11 @@ class Cours extends Model
     public function classeassociations()
     {
         return $this->hasMany(ClasseAssociation::class, 'cours_id');
+    }
+
+    public function competences()
+    {
+        return $this->hasMany(Competence::class, 'cours_id');
     }
 }
 
