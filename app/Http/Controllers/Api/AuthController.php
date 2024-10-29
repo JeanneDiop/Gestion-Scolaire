@@ -1954,7 +1954,7 @@ public function ListerApprenant()
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
             'service_transport' => $apprenant->service_transport,
-            'programme_special' => $apprenant->$apprenant->programme_special,
+            'programme_special' => $apprenant->programme_special,
             'user' => $apprenant->user ? [
                 'id' => $apprenant->user->id,
                 'nom' => $apprenant->user->nom,
@@ -2559,7 +2559,7 @@ public function indexApprenants()
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
             'service_transport' => $apprenant->service_transport,
-            'programme_special' => $apprenant->$apprenant->programme_special,
+            'programme_special' => $apprenant->programme_special,
             'user' => [
                 'id' => $user->id,
                 'nom' => $user->nom,
@@ -2658,7 +2658,7 @@ public function showApprenant($id)
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
             'service_transport' => $apprenant->service_transport,
-            'programme_special' => $apprenant->$apprenant->programme_special,
+            'programme_special' => $apprenant->programme_special,
         'user' => $apprenant->user ? [
             'id' => $apprenant->user->id,
             'nom' => $apprenant->user->nom,
@@ -2771,7 +2771,7 @@ public function showUserApprenant($id)
             'statut_inscription'  => $apprenant->statut_inscription,
             'transport_scolaire'  => $apprenant->transport_scolaire,
             'service_transport' => $apprenant->service_transport,
-            'programme_special' => $apprenant->$apprenant->programme_special,
+            'programme_special' => $apprenant->programme_special,
             'classe' => $apprenant->classe ? [
                 'id' => $apprenant->classe->id,
                 'nom' => $apprenant->classe->nom,
