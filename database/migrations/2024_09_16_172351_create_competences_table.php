@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nom');
             $table->string('description');
-            $table->foreignIdFor(Cours::class)->nullable()->constrained()->onDelete();
+            $table->foreignIdFor(Cours::class)->nullable()->constrained('cours')->onDelete('set null');
             $table->timestamps();
         });
     }

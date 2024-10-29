@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use App\Models\ProgrammeClasse;
 use App\Models\Cours;
+use App\Models\Competence;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\ProgrammeClasse\CreateProgrammeClasseRequest;
 use App\Http\Requests\ProgrammeClasse\CreateProgrammeClasseCoursRequest;
@@ -74,32 +75,64 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
 {
     try {
         DB::beginTransaction();
+
+        // Création du ProgrammeClasse
         $programme_classe = new ProgrammeClasse();
         $programme_classe->nom = $request->nom;
         $programme_classe->niveau_education = $request->niveau_education;
         $programme_classe->niveau_classe = $request->niveau_classe;
-        $programme_classe->description = $request->description;
-        $programme_classe->periode = $request->periode;
+        $programme_classe->cycle = $request->cycle;
+        $programme_classe->annee_scolaire = $request->annee_scolaire;
+        $programme_classe->langue_enseignee = $request->langue_enseignee;
+        $programme_classe->objectif_generaux = $request->objectif_generaux;
+        $programme_classe->objectif_specifiques = $request->objectif_specifiques;
+        $programme_classe->bareme = $request->bareme;
+        $programme_classe->frequence_evaluation = $request->frequence_evaluation;
+        $programme_classe->type_evaluation = $request->type_evaluation ;
+        $programme_classe->importer_programme = $request->importer_programme ;
+        $programme_classe->exporter_programme = $request->exporter_programme;
         $programme_classe->save();
+
+        // Boucle pour ajouter chaque cours et ses compétences
         foreach ($request->cours as $coursData) {
+            // Création du cours
             $cours = new Cours();
             $cours->nom = $coursData['nom'];
             $cours->description = $coursData['description'] ?? null;
             $cours->niveau_education = $coursData['niveau_education'];
-            $cours->heure_allouée = $coursData['heure_allouée'];
+            $cours->niveau_classe = $coursData['niveau_classe'];
+            $cours->heure_allouee = $coursData['heure_allouee'];
+            $cours->dureee_recommander_sceance = $coursData['duree_recommander_sceance'];
             $cours->etat = $coursData['etat'] ?? 'encours';
             $cours->credits = $coursData['credits'] ?? null;
             $cours->coefficient = $coursData['coefficient'] ?? null;
             $cours->semestre = $coursData['semestre'] ?? null;
+            $cours->categorie_cours = $coursData['categorie_cours'];
             $cours->enseignant_id = $coursData['enseignant_id'];
             $cours->programme_classe_id = $programme_classe->id;
             $cours->save();
+
+            // Boucle pour ajouter les compétences spécifiques à ce cours
+            if (isset($coursData['competences'])) {
+                foreach ($coursData['competences'] as $competenceData) {
+                    $competence = new Competence();
+                    $competence->nom = $competenceData['nom'];
+                    $competence->description = $competenceData['description'];
+                    $competence->cours_id = $cours->id;
+                    $competence->save();
+                }
+            }
         }
+
+        // Validation de la transaction
         DB::commit();
-        $programme_classe->load('cours');
+
+        // Chargement des relations pour le retour de réponse
+        $programme_classe->load('cours.competences');
+
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'programmeclasse et cours ont été ajoutés avec succès',
+            'status_message' => 'ProgrammeClasse, cours et compétences ont été ajoutés avec succès',
             'data' => [
                 'programmeclasse' => [
                     'id' => $programme_classe->id,
@@ -111,15 +144,15 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                     'cours' => $programme_classe->cours,
                 ],
             ],
-        ],200);
+        ], 200);
     } catch (Exception $e) {
         DB::rollBack();
 
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe et des cours',
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe, des cours et des compétences',
             'error' => $e->getMessage(),
-        ],500);
+        ], 500);
     }
 }
 

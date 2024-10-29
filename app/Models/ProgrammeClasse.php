@@ -13,8 +13,16 @@ class ProgrammeClasse extends Model
         'nom',
         'niveau_education',
         'niveau_classe',
-        'description',
-        'periode',
+        'cycle',
+        'annee_scolaire',
+        'langue_enseignee',
+        'objectif_generaux',
+        'objectif_specifiques',
+        'bareme',
+        'frequence_evaluation',
+        'type_evaluation',
+        'importer_programme',
+        'exporter_programme',
 
     ];
     public function classes()

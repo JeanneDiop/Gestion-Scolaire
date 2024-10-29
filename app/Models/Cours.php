@@ -19,10 +19,13 @@ class Cours extends Model
         'nom',
         'description',
         'niveau_education',
-        'type',
-        'duree',
+        'niveau_classe',
+        'heure_allouee',
+        'duree_recommander_sceance',
+        'categories_cours',
         'etat',
-        'credits',
+        'credit',
+        'coefficient',
         'semestre',
     ];
     public function enseignant(){
