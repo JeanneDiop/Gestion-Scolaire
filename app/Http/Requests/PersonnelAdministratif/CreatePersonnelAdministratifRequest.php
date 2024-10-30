@@ -33,6 +33,7 @@ class CreatePersonnelAdministratifRequest extends FormRequest
             'password' => 'required|min:8',
             'adresse' => ['required', 'string'],
             'genre' => ['required', 'in:Femme,Homme'],
+            'role_nom' => ['required', 'string'],
             'date_naissance' => ['required', 'date'],
             'lieu_naissance' => ['required', 'string'],
             'poste_occupé' => ['required', 'string'],
@@ -50,8 +51,10 @@ class CreatePersonnelAdministratifRequest extends FormRequest
             'retenue_salaire' => ['nullable', 'string'],
             'mode_paiement' => ['required', 'in:Virement,Bancaire,Espèce,Chèque'],
             'banque_domiciliation' => ['nullable', 'string'],
-            'numero_compte_bancaire' => ['nullable', 'string'],
+            'numero_compte_bancaire' => ['nullable', 'string','unique:personnel_administratifs,numero_compte_bancaire'],
             'cv_diplomes' => ['nullable', 'string'],
+            'certification_formations' => ['nullable', 'string'],
+            'superviseur' => ['nullable', 'string'],
             'contrat_travail' => ['nullable', 'string'],
             'ancienneté' => ['nullable', 'string'],
             'evaluation_performance' => ['nullable', 'numeric'],
@@ -62,75 +65,102 @@ class CreatePersonnelAdministratifRequest extends FormRequest
         ];
     }
     public function messages(): array
-{
-    return [
-        'nom.required' => 'Le champ nom est requis.',
-        'nom.string' => 'Le champ nom doit être une chaîne de caractères.',
-        'nom.max' => 'Le champ nom ne peut pas dépasser 255 caractères.',
+    {
+        return [
+            'nom.required' => 'Le nom est obligatoire.',
+            'nom.string' => 'Le nom doit être une chaîne de caractères.',
+            'nom.max' => 'Le nom ne doit pas dépasser 255 caractères.',
 
-        'prenom.required' => 'Le champ prénom est requis.',
-        'prenom.string' => 'Le champ prénom doit être une chaîne de caractères.',
-        'prenom.max' => 'Le champ prénom ne peut pas dépasser 255 caractères.',
+            'prenom.required' => 'Le prénom est obligatoire.',
+            'prenom.string' => 'Le prénom doit être une chaîne de caractères.',
+            'prenom.max' => 'Le prénom ne doit pas dépasser 255 caractères.',
 
-        'email.required' => 'Le champ email est requis.',
-        'email.string' => 'Le champ email doit être une chaîne de caractères.',
-        'email.email' => 'Le format de l\'email est invalide.',
-        'email.max' => 'Le champ email ne peut pas dépasser 255 caractères.',
-        'email.regex' => 'Le format de l\'email est incorrect.',
-        'email.unique' => 'Cet email est déjà utilisé.',
+            'telephone.required' => 'Le numéro de téléphone est obligatoire.',
+            'telephone.regex' => 'Le numéro de téléphone doit commencer par +221 et être suivi de 7 chiffres.',
+            'telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
 
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit comporter au moins 8 caractères.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.string' => 'L\'adresse email doit être une chaîne de caractères.',
+            'email.email' => 'L\'adresse email doit être valide.',
+            'email.regex' => 'L\'adresse email doit être au format correct.',
+            'email.unique' => 'Cette adresse email est déjà utilisée.',
+            'email.max' => 'L\'adresse email ne doit pas dépasser 255 caractères.',
 
-        'telephone.required' => 'Le champ téléphone est requis.',
-        'telephone.regex' => 'Le format du téléphone est invalide.',
-        'telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
 
-        'adresse.required' => 'Le champ adresse est requis.',
-        'adresse.string' => 'Le champ adresse doit être une chaîne de caractères.',
-        'adresse.max' => 'Le champ adresse ne peut pas dépasser 255 caractères.',
+            'adresse.required' => 'L\'adresse est obligatoire.',
+            'adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
 
-        'genre.required' => 'Le champ genre est requis.',
-        'genre.in' => 'Le genre doit être soit Homme, soit Femme.',
+            'genre.required' => 'Le genre est obligatoire.',
+            'genre.in' => 'Le genre doit être "Femme" ou "Homme".',
 
-        'etat.string' => 'Le champ état doit être une chaîne de caractères.',
-        'etat.in' => 'L\'état doit être soit actif, soit inactif.',
+            'role_nom.required' => 'Le rôle est obligatoire.',
+            'role_nom.string' => 'Le rôle doit être une chaîne de caractères.',
 
-        'poste.required' => 'Le champ poste est requis.',
-        'poste.string' => 'Le champ poste doit être une chaîne de caractères.',
+            'date_naissance.required' => 'La date de naissance est obligatoire.',
+            'date_naissance.date' => 'La date de naissance doit être une date valide.',
 
-        'image.string' => 'Le champ image doit être une chaîne de caractères.',
+            'lieu_naissance.required' => 'Le lieu de naissance est obligatoire.',
+            'lieu_naissance.string' => 'Le lieu de naissance doit être une chaîne de caractères.',
 
-        'date_embauche.required' => 'Le champ date d\'embauche est requis.',
-        'date_embauche.date' => 'Le champ date d\'embauche doit être une date valide.',
+            'poste_occupé.required' => 'Le poste occupé est obligatoire.',
+            'poste_occupé.string' => 'Le poste occupé doit être une chaîne de caractères.',
 
-        'statut_emploie.required' => 'Le champ statut d\'emploi est requis.',
-        'statut_emploie.in' => 'Le statut d\'emploi doit être soit permanent, soit vacataire, soit contractuel, soit honoraire.',
+            'image.string' => 'L\'image doit être une chaîne de caractères.',
 
-        'type_salaire.required' => 'Le champ type de salaire est requis.',
-        'type_salaire.in' => 'Le type de salaire doit être soit fixe, soit horaire.',
-        'departement_service.required' => 'Le champ departement et service est requis.',
-        'departement_service.in' => 'Le departement et service doit être soit fixe, soit horaire.',
+            'date_debut_service.required' => 'La date de début de service est obligatoire.',
+            'date_debut_service.date' => 'La date de début de service doit être une date valide.',
 
-        'date_naissance.required' => 'Le champ date de naissance est requis.',
-        'date_naissance.date' => 'Le champ date de naissance doit être une date valide.',
+            'statut_employé.required' => 'Le statut de l\'employé est obligatoire.',
+            'statut_employé.in' => 'Le statut doit être "Permanent", "Temporaire" ou "Vacataire".',
 
-        'lieu_naissance.required' => 'Le champ lieu de naissance est requis.',
-        'lieu_naissance.string' => 'Le champ lieu de naissance doit être une chaîne de caractères.',
+            'type_contrat.required' => 'Le type de contrat est obligatoire.',
+            'type_contrat.in' => 'Le type de contrat doit être "CDI", "CDD", "Contrat" ou "Vacataire".',
 
-        'statut_marital.required' => 'Le champ statut marital est requis.',
-        'statut_marital.in' => 'Le statut marital doit être soit marié, soit célibataire, soit divorcé, soit veuve, soit veuf.',
+            'salaire_base.required' => 'Le salaire de base est obligatoire.',
+            'salaire_base.string' => 'Le salaire de base doit être une chaîne de caractères.',
 
-        'numero_CNI.string' => 'Le champ numéro CNI doit être une chaîne de caractères.',
-        'numero_CNI.unique' => 'Ce numéro de CNI est déjà utilisé.',
+            'horaires_travail.string' => 'Les horaires de travail doivent être une chaîne de caractères.',
 
-        'numero_securite_social.string' => 'Le champ numéro de sécurité sociale doit être une chaîne de caractères.',
-        'numero_securite_social.unique' => 'Ce numéro de sécurité sociale est déjà utilisé.',
+            'type_salaire.required' => 'Le type de salaire est obligatoire.',
+            'type_salaire.in' => 'Le type de salaire doit être "Mensuel" ou "Horaire".',
 
-        'date_fin_contrat.required' => 'Le champ date de fin de contrat est requis.',
-        'date_fin_contrat.date' => 'Le champ date de fin de contrat doit être une date valide.',
-    ];
-}
+            'departement_service.required' => 'Le département/service est obligatoire.',
+            'departement_service.in' => 'Le département/service doit être "Administratif", "Comptabilité" ou "Maintenance".',
+
+            'prime_indemnités.string' => 'Les primes et indemnités doivent être une chaîne de caractères.',
+
+            'cotisation_sociales.string' => 'Les cotisations sociales doivent être une chaîne de caractères.',
+
+            'part_employeur.string' => 'La part employeur doit être une chaîne de caractères.',
+
+            'retenue_salaire.string' => 'La retenue sur salaire doit être une chaîne de caractères.',
+
+            'mode_paiement.required' => 'Le mode de paiement est obligatoire.',
+            'mode_paiement.in' => 'Le mode de paiement doit être "Virement", "Bancaire", "Espèce" ou "Chèque".',
+
+            'banque_domiciliation.string' => 'La banque de domiciliation doit être une chaîne de caractères.',
+
+            'numero_compte_bancaire.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
+            'numero_compte_bancaire.unique' => 'Ce numéro de compte bancaire est déjà utilisé.',
+
+            'cv_diplomes.string' => 'Les diplômes/CV doivent être une chaîne de caractères.',
+            'certification_formation.string' => 'Les certification/formations doivent être une chaîne de caractères.',
+            'superviseur.string' => 'Le superviseur doivent être une chaîne de caractères.',
+
+            'contrat_travail.string' => 'Le contrat de travail doit être une chaîne de caractères.',
+
+            'ancienneté.string' => 'L\'ancienneté doit être une chaîne de caractères.',
+
+            'evaluation_performance.numeric' => 'L\'évaluation de la performance doit être un nombre.',
+
+            'commentaires_notes.string' => 'Les commentaires/notes doivent être une chaîne de caractères.',
+
+            'numero_CNI.string' => 'Le numéro CNI doit être une chaîne de caractères.',
+            'numero_CNI.unique' => 'Ce numéro de CNI est déjà utilisé.',
+        ];
+    }
 /**
 * @param Validator $validator
 * @return void

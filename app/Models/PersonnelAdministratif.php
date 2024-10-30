@@ -33,6 +33,7 @@ class PersonnelAdministratif extends Model
         'numero_compte_bancaire',
         'cv_diplomes',
         'contrat_travail',
+        'certification_formations',
         'ancienneté',
         'evaluation_performance',
         'commentaires_notes',

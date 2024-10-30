@@ -49,6 +49,7 @@ class EmployeController extends Controller
             $employe->horaires_travail = $request->horaires_travail ?? null;
             $employe->numero_identification_employe = $request->numero_identification_employe;
             $employe->superviseur = $request->superviseur ?? null;
+            $employe->certification_formations = $request->certification_formations ?? null;
             $employe->salaire_base = $request->salaire_base;
             $employe->type_salaire = $request->type_salaire;
             $employe->prime_indemnités = $request->prime_indemnités ?? null ;
@@ -120,6 +121,7 @@ class EmployeController extends Controller
         $employe->horaires_travail = $request->horaires_travail ?? null;
         $employe->numero_identification_employe = $request->numero_identification_employe;
         $employe->superviseur = $request->superviseur ?? null;
+        $employe->certification_formations = $request->certification_formations ?? null;
         $employe->salaire_base = $request->salaire_base;
         $employe->type_salaire = $request->type_salaire;
         $employe->prime_indemnités = $request->prime_indemnités ?? null ;

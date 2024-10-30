@@ -26,86 +26,114 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         return [
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'niveau_education' => 'required|string|max:255',
+            'niveau_education' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
-            'frequence_evaluation' => 'required|in:Hebdomadaire,Mensuel,Semestre,Trimestriel',
-            'type_evaluation' => 'required|in:Formative,Sommative',
+            'type_exercice' => 'nullable|string|max:255',
             'langue_enseignee' => 'required|string|max:255',
             'objectif_generaux' => 'required|string|max:255',
             'objectif_specifiques' => 'required|string|max:255',
-            'bareme' => 'required|string|max:255',
             'importer_programme' => 'required|string|max:255',
             'exporter_programme' => 'required|string|max:255',
             'cours' => 'required|array',
             'cours.*.nom' => 'required|string|max:255',
             'cours.*.description' => 'nullable|string',
-            'cours.*.niveau_education' => 'required|string|max:255',
+            'cours.*.niveau_education' => 'required|in:maternelle,primaire,secondaire,supérieur',
             'cours.*.niveau_classe' => 'required|string|max:255',
-            'cours.*.heure_allouee' => 'required|regex:/^[0-9]+h$/',
-            'cours.*.duree_recommander_sceance' => 'required|regex:/^[0-9]+h$/',
-            'cours.*.categorie_cours' => 'required|string|max:255',
-            'cours.*.etat' => 'nullable|string|in:encours,complet',
-            'cours.*.credits' => 'nullable|integer|min:0',
-            'cours.*.coefficient' => 'nullable|integer|min:0',
-            'cours.*.semestre' => 'nullable|integer|min:1|max:2',
-            'cours.*.enseignant_id' => 'required|exists:enseignants,id',
+            'cours.*.bareme' => [
+    'required',
+    'string',
+    'max:255',
+    function ($attribute, $value, $fail) {
+        $index = explode('.', $attribute)[1];
+        $niveauEducation = request()->input("cours.$index.niveau_education");
+
+        // Validation pour le niveau "maternelle"
+        if ($niveauEducation === 'maternelle') {
+            if (!in_array($value, ['Acquis', 'En Progression'])) {
+                $fail('Pour le niveau "maternelle", le barème doit être "Acquis" ou "En Progression".');
+            }
+        }
+
+        // Validation pour le niveau "primaire"
+        if ($niveauEducation === 'primaire') {
+            if (!preg_match('/^(10|[0-9])\/10$/', $value)) {
+                $fail('Pour le niveau "primaire", le barème doit être au format "X/10".');
+            }
+        }
+
+        // Validation pour le niveau "secondaire"
+        if ($niveauEducation === 'secondaire') {
+            if (!preg_match('/^(20|[1-9]?[0-9])\/20$/', $value)) {
+                $fail('Pour le niveau "secondaire", le barème doit être au format "X/20".');
+            }
+        }
+    }
+],
         ];
     }
-
     /**
      * Messages d'erreur personnalisés.
      */
     public function messages()
-{
-    return [
-        'nom.required' => 'Le nom du programme est obligatoire.',
-        'nom.string' => 'Le nom du programme doit être une chaîne de caractères.',
-        'nom.max' => 'Le nom du programme ne peut pas dépasser 255 caractères.',
-
-        'description.string' => 'La description doit être une chaîne de caractères.',
-
-        'niveau_education.required' => 'Le niveau d\'éducation est obligatoire.',
-        'niveau_education.string' => 'Le niveau d\'éducation doit être une chaîne de caractères.',
-        'niveau_education.max' => 'Le niveau d\'éducation ne peut pas dépasser 255 caractères.',
-
-        'niveau_classe.required' => 'Le niveau de la classe est obligatoire.',
-        'niveau_classe.string' => 'Le niveau de la classe doit être une chaîne de caractères.',
-        'niveau_classe.max' => 'Le niveau de la classe ne peut pas dépasser 255 caractères.',
-
-        'periode.required' => 'La période est obligatoire.',
-        'periode.in' => 'La période doit être soit "annuelle", soit "semestre".',
-
-        'cours.required' => 'Vous devez fournir au moins un cours pour ce programme.',
-        'cours.array' => 'Les cours doivent être fournis sous forme de tableau.',
-
-        'cours.*.nom.required' => 'Le nom du cours est obligatoire.',
-        'cours.*.nom.string' => 'Le nom du cours doit être une chaîne de caractères.',
-        'cours.*.nom.max' => 'Le nom du cours ne peut pas dépasser 255 caractères.',
-
-        'cours.*.description.string' => 'La description du cours doit être une chaîne de caractères.',
-
-        'cours.*.niveau_education.required' => 'Le niveau d\'éducation pour chaque cours est obligatoire.',
-        'cours.*.niveau_education.string' => 'Le niveau d\'éducation pour chaque cours doit être une chaîne de caractères.',
-        'cours.*.niveau_education.max' => 'Le niveau d\'éducation pour chaque cours ne peut pas dépasser 255 caractères.',
-        'cours.*.heure_allouée.required' => 'Le champ "heure allouée" est requis pour chaque cours.',
-        'cours.*.heure_allouée.regex' => 'Le format de "heure allouée" doit être un nombre suivi de "h" (ex : 2h).',
-
-        'cours.*.etat.in' => 'L\'état du cours doit être soit "encours", soit "complet".',
-
-        'cours.*.credits.integer' => 'Les crédits doivent être un nombre entier.',
-        'cours.*.credits.min' => 'Les crédits ne peuvent pas être négatifs.',
-
-        'cours.*.coefficient.integer' => 'Le coefficient doit être un nombre entier.',
-        'cours.*.coefficient.min' => 'Le coefficient ne peut pas être négatif.',
-
-        'cours.*.semestre.integer' => 'Le semestre doit être un nombre entier.',
-        'cours.*.semestre.min' => 'Le semestre doit être au moins 1.',
-        'cours.*.semestre.max' => 'Le semestre ne peut pas être supérieur à 2.',
-
-        'cours.*.enseignant_id.required' => 'Un enseignant doit être assigné à chaque cours.',
-        'cours.*.enseignant_id.exists' => 'L\'enseignant spécifié doit exister dans la base de données.',
-    ];
-}
+    {
+        return [
+            'nom.required' => 'Le champ nom est requis.',
+            'nom.string' => 'Le champ nom doit être une chaîne de caractères.',
+            'nom.max' => 'Le champ nom ne peut pas dépasser 255 caractères.',
+            
+            'description.string' => 'Le champ description doit être une chaîne de caractères.',
+            
+            'niveau_education.required' => 'Le champ niveau d\'éducation est requis.',
+            'niveau_education.string' => 'Le champ niveau d\'éducation doit être une chaîne de caractères.',
+            
+            'niveau_classe.required' => 'Le champ niveau de classe est requis.',
+            'niveau_classe.string' => 'Le champ niveau de classe doit être une chaîne de caractères.',
+            'niveau_classe.max' => 'Le champ niveau de classe ne peut pas dépasser 255 caractères.',
+            
+            'type_exercice.string' => 'Le champ type d\'exercice doit être une chaîne de caractères.',
+            'type_exercice.max' => 'Le champ type d\'exercice ne peut pas dépasser 255 caractères.',
+            
+            'langue_enseignee.required' => 'Le champ langue enseignée est requis.',
+            'langue_enseignee.string' => 'Le champ langue enseignée doit être une chaîne de caractères.',
+            'langue_enseignee.max' => 'Le champ langue enseignée ne peut pas dépasser 255 caractères.',
+            
+            'objectif_generaux.required' => 'Le champ objectif généraux est requis.',
+            'objectif_generaux.string' => 'Le champ objectif généraux doit être une chaîne de caractères.',
+            'objectif_generaux.max' => 'Le champ objectif généraux ne peut pas dépasser 255 caractères.',
+            
+            'objectif_specifiques.required' => 'Le champ objectif spécifiques est requis.',
+            'objectif_specifiques.string' => 'Le champ objectif spécifiques doit être une chaîne de caractères.',
+            'objectif_specifiques.max' => 'Le champ objectif spécifiques ne peut pas dépasser 255 caractères.',
+            
+            'importer_programme.required' => 'Le champ importer programme est requis.',
+            'importer_programme.string' => 'Le champ importer programme doit être une chaîne de caractères.',
+            'importer_programme.max' => 'Le champ importer programme ne peut pas dépasser 255 caractères.',
+            
+            'exporter_programme.required' => 'Le champ exporter programme est requis.',
+            'exporter_programme.string' => 'Le champ exporter programme doit être une chaîne de caractères.',
+            'exporter_programme.max' => 'Le champ exporter programme ne peut pas dépasser 255 caractères.',
+            
+            'cours.required' => 'Le champ cours est requis.',
+            'cours.array' => 'Le champ cours doit être un tableau.',
+            
+            'cours.*.nom.required' => 'Le nom du cours est requis.',
+            'cours.*.nom.string' => 'Le nom du cours doit être une chaîne de caractères.',
+            'cours.*.nom.max' => 'Le nom du cours ne peut pas dépasser 255 caractères.',
+            
+            'cours.*.description.string' => 'La description du cours doit être une chaîne de caractères.',
+            
+            'cours.*.niveau_education.required' => 'Le niveau d\'éducation du cours est requis.',
+            'cours.*.niveau_education.in' => 'Le niveau d\'éducation du cours doit être l\'un des suivants : maternelle, primaire, secondaire, supérieur.',
+            
+            'cours.*.niveau_classe.required' => 'Le niveau de classe du cours est requis.',
+            'cours.*.niveau_classe.string' => 'Le niveau de classe du cours doit être une chaîne de caractères.',
+            'cours.*.niveau_classe.max' => 'Le niveau de classe du cours ne peut pas dépasser 255 caractères.',
+            
+            'cours.*.bareme.required' => 'Le barème du cours est requis.',
+            'cours.*.bareme.string' => 'Le barème du cours doit être une chaîne de caractères.',
+            'cours.*.bareme.max' => 'Le barème du cours ne peut pas dépasser 255 caractères.',
+        ];
+    }
 protected function failedValidation(Validator $validator)
 {
     // Si la validation échoue, vous pouvez accéder aux erreurs

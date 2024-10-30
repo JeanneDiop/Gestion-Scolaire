@@ -34,6 +34,7 @@ class UpdateEnseignantRequest extends FormRequest
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:Homme,Femme',
+            'role_nom' => 'required|string',
             'image' => ['nullable', 'string'],
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
@@ -93,6 +94,8 @@ class UpdateEnseignantRequest extends FormRequest
 
         'adresse.required' => 'Le champ adresse est requis.',
         'adresse.string' => 'Le champ adresse doit être une chaîne de caractères.',
+        'role_nom.required' => 'Le champ role_nom est requis.',
+        'role_nom.string' => 'Le champ role_nom doit être une chaîne de caractères.',
 
         'etat.sometimes' => 'Le champ état doit être spécifié.',
         'etat.string' => 'Le champ état doit être une chaîne de caractères.',

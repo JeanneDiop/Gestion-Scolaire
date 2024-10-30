@@ -24,7 +24,11 @@ class Cours extends Model
         'duree_recommander_sceance',
         'categories_cours',
         'etat',
+        'bareme',
+        'frequence_evaluation',
+        'type_evaluation',
         'credit',
+        'type_exercice',
         'coefficient',
         'semestre',
     ];

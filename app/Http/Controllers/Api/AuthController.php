@@ -292,7 +292,7 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'année_inscription' => $request->année_inscription ?? null,
             'niveau_entrée' => $request->niveau_entrée ?? null,
             'statut_inscription' => $request->statut_inscription ?? null,
-            'transport_scolaire' => $request->transport_scolaire, // Ici, il est pris tel quel
+            'transport_scolaire' => $request->transport_scolaire ?? null, // Ici, il est pris tel quel
             'service_transport' => ($request->transport_scolaire === 'Oui') ? $request->service_transport : null, // Condition pour service_transport
             'programme_special' => $request->programme_special ?? null,
         ]);
@@ -417,7 +417,7 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'année_inscription' => $request->année_inscription?? null,
             'niveau_entrée' => $request->niveau_entrée ?? null,
             'statut_inscription' => $request->statut_inscription ?? null,
-            'transport_scolaire' => $request->transport_scolaire, // Ici, il est pris tel quel
+            'transport_scolaire' => $request->transport_scolaire ?? null, // Ici, il est pris tel quel
             'service_transport' => ($request->transport_scolaire === 'Oui') ? $request->service_transport : null,
             'programme_special' => $request->programme_special ?? null,
             'classe_id' => $request->classe_id,
@@ -1374,6 +1374,7 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
             'part_employeur' =>$request->part_employeur ?? null,
            'retenue_salaire' =>$request->retenue_salaire ?? null,
            'mode_paiement' =>$request->mode_paiement,
+           'certification_formations' =>$request->certification_formations ?? null,
             'banque_domiciliation' =>$request->banque_domiciliation ?? null,
             'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
             'cv_diplomes' =>$request->cv_diplomes ?? null,
@@ -1469,6 +1470,7 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'banque_domiciliation' =>$request->banque_domiciliation ?? null,
             'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
             'cv_diplomes' =>$request->cv_diplomes ?? null,
+            'certification_formations' =>$request->certification_formations ?? null,
             'contrat_travail' =>$request->contrat_travail ?? null,
             'ancienneté' =>$request->ancienneté ?? null,
             'evaluation_performance' =>$request->evaluation_performance ?? null,
@@ -1558,6 +1560,7 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
             'part_employeur' =>$request->part_employeur ?? null,
            'retenue_salaire' =>$request->retenue_salaire ?? null,
            'mode_paiement' =>$request->mode_paiement,
+           'certification_formations' =>$request->certification_formations ?? null,
             'banque_domiciliation' =>$request->banque_domiciliation ?? null,
             'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
             'cv_diplomes' =>$request->cv_diplomes ?? null,
@@ -2173,7 +2176,6 @@ public function getApprenantDetailsWithNotes($id)
             'numero_CNI' => $enseignant->numero_CNI,
             'image' => $enseignant->image,
             'cv_diplomes' => $enseignant->cv_diplomes,
-            'acte_naissance' =>$enseignant->acte_naissance, // Ajout de l'acte de naissance
             'matiere_enseignée' => $enseignant->matiere_enseignée,
             'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
             'niveau_enseignant' => $enseignant->niveau_enseignant,
@@ -2260,6 +2262,7 @@ public function ListerPersonnelAdministratif()
              'numero_identification_employe' =>$personnelAdministratif->numero_identification_employe,
              'superviseur' =>$personnelAdministratif->superviseur,
              'salaire_base' =>$personnelAdministratif->salaire_base,
+             'certification_formations' =>$personnelAdministratif->certification_formations,
              'prime_indemnités' =>$personnelAdministratif->prime_indemnités,
             'cotisation_sociales' =>$personnelAdministratif->cotisation_sociales ,
             'departement_service' =>$personnelAdministratif->departement_service,
@@ -2369,7 +2372,6 @@ public function ListerEnseignantNiveauEcole($niveauEcole)
             'numero_CNI' => $enseignant->numero_CNI,
             'image' => $enseignant->image,
             'cv_diplomes' => $enseignant->cv_diplomes,
-            'acte_naissance' =>$enseignant->acte_naissance, // Ajout de l'acte de naissance
             'matiere_enseignée' => $enseignant->matiere_enseignée,
             'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
             'niveau_enseignant' => $enseignant->niveau_enseignant,
@@ -2928,12 +2930,12 @@ public function showPersonnelAdministratif($id)
             'lieu_naissance' => $personnelAdministratif->lieu_naissance,
             'type_salaire' => $personnelAdministratif->type_salaire,
             'numero_CNI' => $personnelAdministratif->numero_CNI,
-            'date_naissance' =>$personnelAdministratif->date_naissance,
             'nationalité'=>$personnelAdministratif->nationalité,
            'date_debut_service'=>$personnelAdministratif->date_debut_service,
             'statut_employé'=>$personnelAdministratif->statut_employé,
             'type_contrat' =>$personnelAdministratif->type_contrat,
             'departement_service' =>$personnelAdministratif->departement_service,
+            'certification_formations' =>$personnelAdministratif->certification_formations,
              'horaires_travail' =>$personnelAdministratif->horaires_travail,
              'numero_identification_employe' =>$personnelAdministratif->numero_identification_employe,
              'superviseur' =>$personnelAdministratif->superviseur,
@@ -3097,7 +3099,6 @@ public function showUserEnseignant($id)
             'numero_CNI' => $user->enseignant->numero_CNI,
             'image' => $user->enseignant->image,
             'cv_diplomes' => $user->enseignant->cv_diplomes,
-            'acte_naissance' => $user->enseignant->acte_naissance, // Ajout de l'acte de naissance
             'matiere_enseignée' => $user->enseignant->matiere_enseignée,
             'numero_identification_enseignant' => $user->enseignant->numero_identification_enseignant,
             'niveau_enseignant' => $user->enseignant->niveau_enseignant,
@@ -3178,6 +3179,7 @@ public function showUserPersonnelAdministratif($id)
              'prime_indemnités' =>$user->personnelAdministratif->prime_indemnités,
             'cotisation_sociales' =>$user->personnelAdministratif->cotisation_sociales,
             'departement_service' =>$user->personnelAdministratif->departement_service,
+            'certification_formations' =>$user->personnelAdministratif->certification_formations,
             'part_employeur' =>$user->personnelAdministratif->part_employeur,
            'retenue_salaire' =>$user->personnelAdministratif->retenue_salaire,
            'mode_paiement' =>$user->personnelAdministratif->mode_paiement,
@@ -3358,7 +3360,6 @@ public function indexEnseignants()
             'numero_CNI' => $user->enseignant->numero_CNI,
             'image' => $user->enseignant->image,
             'cv_diplomes' => $user->enseignant->cv_diplomes,
-            'acte_naissance' => $user->enseignant->acte_naissance, // Ajout de l'acte de naissance
             'matiere_enseignée' => $user->enseignant->matiere_enseignée,
             'numero_identification_enseignant' => $user->enseignant->numero_identification_enseignant,
             'niveau_enseignant' => $user->enseignant->niveau_enseignant,
@@ -3428,6 +3429,7 @@ public function indexPersonnelAdministaratifs()
              'numero_identification_employe' =>$user->personnelAdministratif->numero_identification_employe,
              'superviseur' =>$user->personnelAdministratif->superviseur,
              'salaire_base' =>$user->personnelAdministratif->salaire_base,
+             'certification_formations' =>$user->personnelAdministratif->certification_formations,
              'prime_indemnités' =>$user->personnelAdministratif->prime_indemnités,
             'cotisation_sociales' =>$user->personnelAdministratif->cotisation_sociales,
             'departement_service' =>$user->personnelAdministratif->departement_service,

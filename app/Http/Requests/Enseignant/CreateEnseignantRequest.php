@@ -32,6 +32,7 @@ class CreateEnseignantRequest extends FormRequest
             'password' => 'required|min:8',
             'telephone' => ['required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone'],
             'adresse' => 'required|string',
+            'role_nom' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:Homme,Femme',
             'image' => ['nullable', 'string'],
@@ -54,7 +55,7 @@ class CreateEnseignantRequest extends FormRequest
             'retenue_salaire' => 'nullable|string',
             'mode_paiement' => 'required|in:Virement,Bancaire,Espèce,Chèque',
             'banque_domiciliation' => 'nullable|string',
-            'numero_RIB' => 'nullable|string',
+            'numero_RIB' => 'nullable|string|unique:enseignants,numero_RIB',
             'cv_diplomes' => 'nullable|string',
             'contrat_travail' => 'nullable|string',
             'ancienneté' => 'nullable|string',
@@ -95,7 +96,8 @@ class CreateEnseignantRequest extends FormRequest
 
             'adresse.required' => 'L\'adresse est requise.',
             'adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
-
+            'role_nom.required' => 'Le role_nom est requise.',
+            'role_nom.string' => 'Le champ role_nom doit être une chaîne de caractères.',
             'etat.string' => 'L\'état doit être une chaîne de caractères.',
             'etat.in' => 'L\'état doit être soit actif soit inactif.',
 
@@ -165,6 +167,7 @@ class CreateEnseignantRequest extends FormRequest
             'banque_domiciliation.string' => 'La banque de domiciliation doit être une chaîne de caractères.',
 
             'numero_RIB.string' => 'Le numéro de RIB doit être une chaîne de caractères.',
+            'numero_RIB.unique' => 'Ce numéro de RIB est déjà utilisé.',
 
             'cv_diplomes.string' => 'Le CV et les diplômes doivent être une chaîne de caractères.',
 

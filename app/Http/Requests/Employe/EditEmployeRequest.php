@@ -60,11 +60,14 @@ class EditEmployeRequest extends FormRequest
             'banque_domiciliation' => ['nullable', 'string'],
             'numero_compte_bancaire' => ['nullable', 'string'],
             'cv_diplomes' => ['nullable', 'string'],
+            'superviseur' => ['nullable', 'string'],
+            'certification_formations' => ['nullable', 'string'],
             'contrat_travail' => ['nullable', 'string'],
             'ancienneté' => ['nullable', 'string'],
             'evaluation_performance' => ['nullable', 'numeric'],
             'commentaires_notes' => ['nullable', 'string'],
             'numero_CNI' => ['required','string'],
+            'numero_identification_employe' => ['required','string'],
 
 
         ];
@@ -136,9 +139,12 @@ class EditEmployeRequest extends FormRequest
         'banque_domiciliation.string' => 'La banque de domiciliation doit être une chaîne de caractères.',
         'numero_compte_bancaire.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
         'cv_diplomes.string' => 'Le CV ou diplômes doivent être une chaîne de caractères.',
+        'certification_formation.string' => 'Les certification/formations doivent être une chaîne de caractères.',
+        'superviseur.string' => 'Le superviseur doivent être une chaîne de caractères.',
         'contrat_travail.string' => 'Le contrat de travail doit être une chaîne de caractères.',
         'ancienneté.string' => 'L\'ancienneté doit être une chaîne de caractères.',
         'commentaires_notes.string' => 'Les commentaires et notes doivent être une chaîne de caractères.',
+        'numero_identification_employe.string' => 'Le numéro_identification_employe doit être une chaîne de caractères.',
     ];
 }
     protected function failedValidation(Validator $validator)

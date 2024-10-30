@@ -18,9 +18,6 @@ class ProgrammeClasse extends Model
         'langue_enseignee',
         'objectif_generaux',
         'objectif_specifiques',
-        'bareme',
-        'frequence_evaluation',
-        'type_evaluation',
         'importer_programme',
         'exporter_programme',
 

@@ -17,11 +17,15 @@ return new class extends Migration
         $table->id();
         $table->string('nom');
         $table->string('description')->nullable();
-        $table->string('niveau_education');
+        $table->enum('niveau_education', ['maternelle', 'primaire', 'secondaire','superieur']);
         $table->string('niveau_classe');
         $table->string('heure_allouee');
         $table->string('duree_recommander_sceance');
         $table->string('categorie_cours');
+        $table->string('bareme')->nullable();
+        $table->string('type_exercice')->nullable();
+        $table->enum('frequence_evaluation', ['Hebdomadaire', 'Mensuel', 'Trimestriel'])->nullable();
+        $table->enum('type_evaluation', ['Formative', 'Sommative'])->nullable();
         $table->enum('etat', ['encours', 'terminé', 'annulé'])->default('encours');
         $table->integer('credits')->nullable();
         $table->integer('coefficient')->nullable();

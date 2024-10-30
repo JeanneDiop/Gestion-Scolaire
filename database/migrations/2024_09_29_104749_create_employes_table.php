@@ -39,8 +39,9 @@ return new class extends Migration
             $table->string('retenue_salaire')->nullable();
             $table->enum('mode_paiement', ['Virement', 'Bancaire','Espèce','Chèque']);
             $table->string('banque_domiciliation')->nullable();
-            $table->string('numero_compte_bancaire')->nullable();
+            $table->string('numero_compte_bancaire')->unique()->nullable();
             $table->string('cv_diplomes')->nullable();
+            $table->string('certification_formations')->nullable();
             $table->string('contrat_travail')->nullable();
             $table->string('ancienneté')->nullable();
             $table->double('evaluation_performance')->nullable();

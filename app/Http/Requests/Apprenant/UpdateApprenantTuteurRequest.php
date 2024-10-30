@@ -35,17 +35,18 @@ class UpdateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-                'unique:users,email',
+
             ],
             'password' => 'nullable|min:8',
             'telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
+
             ],
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:Homme,Femme',
+            'role_nom' => 'required|string',
 
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
@@ -70,11 +71,11 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'année_inscription' => ['nullable', 'date'],
             'niveau_entrée' => ['nullable', 'string', 'max:255'],
             'statut_inscription' => ['nullable', 'in:Inscrit,En attente,Autre'],
-            'transport_scolaire' => ['required', 'in:Oui,Non'],
+            'transport_scolaire' => ['nullable', 'in:Oui,Non'],
             // Validation conditionnelle pour le service de transport
             'service_transport' => [
-                'nullable', 
-                'string', 
+                'nullable',
+                'string',
                 function ($attribute, $value, $fail) {
                     if ($this->input('transport_scolaire') === 'Oui' && empty($value)) {
                         $fail('Le champ service de transport est requis si le transport scolaire est Oui.');
@@ -94,16 +95,17 @@ class UpdateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-               
+
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-            
+
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:Homme,Femme',
+            'tuteur.role_nom' => 'required|string',
             'tuteur.profession' => 'required|string',
             'tuteur.nationalité' => 'required|string|max:255',
             'tuteur.nombre_enfants_inscrits'  => 'nullable|string',
@@ -127,6 +129,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
         'adresse.required' => 'Le champ adresse est obligatoire.',
         'genre.required' => 'Le champ genre est obligatoire.',
         'genre.in' => 'Le genre doit être soit Homme soit Femme.',
+        'role_nom.required' => 'Le champ role_nom est obligatoire.',
         'date_naissance.required' => 'Le champ date de naissance est obligatoire.',
         'date_naissance.date' => 'La date de naissance doit être une date valide.',
         'lieu_naissance.required' => 'Le champ lieu de naissance est obligatoire.',
@@ -163,6 +166,7 @@ class UpdateApprenantTuteurRequest extends FormRequest
         'tuteur.adresse.required' => 'L\'adresse du tuteur est obligatoire.',
         'tuteur.genre.required' => 'Le champ genre du tuteur est obligatoire.',
         'tuteur.genre.in' => 'Le genre du tuteur doit être soit Homme soit Femme.',
+        'tuteur.role_nom.required' => 'Le role_nom du tuteur est obligatoire.',
         'tuteur.profession.required' => 'La profession du tuteur est obligatoire.',
         'tuteur.nationalité.required' => 'La nationalité du tuteur est obligatoire.',
         'tuteur.nombre_enfants_inscrits.required' => 'Le nombre d\'enfants inscrits par le tuteur est obligatoire.',

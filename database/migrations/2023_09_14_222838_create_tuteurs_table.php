@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->string('profession');
-            $table->string('nationalité');
+            $table->string('nationalité')->nullable();
             $table->string('image')->nullable();
             $table->string('nombre_enfants_inscrits')->nullable();
             $table->string('numero_CNI')->nullable()->unique();

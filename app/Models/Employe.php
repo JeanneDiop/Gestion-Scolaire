@@ -39,6 +39,7 @@ class Employe extends Model
         'cv_diplomes',
         'contrat_travail',
         'ancienneté',
+        'certification_formations',
         'evaluation_performance',
         'commentaires_notes',
 

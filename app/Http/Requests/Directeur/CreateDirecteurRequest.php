@@ -27,6 +27,7 @@ class CreateDirecteurRequest extends FormRequest
             'password' => 'nullable|required|min:8',
             'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone',],
             'adresse' => 'required|string|max:255',
+            'role_nom' => 'required|string|max:255',
             'genre' => 'required|in:Homme,Femme',
             'etat' => 'nullable|string|in:actif,inactif',
             'statut_marital' => 'required|in:celibataire,marié,veuf,veuve,divorcé',
@@ -72,6 +73,9 @@ class CreateDirecteurRequest extends FormRequest
             'adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
             'adresse.max' => 'L\'adresse ne peut pas dépasser 255 caractères.',
 
+            'role_nom.required' => 'Le role_nom est requise.',
+            'role_nom.string' => 'Le role_nom doit être une chaîne de caractères.',
+            'role_nom.max' => 'Le role_nom ne peut pas dépasser 255 caractères.',
             'genre.required' => 'Le genre est requis.',
             'genre.in' => 'Le genre doit être soit "homme" soit "femme".',
 

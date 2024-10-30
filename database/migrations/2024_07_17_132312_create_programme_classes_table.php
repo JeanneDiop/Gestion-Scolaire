@@ -21,11 +21,8 @@ return new class extends Migration
             $table->string('langue_enseignee');
             $table->string('objectif_generaux')->nullable();
             $table->string('objectif_specifiques')->nullable();
-            $table->string('bareme')->nullable;
-            $table->enum('frequence_evaluation', ['Hebdomadaire', 'Mensuel', 'Trimestriel'])->nullable();
-            $table->enum('type_evaluation', ['Formative', 'Sommative'])->nullable;
-            $table->string('importer_programme')->nullable;
-            $table->string('exporter_programme')->nullable;
+            $table->string('importer_programme')->nullable();
+            $table->string('exporter_programme')->nullable();
             $table->timestamps();
         });
     }
