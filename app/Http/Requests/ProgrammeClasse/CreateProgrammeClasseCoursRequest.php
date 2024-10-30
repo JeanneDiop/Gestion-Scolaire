@@ -27,6 +27,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
             'niveau_education' => 'required|string',
+            'annee_scolaire' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
             'langue_enseignee' => 'required|string|max:255',
             'objectif_generaux' => 'required|string|max:255',
@@ -85,6 +86,9 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             
             'niveau_education.required' => 'Le champ niveau d\'éducation est requis.',
             'niveau_education.string' => 'Le champ niveau d\'éducation doit être une chaîne de caractères.',
+            
+            'annee_scolaire.required' => 'Le champ annee_scolaire est requis.',
+            'annee_scolaire.string' => 'Le champ annee_scolaire doit être une chaîne de caractères.',
             
             'niveau_classe.required' => 'Le champ niveau de classe est requis.',
             'niveau_classe.string' => 'Le champ niveau de classe doit être une chaîne de caractères.',
