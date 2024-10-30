@@ -28,17 +28,17 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'description' => 'nullable|string',
             'niveau_education' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
-            'type_exercice' => 'nullable|string|max:255',
             'langue_enseignee' => 'required|string|max:255',
             'objectif_generaux' => 'required|string|max:255',
             'objectif_specifiques' => 'required|string|max:255',
-            'importer_programme' => 'required|string|max:255',
-            'exporter_programme' => 'required|string|max:255',
+            'importer_programme' => 'nullable|string|max:255',
+            'exporter_programme' => 'nullable|string|max:255',
             'cours' => 'required|array',
             'cours.*.nom' => 'required|string|max:255',
             'cours.*.description' => 'nullable|string',
             'cours.*.niveau_education' => 'required|in:maternelle,primaire,secondaire,supérieur',
             'cours.*.niveau_classe' => 'required|string|max:255',
+             'cours.*.type_exercice' => 'nullable|string|max:255',
             'cours.*.bareme' => [
     'required',
     'string',
@@ -90,8 +90,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'niveau_classe.string' => 'Le champ niveau de classe doit être une chaîne de caractères.',
             'niveau_classe.max' => 'Le champ niveau de classe ne peut pas dépasser 255 caractères.',
             
-            'type_exercice.string' => 'Le champ type d\'exercice doit être une chaîne de caractères.',
-            'type_exercice.max' => 'Le champ type d\'exercice ne peut pas dépasser 255 caractères.',
+           
             
             'langue_enseignee.required' => 'Le champ langue enseignée est requis.',
             'langue_enseignee.string' => 'Le champ langue enseignée doit être une chaîne de caractères.',
@@ -105,13 +104,13 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'objectif_specifiques.string' => 'Le champ objectif spécifiques doit être une chaîne de caractères.',
             'objectif_specifiques.max' => 'Le champ objectif spécifiques ne peut pas dépasser 255 caractères.',
             
-            'importer_programme.required' => 'Le champ importer programme est requis.',
+           
             'importer_programme.string' => 'Le champ importer programme doit être une chaîne de caractères.',
-            'importer_programme.max' => 'Le champ importer programme ne peut pas dépasser 255 caractères.',
+           
             
-            'exporter_programme.required' => 'Le champ exporter programme est requis.',
+            
             'exporter_programme.string' => 'Le champ exporter programme doit être une chaîne de caractères.',
-            'exporter_programme.max' => 'Le champ exporter programme ne peut pas dépasser 255 caractères.',
+            
             
             'cours.required' => 'Le champ cours est requis.',
             'cours.array' => 'Le champ cours doit être un tableau.',
@@ -128,7 +127,8 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.niveau_classe.required' => 'Le niveau de classe du cours est requis.',
             'cours.*.niveau_classe.string' => 'Le niveau de classe du cours doit être une chaîne de caractères.',
             'cours.*.niveau_classe.max' => 'Le niveau de classe du cours ne peut pas dépasser 255 caractères.',
-            
+            'cours.*.type_exercice.string' => 'Le champ type d\'exercice doit être une chaîne de caractères.',
+            'cours.*.type_exercice.max' => 'Le champ type d\'exercice ne peut pas dépasser 255 caractères.',
             'cours.*.bareme.required' => 'Le barème du cours est requis.',
             'cours.*.bareme.string' => 'Le barème du cours doit être une chaîne de caractères.',
             'cours.*.bareme.max' => 'Le barème du cours ne peut pas dépasser 255 caractères.',

@@ -137,6 +137,7 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
             $cours->bareme = $bareme ?? null;
             $cours->frequence_evaluation = $coursData['frequence_evaluation'] ?? null;
             $cours->type_evaluation = $coursData['type_evaluation ']?? null;
+            $cours->type_exercice = $coursData['type_exercice ']?? null;
             $cours->credits = $coursData['credits'] ?? null;
             $cours->coefficient = $coursData['coefficient'] ?? null;
             $cours->semestre = $coursData['semestre'] ?? null;
@@ -211,6 +212,7 @@ public function updateProgrammeCours($id, UpdateProgrammeClasseCoursRequest $req
                     $cours->bareme = $coursData['bareme'] ?? null;
                     $cours->frequence_evaluation = $coursData['frequence_evaluation'] ?? null;
                     $cours->type_evaluation = $coursData['type_evaluation'] ?? null;
+                    $cours->type_exercice = $coursData['type_exercice ']?? null;
                     $cours->credits = $coursData['credits'] ?? null;
                     $cours->coefficient = $coursData['coefficient'] ?? null;
                     $cours->semestre = $coursData['semestre'];
@@ -254,6 +256,7 @@ public function updateProgrammeCours($id, UpdateProgrammeClasseCoursRequest $req
                 $cours->bareme = $coursData['bareme'] ?? null;
                 $cours->frequence_evaluation = $coursData['frequence_evaluation'] ?? null;
                 $cours->type_evaluation = $coursData['type_evaluation'] ?? null;
+                $cours->type_exercice = $coursData['type_exercice ']?? null;
                 $cours->credits = $coursData['credits'] ?? null;
                 $cours->coefficient = $coursData['coefficient'] ?? null;
                 $cours->semestre = $coursData['semestre'];

@@ -28,15 +28,15 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'description' => 'nullable|string',
             'niveau_education' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
-            'type_exercice' => 'nullable|string|max:255',
             'langue_enseignee' => 'required|string|max:255',
             'objectif_generaux' => 'required|string|max:255',
             'objectif_specifiques' => 'required|string|max:255',
-            'importer_programme' => 'required|string|max:255',
-            'exporter_programme' => 'required|string|max:255',
+            'importer_programme' => 'nullable|string|max:255',
+            'exporter_programme' => 'nullable|string|max:255',
             'cours' => 'required|array',
             'cours.*.nom' => 'required|string|max:255',
             'cours.*.description' => 'nullable|string',
+            'cours.*.type_exercice' => 'nullable|string|max:255',
             'cours.*.niveau_education' => 'required|in:maternelle,primaire,secondaire,superieur',
             'cours.*.niveau_classe' => 'required|string|max:255',
             'cours.*.bareme' => [
@@ -96,8 +96,7 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'niveau_classe.string' => 'Le niveau de la classe doit être une chaîne de caractères.',
             'niveau_classe.max' => 'Le niveau de la classe ne peut pas dépasser 255 caractères.',
 
-            'type_exercice.string' => 'Le type exercice doit être une chaîne de caractères.',
-            'type_exercice.max' => 'Le type exercice ne peut pas dépasser 255 caractères.',
+
 
             'langue_enseignee.required' => 'La langue enseignée est obligatoire.',
             'langue_enseignee.string' => 'La langue enseignée doit être une chaîne de caractères.',
@@ -131,7 +130,8 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.type_evaluation.required' => 'Le type d\'évaluation est obligatoire.',
             'cours.*.type_evaluation.in' => 'Le type d\'évaluation doit être soit "Formative" soit "Sommative".',
 
-
+            'cours.*.type_exercice.string' => 'Le champ type d\'exercice doit être une chaîne de caractères.',
+            'cours.*.type_exercice.max' => 'Le champ type d\'exercice ne peut pas dépasser 255 caractères.',
             'cours.*.description.string' => 'La description du cours doit être une chaîne de caractères.',
 
            'cours.*.niveau_education.required' => 'Le niveau d\'éducation est requis pour chaque cours.',
