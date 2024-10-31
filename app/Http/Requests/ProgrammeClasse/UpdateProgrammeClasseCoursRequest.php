@@ -41,7 +41,7 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.niveau_education' => 'required|in:maternelle,primaire,secondaire,superieur',
             'cours.*.niveau_classe' => 'required|string|max:255',
             'cours.*.bareme' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
                 function ($attribute, $value, $fail) {
@@ -91,7 +91,7 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
 
             'niveau_education.required' => 'Le niveau d\'éducation est obligatoire.',
             'niveau_education.string' => 'Le niveau d\'éducation doit être une chaîne de caractères.',
-           
+
 
             'niveau_classe.required' => 'Le niveau de la classe est obligatoire.',
             'niveau_classe.string' => 'Le niveau de la classe doit être une chaîne de caractères.',

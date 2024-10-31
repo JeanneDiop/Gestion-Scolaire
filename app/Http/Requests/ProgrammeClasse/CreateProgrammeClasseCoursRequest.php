@@ -41,7 +41,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.niveau_classe' => 'required|string|max:255',
              'cours.*.type_exercice' => 'nullable|string|max:255',
             'cours.*.bareme' => [
-    'required',
+    'nullable',
     'string',
     'max:255',
     function ($attribute, $value, $fail) {
@@ -79,7 +79,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.credits' => 'nullable|integer|min:0',
         'cours.*.coefficient' => 'nullable|integer|min:0',
         'cours.*.semestre' => 'nullable|integer|min:1|max:2',
-        'cours.*.enseignant_id' => 'required|exists:enseignants,id',
+        'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
         'cours.*.competences' => 'nullable|array',
         'cours.*.competences.*.nom' => 'required|string|max:255',
         'cours.*.competences.*.description' => 'nullable|string',
