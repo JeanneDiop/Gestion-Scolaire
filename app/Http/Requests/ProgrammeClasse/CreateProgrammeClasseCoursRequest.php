@@ -29,9 +29,9 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'niveau_education' => 'required|string',
             'annee_scolaire' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
-            'langue_enseignee' => 'required|string|max:255',
-            'objectif_generaux' => 'required|string|max:255',
-            'objectif_specifiques' => 'required|string|max:255',
+            'langue_enseignee' => 'nullable|string|max:255',
+            'objectif_generaux' => 'nullable|string|max:255',
+            'objectif_specifiques' => 'nullable|string|max:255',
             'importer_programme' => 'nullable|string|max:255',
             'exporter_programme' => 'nullable|string|max:255',
             'cours' => 'required|array',
@@ -105,15 +105,15 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'niveau_classe.string' => 'Le niveau de classe doit être une chaîne de caractères.',
         'niveau_classe.max' => 'Le niveau de classe ne peut pas dépasser 255 caractères.',
 
-        'langue_enseignee.required' => 'La langue enseignée est obligatoire.',
+
         'langue_enseignee.string' => 'La langue enseignée doit être une chaîne de caractères.',
         'langue_enseignee.max' => 'La langue enseignée ne peut pas dépasser 255 caractères.',
 
-        'objectif_generaux.required' => 'Les objectifs généraux sont obligatoires.',
+
         'objectif_generaux.string' => 'Les objectifs généraux doivent être une chaîne de caractères.',
         'objectif_generaux.max' => 'Les objectifs généraux ne peuvent pas dépasser 255 caractères.',
 
-        'objectif_specifiques.required' => 'Les objectifs spécifiques sont obligatoires.',
+
         'objectif_specifiques.string' => 'Les objectifs spécifiques doivent être une chaîne de caractères.',
         'objectif_specifiques.max' => 'Les objectifs spécifiques ne peuvent pas dépasser 255 caractères.',
 
@@ -131,7 +131,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.niveau_classe.string' => 'Le niveau de classe du cours doit être une chaîne de caractères.',
         'cours.*.niveau_classe.max' => 'Le niveau de classe du cours ne peut pas dépasser 255 caractères.',
 
-        'cours.*.bareme.required' => 'Le barème est obligatoire.',
+        
         'cours.*.bareme.string' => 'Le barème doit être une chaîne de caractères.',
         'cours.*.bareme.max' => 'Le barème ne peut pas dépasser 255 caractères.',
 

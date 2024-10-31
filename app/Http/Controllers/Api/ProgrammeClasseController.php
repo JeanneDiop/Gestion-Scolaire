@@ -86,7 +86,7 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
         $programme_classe->niveau_classe = $request->niveau_classe;
         $programme_classe->cycle = $request->cycle;
         $programme_classe->annee_scolaire = $request->annee_scolaire;
-        $programme_classe->langue_enseignee = $request->langue_enseignee;
+        $programme_classe->langue_enseignee = $request->langue_enseignee ?? null;
         $programme_classe->objectif_generaux = $request->objectif_generaux ?? null;
         $programme_classe->objectif_specifiques = $request->objectif_specifiques ?? null;
         $programme_classe->importer_programme = $request->importer_programme ?? null;
@@ -107,7 +107,7 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                     ], 400);
                 }
             }
-            
+
             if ($niveauEducation === 'primaire') {
                 if (!preg_match('/^(10|[0-9])\/10$/', $bareme)) {
                     return response()->json([
@@ -116,7 +116,7 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                     ], 400);
                 }
             }
-            
+
             if ($niveauEducation === 'secondaire') {
                 if (!preg_match('/^(20|[1-9]?[0-9])\/20$/', $bareme)) {
                     return response()->json([
