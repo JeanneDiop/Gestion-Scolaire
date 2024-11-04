@@ -461,8 +461,25 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
         $programme_classe->exporter_programme = $request->exporter_programme ?? null;
         $programme_classe->save();
 
-        // Boucle pour ajouter chaque cours et ses compétences
-        foreach ($request->cours as $coursData) {
+            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
+            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
+       
+        $cours = new Cours();
+        $cours->nom = $coursData['nom'];
+        $cours->description = $coursData['description'] ?? null;
+        $cours->niveau_education = $coursData['niveau_education'];
+        $cours->niveau_classe = $coursData['niveau_classe'];
+        $cours->heure_allouee = $coursData['heure_allouee'];
+        $cours->etat = $coursData['etat'] ?? 'encours';
+        $cours->credits = $coursData['credits'] ?? null;
+        $cours->coefficient = $coursData['coefficient'] ?? null;
+        $cours->semestre = $coursData['semestre'] ?? null;
+        $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
+        $cours->programme_classe_id = $programmeClasse->id;
+        $cours->save();
+
+         // Boucle pour ajouter chaque cours et ses compétences
+         foreach ($request->categoriecours as $coursData) {
             $bareme = $coursData['bareme'] ?? null;
 
             // Validation du champ bareme selon le niveau d'éducation
@@ -493,27 +510,6 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
                     ], 400);
                 }
             }
-            // Création du cours
-          
-            $cours->bareme = $bareme ?? null;
-          
-            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
-            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
-       
-        $cours = new Cours();
-        $cours->nom = $coursData['nom'];
-        $cours->description = $coursData['description'] ?? null;
-        $cours->niveau_education = $coursData['niveau_education'];
-        $cours->niveau_classe = $coursData['niveau_classe'];
-        $cours->heure_allouee = $coursData['heure_allouee'];
-        $cours->etat = $coursData['etat'] ?? 'encours';
-        $cours->credits = $coursData['credits'] ?? null;
-        $cours->coefficient = $coursData['coefficient'] ?? null;
-        $cours->semestre = $coursData['semestre'] ?? null;
-        $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
-        $cours->programme_classe_id = $programmeClasse->id;
-        $cours->save();
-
             // Boucle pour ajouter les compétences spécifiques à ce cours
             if (isset($coursData['categories'])) {
                 foreach ($coursData['categories'] as $categorieData) {

@@ -1,52 +1,44 @@
 <?php
-
 namespace App\Console\Commands;
 
 use App\Models\Programme;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class StoreProgrammeByClass extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'store:programme {file} {niveau_education} {niveau_classe}';
+    protected $description = 'Enregistre les programmes pour un niveau spécifique à partir d\'un fichier Excel dans resources/programmes';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Enregistre les programmes pour un niveau spécifique à partir d’un fichier Excel';
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         // Récupération des arguments
-        $filePath = $this->argument('file');
+        $fileName = $this->argument('file');
         $niveauEducation = $this->argument('niveau_education');
         $niveauClasse = $this->argument('niveau_classe');
 
-        // Vérifie si le fichier existe
-        if (!file_exists(storage_path("app/public/Programmes/{$filePath}"))) {
+        // Chemin vers le fichier Excel
+        $filePath = resource_path("programmes/{$fileName}");
+
+        // Vérifiez si le fichier existe
+        if (!file_exists($filePath)) {
             $this->error("Le fichier {$filePath} n'existe pas dans le dossier Programmes.");
             return;
         }
 
-        // Chargez le fichier Excel
-        $spreadsheet = $this->loadSpreadsheet(storage_path("app/public/Programmes/{$filePath}"));
+        // Charger et traiter le fichier Excel
+        $this->importFile($filePath, $niveauEducation, $niveauClasse);
+
+        $this->info("Le programme pour {$niveauClasse} - {$niveauEducation} a été enregistré avec succès à partir du fichier: {$fileName}.");
+    }
+
+    private function importFile(string $filePath, string $niveauEducation, string $niveauClasse)
+    {
+        $spreadsheet = $this->loadSpreadsheet($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
 
-        // Initialisez le compteur
         $counter = 0;
-
         foreach ($worksheet->getRowIterator() as $row) {
             // Ignore la première ligne (en-têtes)
             if ($counter === 0) {
@@ -54,27 +46,25 @@ class StoreProgrammeByClass extends Command
                 continue;
             }
 
-            // Obtenez les cellules pour chaque ligne
             $cellIterator = $row->getCellIterator();
             $cellIterator->setIterateOnlyExistingCells(true);
 
-            // Récupérez les valeurs des cellules
             $cells = [];
             foreach ($cellIterator as $cell) {
                 $cells[] = $cell->getFormattedValue();
             }
 
-            // Si la ligne est vide, passez à la suivante
+            // Ignore les lignes vides
             if (implode('', $cells) === '') {
                 continue;
             }
 
-            // Remplir les éléments manquants avec `null` pour correspondre au nombre de colonnes
+            // Compléter avec des valeurs nulles si moins de 9 colonnes
             while (count($cells) < 9) {
                 $cells[] = null;
             }
 
-            // Créez un enregistrement dans la base de données
+            // Créer un enregistrement dans la base de données
             Programme::create([
                 'niveau_education' => $niveauEducation,
                 'niveau_classe' => $niveauClasse,
@@ -87,19 +77,17 @@ class StoreProgrammeByClass extends Command
                 'duree_seance' => $cells[6] ?? null,
                 'mode_evaluation' => $cells[7] ?? null,
                 'bareme' => $cells[8] ?? null,
-                'file_name' => $filePath,
+                'file_name' => basename($filePath),
             ]);
-            $this->info("Ajout de l'enregistrement avec le file_name : {$filePath}");
+            $this->info("Ajout de l'enregistrement avec le fichier : " . basename($filePath));
         }
 
-        $this->info("Programmes pour {$niveauClasse} - {$niveauEducation} enregistrés avec succès à partir du fichier: {$filePath}.");
+        $this->info("Programmes pour {$niveauClasse} - {$niveauEducation} enregistrés avec succès à partir du fichier: " . basename($filePath));
     }
 
-    /**
-     * Charge un fichier Excel.
-     */
     private function loadSpreadsheet(string $path): Spreadsheet
     {
         return IOFactory::load($path);
     }
 }
+
