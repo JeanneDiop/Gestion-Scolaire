@@ -19,10 +19,11 @@ return new class extends Migration
         $table->string('description')->nullable();
         $table->enum('niveau_education', ['maternelle', 'primaire', 'secondaire','superieur']);
         $table->string('niveau_classe');
-        $table->string('heure_allouee');
-        $table->string('duree_recommander_sceance');
+        $table->string('heure_allouee')->nullable();
+        $table->string('duree_recommander_sceance')->nullable();
         $table->string('categorie_cours');
         $table->string('bareme')->nullable();
+        $table->string('leçons')->nullable();
         $table->string('type_exercice')->nullable();
         $table->enum('frequence_evaluation', ['Hebdomadaire', 'Mensuel', 'Trimestriel'])->nullable();
         $table->enum('type_evaluation', ['Formative', 'Sommative'])->nullable();
@@ -30,6 +31,8 @@ return new class extends Migration
         $table->integer('credits')->nullable();
         $table->integer('coefficient')->nullable();
         $table->integer('semestre')->nullable();
+        $table->string('objectif_generaux')->nullable();
+        $table->string('objectif_specifiques')->nullable();
         $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('set null');
         $table->foreignIdFor(ProgrammeClasse::class)->nullable()->constrained()->onDelete('set null');
         $table->timestamps();

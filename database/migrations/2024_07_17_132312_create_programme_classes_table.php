@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('niveau_classe');
             $table->string('annee_scolaire');
             $table->string('langue_enseignee')->nullable();
-            $table->string('objectif_generaux')->nullable();
-            $table->string('objectif_specifiques')->nullable();
             $table->string('importer_programme')->nullable();
             $table->string('exporter_programme')->nullable();
             $table->timestamps();

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Cours;
+use App\Models\CategorieCours;
 return new class extends Migration
 {
     /**
@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nom');
             $table->string('description');
-            $table->foreignIdFor(Cours::class)->nullable()->constrained('cours')->onDelete('set null');
+            $table->foreignIdFor(CategorieCours::class)->nullable()->constrained('categorie_cours')->onDelete('set null');
             $table->timestamps();
         });
     }

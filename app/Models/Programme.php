@@ -4,25 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Cours;
-use App\Models\Parcours;
+
 class Programme extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'nom',
-        'description',
-        'niveau_education',
-        'credits',
-        'date_debut',
-        'date_fin',
+        'matiere',
+        'categorie',
+        'competences_essentielles',
+        'leçons',
+        'type_exercices',
+        'volume_horaire',
+        'duree_seance',
+        'mode_evaluation',
+        'bareme',
+        'file_name',
+
     ];
 
-    public function cours(){
-        return $this->belongsTo(Cours::class);
-    }
-    public function parcours()
-    {
-        return $this->hasMany(Parcours::class);
-    }
+    protected $casts = [
+        'competences_essentielles' => 'array',
+    ];
 }

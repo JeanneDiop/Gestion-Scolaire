@@ -30,8 +30,6 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
             'annee_scolaire' => 'required|string',
             'niveau_classe' => 'required|string|max:255',
             'langue_enseignee' => 'nullable|string|max:255',
-            'objectif_generaux' => 'nullable|string|max:255',
-            'objectif_specifiques' => 'nullable|string|max:255',
             'importer_programme' => 'nullable|string|max:255',
             'exporter_programme' => 'nullable|string|max:255',
             'cours' => 'required|array',
@@ -80,6 +78,8 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.coefficient' => 'nullable|integer|min:0',
         'cours.*.semestre' => 'nullable|integer|min:1|max:2',
         'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
+        'cours.*.jectif_generaux' => 'nullable|string|max:255',
+        'cours.*.objectif_specifiques' => 'nullable|string|max:255',
         'cours.*.competences' => 'nullable|array',
         'cours.*.competences.*.nom' => 'required|string|max:255',
         'cours.*.competences.*.description' => 'nullable|string',
@@ -109,14 +109,6 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'langue_enseignee.string' => 'La langue enseignée doit être une chaîne de caractères.',
         'langue_enseignee.max' => 'La langue enseignée ne peut pas dépasser 255 caractères.',
 
-
-        'objectif_generaux.string' => 'Les objectifs généraux doivent être une chaîne de caractères.',
-        'objectif_generaux.max' => 'Les objectifs généraux ne peuvent pas dépasser 255 caractères.',
-
-
-        'objectif_specifiques.string' => 'Les objectifs spécifiques doivent être une chaîne de caractères.',
-        'objectif_specifiques.max' => 'Les objectifs spécifiques ne peuvent pas dépasser 255 caractères.',
-
         'cours.required' => 'Le champ cours est obligatoire.',
         'cours.array' => 'Le champ cours doit être un tableau.',
 
@@ -131,7 +123,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.niveau_classe.string' => 'Le niveau de classe du cours doit être une chaîne de caractères.',
         'cours.*.niveau_classe.max' => 'Le niveau de classe du cours ne peut pas dépasser 255 caractères.',
 
-        
+
         'cours.*.bareme.string' => 'Le barème doit être une chaîne de caractères.',
         'cours.*.bareme.max' => 'Le barème ne peut pas dépasser 255 caractères.',
 
@@ -153,6 +145,12 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
 
         'cours.*.enseignant_id.required' => 'L\'identifiant de l\'enseignant est obligatoire.',
         'cours.*.enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
+
+        'cours.*.objectif_generaux.string' => 'Les objectifs généraux doivent être une chaîne de caractères.',
+        'cours.*.objectif_generaux.max' => 'Les objectifs généraux ne peuvent pas dépasser 255 caractères.',
+
+        'cours.*.objectif_specifiques.string' => 'Les objectifs spécifiques doivent être une chaîne de caractères.',
+        'cours.*.objectif_specifiques.max' => 'Les objectifs spécifiques ne peuvent pas dépasser 255 caractères.',
 
         'cours.*.competences.*.nom.required' => 'Le nom de la compétence est obligatoire.',
         'cours.*.competences.*.nom.string' => 'Le nom de la compétence doit être une chaîne de caractères.',

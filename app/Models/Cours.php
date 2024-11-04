@@ -11,7 +11,7 @@ use App\Models\Programme;
 use App\Models\PresenceAbsence;
 use App\Models\ProgrammeClasse;
 use App\Models\ClasseAssociation;
-use App\Models\Competence;
+use App\Models\CategorieCours;
 class Cours extends Model
 {
     use HasFactory;
@@ -39,6 +39,9 @@ class Cours extends Model
     public function planifiercours(){
         return $this->hasMany(Planifiercour::class);
     }
+    public function categoriecours(){
+        return $this->hasMany(CategorieCours::class);
+    }
     public function presenceabsences()
     {
         return $this->hasMany(PresenceAbsence::class ,'cours_id');
@@ -60,9 +63,6 @@ class Cours extends Model
         return $this->hasMany(ClasseAssociation::class, 'cours_id');
     }
 
-    public function competences()
-    {
-        return $this->hasMany(Competence::class, 'cours_id');
-    }
+
 }
 

@@ -16,8 +16,6 @@ class ProgrammeClasse extends Model
         'cycle',
         'annee_scolaire',
         'langue_enseignee',
-        'objectif_generaux',
-        'objectif_specifiques',
         'importer_programme',
         'exporter_programme',
 

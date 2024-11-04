@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\CategorieCours;
 class Competence extends Model
 {
     use HasFactory;
@@ -13,7 +13,7 @@ class Competence extends Model
         'description',
 
     ];
-    public function cours(){
-        return $this->belongsTo(Cours::class, 'cour_id');
+    public function categoriecours(){
+        return $this->belongsTo(CategorieCours::class, 'categorie_cours_id');
     }
 }

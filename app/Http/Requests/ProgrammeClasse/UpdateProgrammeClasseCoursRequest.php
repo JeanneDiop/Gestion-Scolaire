@@ -69,7 +69,9 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.credits' => 'nullable|integer|min:0',
             'cours.*.coefficient' => 'nullable|integer|min:0',
             'cours.*.semestre' => 'nullable|integer|min:1|max:2',
-            'cours.*.enseignant_id' => 'required|exists:enseignants,id',
+            'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
+            'cours.*.jectif_generaux' => 'nullable|string|max:255',
+            'cours.*.objectif_specifiques' => 'nullable|string|max:255',
             'cours.*.competences' => 'nullable|array',
             'cours.*.competences.*.nom' => 'required|string|max:255',
             'cours.*.competences.*.description' => 'nullable|string',
@@ -165,6 +167,11 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
             'cours.*.semestre.min' => 'Le semestre doit être au moins 1.',
             'cours.*.semestre.max' => 'Le semestre ne peut pas être supérieur à 2.',
 
+            'cours.*.objectif_generaux.string' => 'Les objectifs généraux doivent être une chaîne de caractères.',
+             'cours.*.objectif_generaux.max' => 'Les objectifs généraux ne peuvent pas dépasser 255 caractères.',
+
+            'cours.*.objectif_specifiques.string' => 'Les objectifs spécifiques doivent être une chaîne de caractères.',
+            'cours.*.objectif_specifiques.max' => 'Les objectifs spécifiques ne peuvent pas dépasser 255 caractères.',
             'cours.*.enseignant_id.required' => 'Un enseignant doit être assigné à chaque cours.',
             'cours.*.enseignant_id.exists' => 'L\'enseignant spécifié doit exister dans la base de données.',
 

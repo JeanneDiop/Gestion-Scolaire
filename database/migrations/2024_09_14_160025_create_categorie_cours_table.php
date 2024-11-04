@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('programmes', function (Blueprint $table) {
+        Schema::create('categorie_cours', function (Blueprint $table) {
             $table->id();
-            $table->string('file_name')->nullable();
-            $table->string('matiere')->nullable();
-            $table->string('categorie')->nullable();
-            $table->text('competences_essentielles')->nullable();
-            $table->string('leçons')->nullable();
-            $table->string('type_exercices')->nullable();
+            $table->string('nom');
+            $table->text('description')->nullable();
+            $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
             $table->string('volume_horaire')->nullable();
-            $table->string('duree_seance')->nullable();
+            $table->string('leçons')->nullable();
+            $table->string('type_exercice')->nullable();
+            $table->string('duree_recommander_sceance')->nullable();
             $table->string('mode_evaluation')->nullable();
             $table->string('bareme')->nullable();
             $table->timestamps();
-            });
+        });
     }
 
     /**
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('programmes');
+        Schema::dropIfExists('categorie_cours');
     }
 };
