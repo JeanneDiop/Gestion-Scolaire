@@ -396,6 +396,8 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
             $programme->categorie = $request->categorie ?? null;
             $programme->competences_essentielles = $request->competences_essentielles ?? null;
             $programme->lecons = $request->lecons ?? null;
+            $programme->niveau_education = $request->niveau_education ?? null;
+            $programme->niveau_classe = $request->niveau_classe ?? null;
             $programme->volume_horaire = $request->volume_horaire ?? null;
             $programme->duree_seance = $request->duree_seance ?? null;
             $programme->mode_evaluation = $request->mode_evaluation ?? null;

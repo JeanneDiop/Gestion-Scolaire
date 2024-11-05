@@ -63,7 +63,7 @@ class StoreProgrammeByClass extends Command
             while (count($cells) < 9) {
                 $cells[] = null;
             }
-
+            
             // Créer un enregistrement dans la base de données
             Programme::create([
                 'niveau_education' => $niveauEducation,

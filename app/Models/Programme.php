@@ -20,6 +20,8 @@ class Programme extends Model
         'mode_evaluation',
         'bareme',
         'source',
+        'niveau_education',
+        'niveau_classe',
         'file_name',
 
     ];
