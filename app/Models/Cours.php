@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Enseignant;
 use App\Models\Planifiercour;
 use App\Models\Evaluation;
-use App\Models\Programme;
+
 use App\Models\PresenceAbsence;
-use App\Models\ProgrammeClasse;
+use App\Models\Programme;
 use App\Models\ClasseAssociation;
 use App\Models\CategorieCours;
 class Cours extends Model
@@ -50,13 +50,10 @@ class Cours extends Model
     {
         return $this->hasMany(Evaluation::class);
     }
-    public function programmes()
+
+    public function programme()
     {
-        return $this->hasMany(Programme::class);
-    }
-    public function programmeclasse()
-    {
-        return $this->belongsTo(ProgrammeClasse::class, 'cours_id');
+        return $this->belongsTo(Programme::class, 'cours_id');
     }
     public function classeassociations()
     {

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Enseignant;
-use App\Models\ProgrammeClasse;
+use App\Models\Programme;
 return new class extends Migration
 {
     /**
@@ -34,7 +34,7 @@ return new class extends Migration
         $table->string('objectif_generaux')->nullable();
         $table->string('objectif_specifiques')->nullable();
         $table->foreignIdFor(Enseignant::class)->nullable()->constrained()->onDelete('set null');
-        $table->foreignIdFor(ProgrammeClasse::class)->nullable()->constrained()->onDelete('set null');
+        $table->foreignIdFor(Programme::class)->nullable()->constrained()->onDelete('set null');
         $table->timestamps();
     });
 

@@ -15,7 +15,6 @@ use App\Http\Controllers\API\EvaluationController;
 use App\Http\Controllers\API\ParcoursController;
 use App\Http\Controllers\API\NoteController;
 use App\Http\Controllers\API\ProgrammeController;
-use App\Http\Controllers\API\ProgrammeClasseController;
 use App\Http\Controllers\API\PresenceAbsenceController;
 use App\Http\Controllers\API\ApprenantClasseController;
 use App\Http\Controllers\API\EcoleController;
@@ -307,31 +306,24 @@ Route::delete('parcours/supprimer/{id}', [ParcoursController::class, 'destroy'])
 Route::get('parcours/lister', [ParcoursController::class, 'index']);
 //afficher parcours
 Route::get('parcours/detail/{id}', [ParcoursController::class, 'show']);
-//gestion Programme-----------------
-Route::post('programme/create', [ProgrammeController::class, 'store']);
-//modifier programme
-Route::put('programme/edit/{id}', [ProgrammeController::class, 'update']);
-//supprimer  programme
-Route::delete('programme/supprimer/{id}', [ProgrammeController::class, 'destroy']);
-//lister programme
-Route::get('programme/lister', [ProgrammeController::class, 'index']);
-//afficher programme
-Route::get('programme/detail/{id}', [ProgrammeController::class, 'show']);
 
-//gestion programmeclasse-----------------------------------------------------
-Route::post('programmeclasse/create', [ProgrammeClasseController::class, 'store']);
+
+//gestion programme-----------------------------------------------------
+Route::post('programmeclasse/create', [ProgrammeController::class, 'store']);
 //modifier programmeclasse
-Route::put('programmeclasse/edit/{id}', [ProgrammeClasseController::class, 'update']);
+Route::put('programmeclasse/edit/{id}', [ProgrammeController::class, 'update']);
 //supprimer  programmeclasse
-Route::delete('programmeclasse/supprimer/{id}', [ProgrammeClasseController::class, 'destroy']);
-//lister programmeclasse
-Route::get('programmeclasse/lister', [ProgrammeClasseController::class, 'index']);
+Route::delete('programmeclasse/supprimer/{id}', [ProgrammeController::class, 'destroy']);
+//lister les programmes
+Route::get('programmeclasse/lister', [ProgrammeController::class, 'index']);
+//lister programme excel
+Route::get('programmes/lister', [ProgrammeController::class, 'listerprogrammesexcel']);
 //afficher programmeclassecours
-Route::get('programmeclasse/detail/{id}', [ProgrammeClasseController::class, 'show']);
+Route::get('programmeclasse/detail/{id}', [ProgrammeController::class, 'show']);
 //ajouter programmeclassecours
-Route::post('programmeclassecours/ajouter', [ProgrammeClasseController::class, 'storeProgrammeCours']);
+Route::post('programmeclassecours/ajouter', [ProgrammeController::class, 'storeProgrammeCours']);
 //modifier programmeclassecours
-Route::put('programmeclassecours/edit/{id}', [ProgrammeClasseController::class, 'updateProgrammeCours']);
+Route::put('programmeclassecours/edit/{id}', [ProgrammeController::class, 'updateProgrammeCours']);
 
 //gestion PresenceAbsence-----------------
 Route::get('/presenceabsence/test', [PresenceAbsenceController::class, 'index']);

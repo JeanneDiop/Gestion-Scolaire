@@ -10,7 +10,7 @@ use App\Models\Planifiercour;
 use App\Models\EnseignantClasse;
 use App\Models\ApprenantClasse;
 use App\Models\ClasseAssociation;
-use App\Models\ProgrammeClasse;
+use App\Models\Programme;
 
 use App\Models\Enseignant;
 
@@ -28,8 +28,8 @@ class Classe extends Model
     public function salle(){
         return $this->belongsTo(Salle::class);
     }
-    public function programmeclasse(){
-        return $this->belongsTo(ProgrammeClasse::class, 'classe_id');
+    public function programme(){
+        return $this->belongsTo(Programme::class, 'classe_id');
     }
     public function apprenants()
     {

@@ -14,6 +14,14 @@ return new class extends Migration
         Schema::create('programmes', function (Blueprint $table) {
             $table->id();
             $table->string('file_name')->nullable();
+            $table->string('nom')->nullable();
+            $table->string('niveau_education')->nullable();
+            $table->string('niveau_classe')->nullable();
+            $table->string('cycle')->nullable();
+            $table->string('annee_scolaire')->nullable();
+            $table->string('langue_enseignee')->nullable();
+            $table->string('importer_programme')->nullable();
+            $table->string('exporter_programme')->nullable();
             $table->string('matiere')->nullable();
             $table->string('categorie')->nullable();
             $table->text('competences_essentielles')->nullable();
@@ -23,6 +31,7 @@ return new class extends Migration
             $table->string('duree_seance')->nullable();
             $table->string('mode_evaluation')->nullable();
             $table->string('bareme')->nullable();
+            $table->string('source')->default('manuel');
             $table->timestamps();
             });
     }

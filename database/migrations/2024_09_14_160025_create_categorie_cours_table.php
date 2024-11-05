@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
             $table->string('volume_horaire')->nullable();
             $table->string('leçons')->nullable();
-            $table->string('type_exercice')->nullable();
-            $table->string('duree_recommander_sceance')->nullable();
+            $table->string('type_exercices')->nullable();
+            $table->string('duree_seance')->nullable();
             $table->string('mode_evaluation')->nullable();
             $table->string('bareme')->nullable();
             $table->timestamps();

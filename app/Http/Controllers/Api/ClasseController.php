@@ -8,7 +8,7 @@ use App\Models\Classe;
 use App\Models\Enseignant;
 use App\Models\Salle;
 use App\Models\Cours;
-use App\Models\ProgrammeClasse;
+use App\Models\Programme;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,17 +21,17 @@ class ClasseController extends Controller
     {
         try {
 
-            $programmes = ProgrammeClasse::all();
+            $programmes = Programme::all();
             $classe = new Classe();
             $classe->nom = $request->nom;
             $classe->niveau_classe = $request->niveau_classe;
             $classe->niveau_education = $request->niveau_education;
             $classe->salle_id = $request->salle_id;
 
-            if ($request->has('programme_classe_id')) {
-                $classe->programme_classe_id = $request->programme_classe_id;
+            if ($request->has('programme_id')) {
+                $classe->programme_id = $request->programme_id;
                 $classe->save();
-                $matieres = Cours::where('programme_classe_id', $classe->programme_classe_id)->get();
+                $matieres = Cours::where('programme_id', $classe->programme_id)->get();
 
                 if ($matieres->isEmpty()) {
                     $matieres = [];
@@ -42,7 +42,7 @@ class ClasseController extends Controller
 
             $programmesWithMatieres = [];
             foreach ($programmes as $programme) {
-                $programmeMatieres = Cours::where('programme_classe_id', $programme->id)->get();
+                $programmeMatieres = Cours::where('programme_id', $programme->id)->get();
                 $programmesWithMatieres[] = [
                     'programme' => $programme,
                     'matieres' => $programmeMatieres,
@@ -90,10 +90,10 @@ class ClasseController extends Controller
             }
 
             // Récupérer tous les programmes disponibles et leurs matières
-            $programmes = ProgrammeClasse::all();
+            $programmes = Programme::all();
             $programmesWithMatieres = [];
             foreach ($programmes as $programme) {
-                $programmeMatieres = Cours::where('programme_classe_id', $programme->id)->get();
+                $programmeMatieres = Cours::where('programme_id', $programme->id)->get();
                 $programmesWithMatieres[] = [
                     'programme' => $programme,
                     'matieres' => $programmeMatieres,

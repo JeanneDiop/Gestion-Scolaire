@@ -77,6 +77,7 @@ class StoreProgrammeByClass extends Command
                 'duree_seance' => $cells[6] ?? null,
                 'mode_evaluation' => $cells[7] ?? null,
                 'bareme' => $cells[8] ?? null,
+                'source' => 'import_excel',
                 'file_name' => basename($filePath),
             ]);
             $this->info("Ajout de l'enregistrement avec le fichier : " . basename($filePath));
