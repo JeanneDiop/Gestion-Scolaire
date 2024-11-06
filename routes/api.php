@@ -184,14 +184,12 @@ Route::delete('/supprimeruserpersonnel/{user}', [AuthController::class, 'supprim
 Route::post('archiverpersonnel/{personneladministratif}',[AuthController::class,'archiverPersonnelAdministratif']);
 
 //--------------------gestion classe-----------------------
-
-Route::post('ajouter/classe', [ClasseController::class, 'storeClasse']);
 //lister les classes
 Route::get('classe/lister', [ClasseController::class, 'indexClasse']);
 //afficher classe
 Route::get('classe/detail/{id}', [ClasseController::class, 'showClasse']);
 //modifier une classe
-Route::put('classe/edit/{id}', [ClasseController::class, 'updateClasse']);
+Route::put('classeprogramme/edit/{id}', [ClasseController::class, 'updateClasse']);
 //supprimer un classe
 Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroy']);
 //ajouter classe

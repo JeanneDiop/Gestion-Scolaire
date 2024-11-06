@@ -52,18 +52,21 @@ class StoreProgrammeByClass extends Command
             $cells = [];
             foreach ($cellIterator as $cell) {
                 $cells[] = $cell->getFormattedValue();
+
             }
 
             // Ignore les lignes vides
             if (implode('', $cells) === '') {
                 continue;
-            }
+           }
+
 
             // Compléter avec des valeurs nulles si moins de 9 colonnes
             while (count($cells) < 9) {
                 $cells[] = null;
             }
-            
+
+
             // Créer un enregistrement dans la base de données
             Programme::create([
                 'niveau_education' => $niveauEducation,

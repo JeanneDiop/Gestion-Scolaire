@@ -23,6 +23,16 @@ class Programme extends Model
         'niveau_education',
         'niveau_classe',
         'file_name',
+        'cycle',
+        'annee_scolaire',
+        'langue_enseignee',
+        'importer_programme',
+        'exporter_programme',
+
+
+
+
+
 
     ];
 
@@ -33,10 +43,10 @@ class Programme extends Model
 
     public function classe()
     {
-        return $this->belongsTo(Classe::class);
+        return $this->belongsTo(Classe::class, 'classe_id');
     }
     public function cours()
     {
-        return $this->belongsTo(Cours::class);
+        return $this->belongsTo(Cours::class, 'cours_id');
     }
 }

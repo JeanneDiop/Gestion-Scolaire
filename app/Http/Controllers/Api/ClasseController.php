@@ -17,105 +17,54 @@ use App\Http\Requests\Classe\EditClasseRequest;
 
 class ClasseController extends Controller
 {
-    public function storeClasse(CreateClasseRequest $request)
-    {
-        try {
 
-            $programmes = Programme::all();
-            $classe = new Classe();
-            $classe->nom = $request->nom;
-            $classe->niveau_classe = $request->niveau_classe;
-            $classe->niveau_education = $request->niveau_education;
-            $classe->salle_id = $request->salle_id;
-
-            if ($request->has('programme_id')) {
-                $classe->programme_id = $request->programme_id;
-                $classe->save();
-                $matieres = Cours::where('programme_id', $classe->programme_id)->get();
-
-                if ($matieres->isEmpty()) {
-                    $matieres = [];
-                }
-            } else {
-                $matieres = [];
-            }
-
-            $programmesWithMatieres = [];
-            foreach ($programmes as $programme) {
-                $programmeMatieres = Cours::where('programme_id', $programme->id)->get();
-                $programmesWithMatieres[] = [
-                    'programme' => $programme,
-                    'matieres' => $programmeMatieres,
-                ];
-            }
-
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'Classe a été ajoutée',
-                'data' => [
-                    'classe' => $classe,
-                    'programmes_with_matieres' => $programmesWithMatieres,
-
-                ],
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe',
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
 
 
     public function updateClasse(EditClasseRequest $request, $id)
-    {
-        try {
+{
+    try {
+        // Rechercher la classe par ID
+        $classe = Classe::findOrFail($id);
 
-            $classe = Classe::findOrFail($id);
-            $classe->nom = $request->nom;
-            $classe->niveau_classe = $request->niveau_classe;
-            $classe->niveau_education = $request->niveau_education;
-            $classe->salle_id = $request->salle_id;
-            if ($request->has('programme_classe_id')) {
-                $classe->programme_classe_id = $request->programme_classe_id;
-                $classe->update();
-                $matieres = Cours::where('programme_classe_id', $classe->programme_classe_id)->get();
+        // Mettre à jour les attributs de la classe
+        $classe->nom = $request->nom;
+        $classe->niveau_classe = $request->niveau_classe;
+        $classe->niveau_education = $request->niveau_education;
+        $classe->salle_id = $request->salle_id;
+        $classe->save();
 
-                if ($matieres->isEmpty()) {
-                    $matieres = [];
-                }
-            } else {
-                $matieres = [];
-            }
+        // Récupérer les programmes qui correspondent au niveau d'éducation et au niveau de classe mis à jour
+        $query = Programme::where('niveau_education', $classe->niveau_education)
+            ->where('niveau_classe', $classe->niveau_classe);
 
-            // Récupérer tous les programmes disponibles et leurs matières
-            $programmes = Programme::all();
-            $programmesWithMatieres = [];
-            foreach ($programmes as $programme) {
-                $programmeMatieres = Cours::where('programme_id', $programme->id)->get();
-                $programmesWithMatieres[] = [
-                    'programme' => $programme,
-                    'matieres' => $programmeMatieres,
-                ];
-            }
-
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'Classe mise à jour avec succès',
-                'data' => [
-                    'classe' => $classe,
-                    'programmes_with_matieres' => $programmesWithMatieres,
-                ],
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la classe',
-                'error' => $e->getMessage(),
-            ]);
+        if ($request->filled('source')) {
+            $query->where('source', $request->source);
         }
+
+        $programmes = $query->get();
+
+        // Associer la classe à chaque programme
+        foreach ($programmes as $programme) {
+            $programme->classe = $classe;
+        }
+
+        // Retourner la classe mise à jour et les programmes correspondants (par exemple en JSON)
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Classe mise à jour avec succès',
+            'classe' => $classe,
+            'programmes' => $programmes
+        ], 200);
+
+    } catch (\Exception $e) {
+        // En cas d'erreur, retourner une réponse JSON avec l'erreur
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la classe',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
 
 public function showClasse($id)
@@ -123,12 +72,47 @@ public function showClasse($id)
     try {
         $classe = Classe::with([
             'salle',
-            'programmeclasse.cours',
+            'programmes',
             'apprenants.user',
             'classeAssociations.apprenant.user',
             'classeAssociations.cours',
             'classeAssociations.enseignant.user'
         ])->findOrFail($id);
+        $classe = Classe::with('programmes', 'apprenants')->find(3);
+        dd($classe);
+        $programmesImportExcel = $classe->programmes->where('source', 'import_excel')->map(function ($programme){
+            return [
+                'id' => $programme->id,
+                'nom' => $programme->nom,
+                'niveau_classe' => $programme->niveau_classe,
+                'niveau_education' => $programme->niveau_education,
+                'matiere' => $programme->matiere,
+                'categorie' => $programme->categorie,
+                'importer_programme' => $programme->importer_programme,
+                'exporter_programme' => $programme->exporter_programme,
+                'competences_essentielles' => $programme->competences_essentielles,
+                'lecons' => $programme->lecons,
+                'volume_horaire' => $programme->volume_horaire,
+                'duree_seance' => $programme->duree_seance,
+                'mode_evaluation' => $programme->mode_evaluation,
+                'bareme' => $programme->bareme,
+                'file_name' => $programme->file_name,
+
+            ];
+        });
+
+        $programmesManuels = $classe->programmes->where('source', 'manuel')->map(function ($programme) {
+            return [
+                'id' => $programme->id,
+                'nom' => $programme->nom,
+                'niveau_classe' => $programme->niveau_classe,
+                'niveau_education' => $programme->niveau_education,
+                'cycle' => $programme->cycle,
+                'annee_scolaire' => $programme->annee_scolaire,
+                'langue_enseignee' => $programme->langue_enseignee,
+
+            ];
+        });
         $classeData = [
             'id' => $classe->id,
             'nom' => $classe->nom,
@@ -141,27 +125,8 @@ public function showClasse($id)
                 'type' => $classe->salle->type,
             ] : null,
 
-            'programme_classe' => $classe->programmeClasse ? [
-                'id' => $classe->programmeClasse->id,
-                'nom' => $classe->programmeClasse->nom,
-                'description' => $classe->programmeClasse->description,
-                'niveau_classe' => $classe->programmeClasse->niveau_classe,
-                'niveau_education' => $classe->programmeClasse->niveau_education,
-                'periode' => $classe->programmeClasse->periode,
-                'cours' => $classe->programmeClasse->cours->map(function ($cours) {
-                    return [
-                        'id' => $cours->id,
-                        'nom' => $cours->nom,
-                        'description' => $cours->description,
-                        'niveau_education' => $cours->niveau_education,
-                        'periode' => $cours->periode,
-                        'etat' => $cours->etat,
-                        'credits' => $cours->credits,
-                        'coefficient' => $cours->coefficient,
-                        'semestre' => $cours->semestre,
-                    ];
-                }),
-            ] : null,
+            'programmes_import_excel' => $programmesImportExcel,
+            'programmes_manuels' => $programmesManuels,
 
             'apprenants' => $classe->apprenants->map(function ($apprenant) {
                 return [
@@ -414,14 +379,13 @@ public function ajouterClasse(CreateClasseRequest $request)
         $classe->salle_id = $request->salle_id;
         $classe->save();
         // Récupérer les programmes qui correspondent au niveau d'éducation et au niveau de classe de la classe nouvellement créée
-        $query  = Programme::where('niveau_education', $classe->niveau_education)
-            ->where('niveau_classe', $classe->niveau_classe)->get();
-            if ($request->filled('source')) {
-                $query->where('source', $request->source);
-            }
+        $query = Programme::where('niveau_education', $classe->niveau_education)
+        ->where('niveau_classe', $classe->niveau_classe);
 
-            // Exécuter la requête pour récupérer les programmes
-            $programmes = $query->get();
+        if ($request->filled('source')) {
+        $query->where('source', $request->source);
+        }
+       $programmes = $query->get();
 
             foreach ($programmes as $programme) {
                 $programme->classe = $classe; // Ajoutez la classe associée à chaque programme
@@ -436,10 +400,12 @@ public function ajouterClasse(CreateClasseRequest $request)
         ], 200);
 
     } catch (\Exception $e) {
-        // Gérer les erreurs (par exemple, retourner une réponse d'erreur)
-        return response()->json(['error' => 'Une erreur s\'est produite lors de la création de la classe.'], 500);
-    }
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de lenregistrement de la  classe',
+            'error' => $e->getMessage(),
+        ], 500);
 }
 
-
+}
 }

@@ -27,8 +27,7 @@ class EditClasseRequest extends FormRequest
         return [
             'nom' => 'required|string|max:255',
             'niveau_classe' => 'required|string|max:255',
-            'niveau_eductaion' => 'required|string|max:255',
-            'programme_classe_id' => 'sometimes|integer|exists:programme_classes,id',
+            'niveau_education' => 'required|string|max:255',
             'salle_id' => 'required|integer',
         ];
     }
@@ -41,8 +40,9 @@ class EditClasseRequest extends FormRequest
         'niveau_classe.required' => 'Le niveau de la classe est obligatoire.',
         'niveau_classe.string' => 'Le niveau de la classe doit être une chaîne de caractères.',
         'niveau_classe.max' => 'Le niveau de la classe ne doit pas dépasser 255 caractères.',
-        'programme_classe_id.integer' => 'L\'ID du programme doit être un nombre entier.',
-        'programme_classe_id.exists' => 'Le programme sélectionné n\'existe pas.',
+        'niveau_education.required' => 'Le niveau d\'education est obligatoire.',
+        'niveau_education.string' => 'Le niveau d\'education  doit être une chaîne de caractères.',
+        'niveau_education.max' => 'Le niveau d\'education  ne doit pas dépasser 255 caractères.',
         'salle_id.required' => 'L\'ID de la salle est obligatoire.',
         'salle_id.integer' => 'L\'ID de la salle doit être un nombre entier.',
     ];
