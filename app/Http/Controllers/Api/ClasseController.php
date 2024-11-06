@@ -403,4 +403,43 @@ public function showNotes($classeId)
 
 
 
+public function ajouterClasse(CreateClasseRequest $request)
+{
+    try {
+        // Créer une nouvelle classe
+        $classe = new Classe();
+        $classe->nom = $request->nom;
+        $classe->niveau_classe = $request->niveau_classe;
+        $classe->niveau_education = $request->niveau_education;
+        $classe->salle_id = $request->salle_id;
+        $classe->save();
+        // Récupérer les programmes qui correspondent au niveau d'éducation et au niveau de classe de la classe nouvellement créée
+        $query  = Programme::where('niveau_education', $classe->niveau_education)
+            ->where('niveau_classe', $classe->niveau_classe)->get();
+            if ($request->filled('source')) {
+                $query->where('source', $request->source);
+            }
+
+            // Exécuter la requête pour récupérer les programmes
+            $programmes = $query->get();
+
+            foreach ($programmes as $programme) {
+                $programme->classe = $classe; // Ajoutez la classe associée à chaque programme
+            }
+
+        // Retourner la classe et les programmes correspondants (par exemple en JSON)
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'classe ajouter avec succès',
+            'classe' => $classe,
+            'programmes' => $programmes
+        ], 200);
+
+    } catch (\Exception $e) {
+        // Gérer les erreurs (par exemple, retourner une réponse d'erreur)
+        return response()->json(['error' => 'Une erreur s\'est produite lors de la création de la classe.'], 500);
+    }
+}
+
+
 }

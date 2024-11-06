@@ -28,8 +28,8 @@ class Classe extends Model
     public function salle(){
         return $this->belongsTo(Salle::class);
     }
-    public function programme(){
-        return $this->belongsTo(Programme::class, 'classe_id');
+    public function programmes(){
+        return $this->hasMany(Programme::class, 'classe_id');
     }
     public function apprenants()
     {

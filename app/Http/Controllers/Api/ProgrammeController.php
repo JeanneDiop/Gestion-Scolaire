@@ -430,7 +430,7 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
             $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
             $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
             $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
-            $cours->programme_id = $programme->id;
+           
             $cours->save();
 
             $bareme = $coursData['bareme'] ?? null;

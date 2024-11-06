@@ -194,6 +194,8 @@ Route::get('classe/detail/{id}', [ClasseController::class, 'showClasse']);
 Route::put('classe/edit/{id}', [ClasseController::class, 'updateClasse']);
 //supprimer un classe
 Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroy']);
+//ajouter classe
+Route::post('ajouter/classeprogramme', [ClasseController::class, 'ajouterClasse']);
 
 //------------------gestion salle-------------------------
 Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);

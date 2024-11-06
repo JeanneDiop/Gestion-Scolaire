@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Programme;
 return new class extends Migration
 {
     /**
@@ -17,7 +16,6 @@ return new class extends Migration
             $table->string('niveau_education');
             $table->string('niveau_classe');
             $table->foreignId('salle_id')->nullable()->constrained('salles')->onDelete('set null');
-            $table->foreignIdFor(Programme::class)->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
         });
     }

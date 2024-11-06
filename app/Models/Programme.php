@@ -31,12 +31,12 @@ class Programme extends Model
     ];
 
 
-    public function classes()
+    public function classe()
     {
-        return $this->hasMany(Classe::class);
+        return $this->belongsTo(Classe::class);
     }
     public function cours()
     {
-        return $this->hasMany(Cours::class);
+        return $this->belongsTo(Cours::class);
     }
 }
