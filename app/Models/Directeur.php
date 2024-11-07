@@ -11,16 +11,34 @@ class Directeur extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'qualification_academique',
-        'statut_marital',
+
         'date_naissance',
         'lieu_naissance',
+        'nationalité',
         'image',
         'numero_CNI',
-        'annee_experience',
-        'date_prise_fonction',
-        'date_embauche',
-        'date_fin_contrat'
+        'date_debut_service',
+        'statut_employé',
+        'type_contrat',
+        'horaires_travail',
+        'numero_identification_directeur',
+        'salaire_base',
+        'type_salaire',
+        'prime_indemnités',
+        'cotisation_sociales',
+        'departement_service',
+        'part_employeur',
+        'retenue_salaire',
+        'mode_paiement',
+        'banque_domiciliation',
+        'numero_compte_bancaire',
+        'cv_diplomes',
+        'contrat_travail',
+        'certification_formations',
+        'ancienneté',
+        'evaluation_performance',
+        'commentaires_notes',
+
 
     ];
     public function user()

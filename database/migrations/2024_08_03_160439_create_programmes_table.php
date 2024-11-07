@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('volume_horaire')->nullable();
             $table->string('duree_seance')->nullable();
             $table->string('mode_evaluation')->nullable();
+            $table->string('heure_debut')->nullable();
+            $table->string('heure_fin')->nullable();
             $table->string('bareme')->nullable();
             $table->string('source')->default('manuel');
             $table->foreignIdFor(Classe::class)->nullable()->constrained()->onDelete('cascade');

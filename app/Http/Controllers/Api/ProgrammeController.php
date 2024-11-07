@@ -72,113 +72,6 @@ class ProgrammeController extends Controller
 }
 
 
-public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
-{
-    try {
-        DB::beginTransaction();
-
-        // Validation du champ bareme selon le niveau d'éducation
-
-
-        // Création du ProgrammeClasse
-        $programme_classe = new Programme();
-        $programme_classe->nom = $request->nom;
-        $programme_classe->niveau_education = $request->niveau_education;
-        $programme_classe->niveau_classe = $request->niveau_classe;
-        $programme_classe->cycle = $request->cycle;
-        $programme_classe->annee_scolaire = $request->annee_scolaire;
-        $programme_classe->langue_enseignee = $request->langue_enseignee ?? null;
-        $programme_classe->importer_programme = $request->importer_programme ?? null;
-        $programme_classe->exporter_programme = $request->exporter_programme ?? null;
-        $programme_classe->save();
-
-        // Boucle pour ajouter chaque cours et ses compétences
-        foreach ($request->cours as $coursData) {
-            $bareme = $coursData['bareme'] ?? null;
-
-            // Validation du champ bareme selon le niveau d'éducation
-            $niveauEducation = $coursData['niveau_education'];
-            if ($niveauEducation === 'maternelle') {
-                if (!in_array($bareme, ['Acquis', 'En Progression'])) {
-                    return response()->json([
-                        'status_code' => 400,
-                        'status_message' => 'Pour le niveau "maternelle", le barème doit être "Acquis" ou "En Progression".'
-                    ], 400);
-                }
-            }
-
-            if ($niveauEducation === 'primaire') {
-                if (!preg_match('/^(10|[0-9])\/10$/', $bareme)) {
-                    return response()->json([
-                        'status_code' => 400,
-                        'status_message' => 'Pour le niveau "primaire", le barème doit être au format "X/10".'
-                    ], 400);
-                }
-            }
-
-            if ($niveauEducation === 'secondaire') {
-                if (!preg_match('/^(20|[1-9]?[0-9])\/20$/', $bareme)) {
-                    return response()->json([
-                        'status_code' => 400,
-                        'status_message' => 'Pour le niveau "secondaire", le barème doit être au format "X/20".'
-                    ], 400);
-                }
-            }
-            // Création du cours
-            $cours = new Cours();
-            $cours->nom = $coursData['nom'];
-            $cours->description = $coursData['description'] ?? null;
-            $cours->niveau_education = $niveauEducation;
-            $cours->niveau_classe = $coursData['niveau_classe'];
-            $cours->heure_allouee = $coursData['heure_allouee'];
-            $cours->duree_recommander_sceance = $coursData['duree_recommander_sceance'];
-            $cours->etat = $coursData['etat'] ?? 'encours';
-            $cours->bareme = $bareme ?? null;
-            $cours->frequence_evaluation = $coursData['frequence_evaluation'] ?? null;
-            $cours->type_evaluation = $coursData['type_evaluation ']?? null;
-            $cours->type_exercice = $coursData['type_exercice ']?? null;
-            $cours->credits = $coursData['credits'] ?? null;
-            $cours->coefficient = $coursData['coefficient'] ?? null;
-            $cours->semestre = $coursData['semestre'] ?? null;
-            $cours->categorie_cours = $coursData['categorie_cours'];
-            $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
-            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
-            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
-            $cours->programme_classe_id = $programme_classe->id;
-            $cours->save();
-
-            // Boucle pour ajouter les compétences spécifiques à ce cours
-            if (isset($coursData['competences'])) {
-                foreach ($coursData['competences'] as $competenceData) {
-                    $competence = new Competence();
-                    $competence->nom = $competenceData['nom'];
-                    $competence->description = $competenceData['description'];
-                    $competence->cours_id = $cours->id;
-                    $competence->save();
-                }
-            }
-        }
-
-        // Validation de la transaction
-        DB::commit();
-
-        // Chargement des relations pour le retour de réponse
-        $programme_classe = Programme::with(['cours.competences'])->find($programme_classe->id);
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'ProgrammeClasse, cours et compétences ont été ajoutés avec succès',
-            'data' =>  compact('programme_classe')
-        ], 200);
-    } catch (Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe, des cours et des compétences',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
 
 public function updateProgrammeCours($id, UpdateProgrammeClasseCoursRequest $request)
 {
@@ -380,28 +273,17 @@ public function destroy($id)
 }
 
 
-public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $request)
+public function ajouterProgrammesClassesCours(CreateProgrammeClasseCoursRequest $request)
 {
     try {
         DB::beginTransaction();
 
-        // Création de l'instance de ProgrammeClasse
-        $programme= new Programme();
+        // Création de l'instance de Programme
+        $programme = new Programme();
 
+        // Vérification du type d'action
         if ($request->action_type === 'import_excel') {
-            // Champs spécifiques pour l'importation Excel
-            $programme->importer_programme = $request->importer_programme ?? null;
-            $programme->exporter_programme = $request->exporter_programme ?? null;
-            $programme->matiere = $request->matiere ?? null;
-            $programme->categorie = $request->categorie ?? null;
-            $programme->competences_essentielles = $request->competences_essentielles ?? null;
-            $programme->lecons = $request->lecons ?? null;
-            $programme->niveau_education = $request->niveau_education ?? null;
-            $programme->niveau_classe = $request->niveau_classe ?? null;
-            $programme->volume_horaire = $request->volume_horaire ?? null;
-            $programme->duree_seance = $request->duree_seance ?? null;
-            $programme->mode_evaluation = $request->mode_evaluation ?? null;
-            $programme->bareme = $request->bareme ?? null;
+            // Aucune gestion spécifique pour le programme dans ce cas
         } elseif ($request->action_type === 'add_program') {
             // Champs spécifiques pour l'ajout de programme
             $programme->nom = $request->nom;
@@ -413,6 +295,7 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
             $programme->source = $request->source ?? 'manuel';
         }
 
+        // Sauvegarder le programme
         $programme->save();
 
         // Boucle pour ajouter chaque cours et ses compétences
@@ -430,13 +313,14 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
             $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
             $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
             $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
-           
-            $cours->save();
 
+            // Lier le cours au programme
+            $programme->cours()->save($cours);  // Enregistrez le cours en relation avec le programme
+
+            // Validation du champ bareme selon le niveau d'éducation
             $bareme = $coursData['bareme'] ?? null;
             $niveauEducation = $coursData['niveau_education'];
 
-            // Validation du champ bareme selon le niveau d'éducation
             if ($niveauEducation === 'maternelle' && !in_array($bareme, ['Acquis', 'En Progression'])) {
                 DB::rollBack();
                 return response()->json([
@@ -490,7 +374,7 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
         DB::commit();
 
         // Chargement des relations pour le retour de réponse
-        $programme_classe = Programme::with(['cours.competences'])->find($programme->id);
+        $programme_classe = Programme::with(['cours.categorieCours.competences'])->find($programme->id);
 
         return response()->json([
             'status_code' => 200,
@@ -505,9 +389,124 @@ public function storeProgrammeClasseCours(CreateProgrammeClasseCoursRequest $req
             'error' => $e->getMessage(),
         ], 500);
     }
-
 }
-    public function listerprogrammesexcel()
+
+
+public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
+{
+    try {
+        DB::beginTransaction();
+
+        // Validation du champ bareme selon le niveau d'éducation
+        // Création du ProgrammeClasse
+        $programme_classe = new Programme();
+        $programme_classe->nom = $request->nom;
+        $programme_classe->niveau_education = $request->niveau_education;
+        $programme_classe->niveau_classe = $request->niveau_classe;
+        $programme_classe->cycle = $request->cycle ?? null;
+        $programme_classe->annee_scolaire = $request->annee_scolaire;
+        $programme_classe->langue_enseignee = $request->langue_enseignee ?? null;
+
+        $programme_classe->save();
+
+        // Boucle pour ajouter chaque cours et ses compétences
+        foreach ($request->cours as $coursData) {
+            $bareme = $coursData['bareme'] ?? null;
+
+            // Validation du champ bareme selon le niveau d'éducation
+            $niveauEducation = $coursData['niveau_education'];
+            if ($niveauEducation === 'maternelle') {
+                if (!in_array($bareme, ['Acquis', 'En Progression'])) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'status_message' => 'Pour le niveau "maternelle", le barème doit être "Acquis" ou "En Progression".'
+                    ], 400);
+                }
+            }
+
+            if ($niveauEducation === 'primaire') {
+                if (!preg_match('/^(10|[0-9])\/10$/', $bareme)) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'status_message' => 'Pour le niveau "primaire", le barème doit être au format "X/10".'
+                    ], 400);
+                }
+            }
+
+            if ($niveauEducation === 'secondaire') {
+                if (!preg_match('/^(20|[1-9]?[0-9])\/20$/', $bareme)) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'status_message' => 'Pour le niveau "secondaire", le barème doit être au format "X/20".'
+                    ], 400);
+                }
+            }
+            // Création du cours
+            $cours = new Cours();
+            $cours->nom = $coursData['nom'];
+            $cours->description = $coursData['description'] ?? null;
+            $cours->niveau_education = $niveauEducation;
+            $cours->niveau_classe = $coursData['niveau_classe'];
+            $cours->heure_allouee = $coursData['heure_allouee'];
+            $cours->etat = $coursData['etat'] ?? 'encours';
+            $cours->bareme = $bareme ?? null;
+            $cours->credits = $coursData['credits'] ?? null;
+            $cours->coefficient = $coursData['coefficient'] ?? null;
+            $cours->semestre = $coursData['semestre'] ?? null;
+            $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
+            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
+            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
+            $cours->save();
+
+            // Boucle pour ajouter les compétences spécifiques à ce cours
+            if (isset($coursData['categories'])) {
+                foreach ($coursData['categories'] as $categorieData) {
+                    $categorie = new CategorieCours();
+                    $categorie->nom = $categorieData['nom'];
+                    $categorie->description = $categorieData['description'] ?? null;
+                    $categorie->cours_id = $cours->id;
+                    $categorie->volume_horaire = $categorieData['volume_horaire'] ?? null;
+                    $categorie->duree_recommander_sceance = $categorieData['duree_recommander_sceance'] ?? null;
+                    $categorie->mode_evaluation = $categorieData['mode_evaluation'] ?? null;
+                    $categorie->bareme = $categorieData['bareme'] ?? null;
+                    $categorie->save();
+
+                    // Ajouter les compétences spécifiques pour cette catégorie
+                    if (isset($categorieData['competences'])) {
+                        foreach ($categorieData['competences'] as $competenceData) {
+                            $competence = new Competence();
+                            $competence->nom = $competenceData['nom'];
+                            $competence->description = $competenceData['description'] ?? null;
+                            $competence->categorie_id = $categorie->id;
+                            $competence->save();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Validation de la transaction
+        DB::commit();
+
+        // Chargement des relations pour le retour de réponse
+        $programme_classe = Programme::with(['cours.competences'])->find($programme_classe->id);
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'ProgrammeClasse, cours et compétences ont été ajoutés avec succès',
+            'data' =>  compact('programme_classe')
+        ], 200);
+    } catch (Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe, des cours et des compétences',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function listerprogrammesexcel()
 {
     try {
         // Récupérer uniquement les programmes importés via Excel

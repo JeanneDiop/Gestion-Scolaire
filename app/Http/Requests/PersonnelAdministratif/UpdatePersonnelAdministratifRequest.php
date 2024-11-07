@@ -138,11 +138,16 @@ public function messages(): array
         'numero_compte_bancaire.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
 
         'cv_diplomes.string' => 'Les diplômes/CV doivent être une chaîne de caractères.',
-        
+
         'certification_formation.string' => 'Les certification/formations doivent être une chaîne de caractères.',
         'superviseur.string' => 'Le superviseur doivent être une chaîne de caractères.',
 
 
+
+        'numero_identification_employé.required' => 'Le numéro d\'identification de l\'enseignant est requis.',
+        'numero_identification_employé.string' => 'Le numéro d\'identification doit être une chaîne de caractères.',
+        'numero_identification_employé.max' => 'Le numéro d\'identification ne doit pas dépasser 255 caractères.',
+        'numero_identification_employé.unique' => 'Ce numéro d\'identification est déjà utilisé.',
         'contrat_travail.string' => 'Le contrat de travail doit être une chaîne de caractères.',
 
         'ancienneté.string' => 'L\'ancienneté doit être une chaîne de caractères.',

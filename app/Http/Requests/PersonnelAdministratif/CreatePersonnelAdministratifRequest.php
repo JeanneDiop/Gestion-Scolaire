@@ -40,6 +40,7 @@ class CreatePersonnelAdministratifRequest extends FormRequest
             'image' => ['nullable' ,'string'],
             'date_debut_service' => ['required', 'date'],
             'statut_employé' => ['required', 'in:Permanent,Temporaire,Vacataire'],
+            'numero_identification_employé' => 'required|string|max:255|unique:enseignants,numero_identification_enseignant',
             'type_contrat' => ['required', 'in:CDI,CDD,Contrat,Vacataire'],
             'salaire_base' => ['required', 'string'],
             'horaires_travail' => ['nullable', 'string'],
@@ -109,6 +110,11 @@ class CreatePersonnelAdministratifRequest extends FormRequest
 
             'image.string' => 'L\'image doit être une chaîne de caractères.',
 
+            'numero_identification_employé.required' => 'Le numéro d\'identification de l\'enseignant est requis.',
+            'numero_identification_employé.string' => 'Le numéro d\'identification doit être une chaîne de caractères.',
+            'numero_identification_employé.max' => 'Le numéro d\'identification ne doit pas dépasser 255 caractères.',
+            'numero_identification_employé.unique' => 'Ce numéro d\'identification est déjà utilisé.',
+            
             'date_debut_service.required' => 'La date de début de service est obligatoire.',
             'date_debut_service.date' => 'La date de début de service doit être une date valide.',
 

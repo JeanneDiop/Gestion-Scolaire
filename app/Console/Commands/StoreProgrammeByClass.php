@@ -62,7 +62,7 @@ class StoreProgrammeByClass extends Command
 
 
             // Compléter avec des valeurs nulles si moins de 9 colonnes
-            while (count($cells) < 9) {
+            while (count($cells) < 11) {
                 $cells[] = null;
             }
 
@@ -79,7 +79,9 @@ class StoreProgrammeByClass extends Command
                 'volume_horaire' => $cells[5] ?? null,
                 'duree_seance' => $cells[6] ?? null,
                 'mode_evaluation' => $cells[7] ?? null,
-                'bareme' => $cells[8] ?? null,
+                'heure_debut' => $cells[8] ?? null,
+                'heure_fin' => $cells[9] ?? null,
+                'bareme' => $cells[10] ?? null,
                 'source' => 'import_excel',
                 'file_name' => basename($filePath),
             ]);

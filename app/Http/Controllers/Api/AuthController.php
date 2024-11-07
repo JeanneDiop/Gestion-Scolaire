@@ -1258,16 +1258,6 @@ public function registerDirecteur(CreateDirecteurRequest $request)
     DB::beginTransaction(); // Démarre la transaction
 
     try {
-        // Validation des données d'entrée
-        $validatedData = $request->validate([
-            'annee_experience' => ['required', 'regex:/^\d+\s*(ans|année|années)?$/'],
-            'date_prise_fonction' => 'required|integer|min:1900|max:' . date('Y'), // Validation pour INTEGER
-        ]);
-
-        // Extrait les chiffres uniquement
-        $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']);
-        $date_prise_fonction = $validatedData['date_prise_fonction'];
-
         // Création de l'utilisateur
         $user = User::create([
             'nom' => $request->nom,
@@ -1291,16 +1281,34 @@ public function registerDirecteur(CreateDirecteurRequest $request)
 
         // Création du directeur
         $directeur = $user->directeur()->create([
-            'statut_marital' => $request->statut_marital,
+            'image' => $fileName,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
+            'type_salaire' => $request->type_salaire,
             'numero_CNI' => $request->numero_CNI,
-            'qualification_academique' => $request->qualification_academique,
-            'date_prise_fonction' => $date_prise_fonction,
-            'annee_experience' => $annee_experience,
-            'image' => $fileName, // Utilise le nom du fichier
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat
+            'date_naissance' =>$request->date_naissance,
+            'nationalité'=>$request->nationalité ??null,
+           'date_debut_service'=>$request->date_debut_service ?? null,
+            'statut_employé'=>$request->statut_employé,
+            'type_contrat' =>$request->type_contrat,
+            'departement_service' =>$request->departement_service,
+             'horaires_travail' =>$request->horaires_travail ?? null,
+             'numero_identification_directeur' =>$request->numero_identification_directeur,
+             'salaire_base' =>$request->salaire_base,
+             'prime_indemnités' =>$request->prime_indemnités ?? null,
+            'cotisation_sociales' =>$request->cotisation_sociales ?? null,
+            'departement_service' =>$request->departement_service,
+            'part_employeur' =>$request->part_employeur ?? null,
+           'retenue_salaire' =>$request->retenue_salaire ?? null,
+           'mode_paiement' =>$request->mode_paiement,
+            'banque_domiciliation' =>$request->banque_domiciliation ?? null,
+            'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
+            'cv_diplomes' =>$request->cv_diplomes ?? null,
+            'certification_formations' =>$request->certification_formations ?? null,
+            'contrat_travail' =>$request->contrat_travail ?? null,
+            'ancienneté' =>$request->ancienneté ?? null,
+            'evaluation_performance' =>$request->evaluation_performance ?? null,
+            'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
         DB::commit(); // Valide la transaction
@@ -1609,21 +1617,6 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             ], 404);
         }
 
-        // Validation des données
-        $validatedData = $request->validate([
-            'annee_experience' => ['nullable', 'regex:/^\d+\s*(ans|année|années)?$/'],
-            'date_prise_fonction' => 'nullable|integer|min:1900|max:' . date('Y'),
-        ]);
-
-        // Extraire les chiffres uniquement pour l'expérience
-        if (isset($validatedData['annee_experience'])) {
-            $annee_experience = preg_replace('/\D/', '', $validatedData['annee_experience']);
-        } else {
-            $annee_experience = $user->directeur->annee_experience; // Conserver l'actuel si non fourni
-        }
-
-        $date_prise_fonction = $validatedData['date_prise_fonction'] ?? $user->directeur->date_prise_fonction;
-
         // Mise à jour des informations de l'utilisateur
         $user->update([
             'nom' => $request->nom,
@@ -1645,16 +1638,34 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
 
         // Mise à jour des informations spécifiques du directeur
         $user->directeur->update([
-            'statut_marital' => $request->statut_marital,
+           'image' => $fileName,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
+            'type_salaire' => $request->type_salaire,
             'numero_CNI' => $request->numero_CNI,
-            'qualification_academique' => $request->qualification_academique,
-            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
-            'date_prise_fonction' => $date_prise_fonction,
-            'annee_experience' => $annee_experience,
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'date_naissance' =>$request->date_naissance,
+            'nationalité'=>$request->nationalité ??null,
+           'date_debut_service'=>$request->date_debut_service ?? null,
+            'statut_employé'=>$request->statut_employé,
+            'type_contrat' =>$request->type_contrat,
+            'departement_service' =>$request->departement_service,
+             'horaires_travail' =>$request->horaires_travail ?? null,
+             'numero_identification_directeur' =>$request->numero_identification_directeur,
+             'salaire_base' =>$request->salaire_base,
+             'prime_indemnités' =>$request->prime_indemnités ?? null,
+            'cotisation_sociales' =>$request->cotisation_sociales ?? null,
+            'departement_service' =>$request->departement_service,
+            'part_employeur' =>$request->part_employeur ?? null,
+           'retenue_salaire' =>$request->retenue_salaire ?? null,
+           'mode_paiement' =>$request->mode_paiement,
+            'banque_domiciliation' =>$request->banque_domiciliation ?? null,
+            'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
+            'cv_diplomes' =>$request->cv_diplomes ?? null,
+            'certification_formations' =>$request->certification_formations ?? null,
+            'contrat_travail' =>$request->contrat_travail ?? null,
+            'ancienneté' =>$request->ancienneté ?? null,
+            'evaluation_performance' =>$request->evaluation_performance ?? null,
+            'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
         // Valider la transaction
@@ -1828,20 +1839,6 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
                 'message' => 'Directeur non trouvé.',
             ], 404);
         }
-
-        // Validation des données
-        $validatedData = $request->validate([
-            'annee_experience' => ['nullable', 'regex:/^\d+\s*(ans|année|années)?$/'],
-            'date_prise_fonction' => 'nullable|integer|min:1900|max:' . date('Y'),
-        ]);
-
-        // Extraire les chiffres uniquement pour l'expérience
-        $annee_experience = isset($validatedData['annee_experience'])
-            ? preg_replace('/\D/', '', $validatedData['annee_experience'])
-            : $directeur->annee_experience; // Conserver l'actuel si non fourni
-
-        $date_prise_fonction = $validatedData['date_prise_fonction'] ?? $directeur->date_prise_fonction; // Conserver l'actuel si non fourni
-
         // Mise à jour des informations de l'utilisateur associé
         $directeur->user->update([
             'nom' => $request->nom,
@@ -1863,16 +1860,34 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
 
         // Mise à jour des informations spécifiques du directeur
         $directeur->update([
-            'statut_marital' => $request->statut_marital,
+           'image' => $fileName,
             'date_naissance' => $request->date_naissance,
             'lieu_naissance' => $request->lieu_naissance,
+            'type_salaire' => $request->type_salaire,
             'numero_CNI' => $request->numero_CNI,
-            'image' => $fileName, // Utilise le nouveau nom du fichier ou l'image actuelle
-            'qualification_academique' => $request->qualification_academique,
-            'date_prise_fonction' => $date_prise_fonction, // Utiliser la valeur validée
-            'annee_experience' => $annee_experience, // Utiliser la valeur validée
-            'date_embauche' => $request->date_embauche,
-            'date_fin_contrat' => $request->date_fin_contrat,
+            'date_naissance' =>$request->date_naissance,
+            'nationalité'=>$request->nationalité ??null,
+           'date_debut_service'=>$request->date_debut_service ?? null,
+            'statut_employé'=>$request->statut_employé,
+            'type_contrat' =>$request->type_contrat,
+            'departement_service' =>$request->departement_service,
+             'horaires_travail' =>$request->horaires_travail ?? null,
+             'numero_identification_directeur' =>$request->numero_identification_directeur,
+             'salaire_base' =>$request->salaire_base,
+             'prime_indemnités' =>$request->prime_indemnités ?? null,
+            'cotisation_sociales' =>$request->cotisation_sociales ?? null,
+            'departement_service' =>$request->departement_service,
+            'part_employeur' =>$request->part_employeur ?? null,
+           'retenue_salaire' =>$request->retenue_salaire ?? null,
+           'mode_paiement' =>$request->mode_paiement,
+            'banque_domiciliation' =>$request->banque_domiciliation ?? null,
+            'numero_compte_bancaire' =>$request->numero_compte_bancaire ?? null,
+            'cv_diplomes' =>$request->cv_diplomes ?? null,
+            'certification_formations' =>$request->certification_formations ?? null,
+            'contrat_travail' =>$request->contrat_travail ?? null,
+            'ancienneté' =>$request->ancienneté ?? null,
+            'evaluation_performance' =>$request->evaluation_performance ?? null,
+            'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
         // Valider la transaction
@@ -2489,16 +2504,34 @@ public function ListerDirecteur()
         return [
             // Attributs spécifiques au modèle Directeur
             'id' => $directeur->id, // Assurez-vous que cela correspond à la clé primaire de la table directeur
-            'date_naissance' => $directeur->date_naissance,
-            'lieu_naissance' => $directeur->lieu_naissance,
-            'annee_experience' => $directeur->annee_experience,
-            'date_prise_fonction' => $directeur->date_prise_fonction,
-            'numero_CNI' => $directeur->numero_CNI,
             'image' => $directeur->image,
-            'qualification_academique' => $directeur->qualification_academique,
-            'statut_marital' => $directeur->statut_marital,
-            'date_embauche' => $directeur->date_embauche,
-            'date_fin_contrat' => $directeur->date_fin_contrat,
+            'date_naissance' => $directeur->date_naissance,
+            'lieu_naissance' =>$directeur->lieu_naissance,
+            'type_salaire' => $directeur->type_salaire,
+            'numero_CNI' => $directeur->numero_CNI,
+            'date_naissance' =>$directeur->date_naissance,
+            'nationalité'=>$directeur->nationalité ??null,
+           'date_debut_service'=>$directeur->date_debut_service ?? null,
+            'statut_employé'=>$directeur->statut_employé,
+            'type_contrat' =>$directeur->type_contrat,
+            'departement_service' =>$directeur->departement_service,
+             'horaires_travail' =>$directeur->horaires_travail,
+             'numero_identification_directeur' =>$directeur->numero_identification_directeur,
+             'salaire_base' =>$directeur->salaire_base,
+             'prime_indemnités' =>$directeur->prime_indemnités,
+            'cotisation_sociales' =>$directeur->cotisation_sociales,
+            'departement_service' =>$directeur->departement_service,
+            'part_employeur' =>$directeur->part_employeur,
+           'retenue_salaire' =>$directeur->retenue_salaire ,
+           'mode_paiement' =>$directeur->mode_paiement,
+            'banque_domiciliation' =>$directeur->banque_domiciliation,
+            'numero_compte_bancaire' =>$directeur->numero_compte_bancaire ,
+            'cv_diplomes' =>$directeur->cv_diplomes,
+            'certification_formations' =>$directeur->certification_formations,
+            'contrat_travail' =>$directeur->contrat_travail,
+            'ancienneté' =>$directeur->ancienneté,
+            'evaluation_performance' =>$directeur->evaluation_performance,
+            'commentaires_notes' =>$directeur->commentaires_notes,
             // Ajoutez d'autres attributs spécifiques au modèle Directeur si nécessaire
             'user' => [
                 'nom' => $directeur->user->nom,
@@ -2988,16 +3021,34 @@ public function showDirecteur($id)
     // Créer une structure de données personnalisée
     $directeurData = [
         'id' => $directeur->id,
-        'date_naissance' => $directeur->date_naissance,
-        'lieu_naissance' => $directeur->lieu_naissance,
-        'annee_experience' => $directeur->annee_experience,
-        'date_prise_fonction' => $directeur->date_prise_fonction,
-        'numero_CNI' => $directeur->numero_CNI,
         'image' => $directeur->image,
-        'qualification_academique' => $directeur->qualification_academique,
-        'statut_marital' => $directeur->statut_marital,
-        'date_embauche' => $directeur->date_embauche,
-        'date_fin_contrat' => $directeur->date_fin_contrat,
+        'date_naissance' => $directeur->date_naissance,
+        'lieu_naissance' =>$directeur->lieu_naissance,
+        'type_salaire' => $directeur->type_salaire,
+        'numero_CNI' => $directeur->numero_CNI,
+        'date_naissance' =>$directeur->date_naissance,
+        'nationalité'=>$directeur->nationalité ??null,
+       'date_debut_service'=>$directeur->date_debut_service ?? null,
+        'statut_employé'=>$directeur->statut_employé,
+        'type_contrat' =>$directeur->type_contrat,
+        'departement_service' =>$directeur->departement_service,
+         'horaires_travail' =>$directeur->horaires_travail,
+         'numero_identification_directeur' =>$directeur->numero_identification_directeur,
+         'salaire_base' =>$directeur->salaire_base,
+         'prime_indemnités' =>$directeur->prime_indemnités,
+        'cotisation_sociales' =>$directeur->cotisation_sociales,
+        'departement_service' =>$directeur->departement_service,
+        'part_employeur' =>$directeur->part_employeur,
+       'retenue_salaire' =>$directeur->retenue_salaire ,
+       'mode_paiement' =>$directeur->mode_paiement,
+        'banque_domiciliation' =>$directeur->banque_domiciliation,
+        'numero_compte_bancaire' =>$directeur->numero_compte_bancaire ,
+        'cv_diplomes' =>$directeur->cv_diplomes,
+        'certification_formations' =>$directeur->certification_formations,
+        'contrat_travail' =>$directeur->contrat_travail,
+        'ancienneté' =>$directeur->ancienneté,
+        'evaluation_performance' =>$directeur->evaluation_performance,
+        'commentaires_notes' =>$directeur->commentaires_notes,
         'user' => $directeur->user ? [
             'id' => $directeur->user->id,
             'nom' => $directeur->user->nom,
@@ -3032,16 +3083,34 @@ public function showUserDirecteur($id)
     // Créer une structure de données personnalisée
     $directeurData = [
         'id' => $user->directeur->id,
-        'date_naissance' => $user->directeur->date_naissance,
-        'lieu_naissance' => $user->directeur->lieu_naissance,
-        'annee_experience' => $user->directeur->annee_experience,
-        'date_prise_fonction' => $user->directeur->date_prise_fonction,
-        'numero_CNI' => $user->directeur->numero_CNI,
         'image' => $user->directeur->image,
-        'qualification_academique' => $user->directeur->qualification_academique,
-        'statut_marital' => $user->directeur->statut_marital,
-        'date_embauche' => $user->directeur->date_embauche,
-        'date_fin_contrat' => $user->directeur->date_fin_contrat,
+            'date_naissance' => $user->directeur->date_naissance,
+            'lieu_naissance' =>$user->directeur->lieu_naissance,
+            'type_salaire' => $user->directeur->type_salaire,
+            'numero_CNI' => $user->directeur->numero_CNI,
+            'date_naissance' =>$user->directeur->date_naissance,
+            'nationalité'=>$user->directeur->nationalité ??null,
+           'date_debut_service'=>$user->directeur->date_debut_service ?? null,
+            'statut_employé'=>$user->directeur->statut_employé,
+            'type_contrat' =>$user->directeur->type_contrat,
+            'departement_service' =>$user->directeur->departement_service,
+             'horaires_travail' =>$user->directeur->horaires_travail,
+             'numero_identification_directeur' =>$user->directeur->numero_identification_directeur,
+             'salaire_base' =>$user->directeur->salaire_base,
+             'prime_indemnités' =>$user->directeur->prime_indemnités,
+            'cotisation_sociales' =>$user->directeur->cotisation_sociales,
+            'departement_service' =>$user->directeur->departement_service,
+            'part_employeur' =>$user->directeur->part_employeur,
+           'retenue_salaire' =>$user->directeur->retenue_salaire ,
+           'mode_paiement' =>$user->directeur->mode_paiement,
+            'banque_domiciliation' =>$user->directeur->banque_domiciliation,
+            'numero_compte_bancaire' =>$user->directeur->numero_compte_bancaire ,
+            'cv_diplomes' =>$user->directeur->cv_diplomes,
+            'certification_formations' =>$user->directeur->certification_formations,
+            'contrat_travail' =>$user->directeur->contrat_travail,
+            'ancienneté' =>$user->directeur->ancienneté,
+            'evaluation_performance' =>$user->directeur->evaluation_performance,
+            'commentaires_notes' =>$user->directeur->commentaires_notes,
         'user' => [
             'id' => $user->id,
             'nom' => $user->nom,
@@ -3534,16 +3603,35 @@ public function indexDirecteurs()
             'role_nom' => $user->role_nom,
             // Attributs spécifiques au modèle Directeur
             'directeur' => $user->directeur ? [
-                'date_naissance' => $user->directeur->date_naissance,
-                'lieu_naissance' => $user->directeur->lieu_naissance,
-                'annee_experience' => $user->directeur->annee_experience,
-                'date_prise_fonction' => $user->directeur->date_prise_fonction,
-                'numero_CNI' => $user->directeur->numero_CNI,
-                'image' => $user->directeur->image,
-                'qualification_academique' => $user->directeur->qualification_academique,
-                'statut_marital' => $user->directeur->statut_marital,
-                'date_embauche' => $user->directeur->date_embauche,
-                'date_fin_contrat' => $user->directeur->date_fin_contrat,
+            'id' => $user->directeur->id,
+           'image' => $user->directeur->image,
+            'date_naissance' => $user->directeur->date_naissance,
+            'lieu_naissance' =>$user->directeur->lieu_naissance,
+            'type_salaire' => $user->directeur->type_salaire,
+            'numero_CNI' => $user->directeur->numero_CNI,
+            'date_naissance' =>$user->directeur->date_naissance,
+            'nationalité'=>$user->directeur->nationalité ??null,
+           'date_debut_service'=>$user->directeur->date_debut_service ?? null,
+            'statut_employé'=>$user->directeur->statut_employé,
+            'type_contrat' =>$user->directeur->type_contrat,
+            'departement_service' =>$user->directeur->departement_service,
+             'horaires_travail' =>$user->directeur->horaires_travail,
+             'numero_identification_directeur' =>$user->directeur->numero_identification_directeur,
+             'salaire_base' =>$user->directeur->salaire_base,
+             'prime_indemnités' =>$user->directeur->prime_indemnités,
+            'cotisation_sociales' =>$user->directeur->cotisation_sociales,
+            'departement_service' =>$user->directeur->departement_service,
+            'part_employeur' =>$user->directeur->part_employeur,
+           'retenue_salaire' =>$user->directeur->retenue_salaire ,
+           'mode_paiement' =>$user->directeur->mode_paiement,
+            'banque_domiciliation' =>$user->directeur->banque_domiciliation,
+            'numero_compte_bancaire' =>$user->directeur->numero_compte_bancaire ,
+            'cv_diplomes' =>$user->directeur->cv_diplomes,
+            'certification_formations' =>$user->directeur->certification_formations,
+            'contrat_travail' =>$user->directeur->contrat_travail,
+            'ancienneté' =>$user->directeur->ancienneté,
+            'evaluation_performance' =>$user->directeur->evaluation_performance,
+            'commentaires_notes' =>$user->directeur->commentaires_notes,
             ] : null,
         ];
     });
