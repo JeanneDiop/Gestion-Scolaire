@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Apprenant;
-use App\Models\Cours;
-use App\Models\Enseignant;
-class PresenceAbsence extends Model
+
+class Presence extends Model
 {
+
     use HasFactory;
     protected $fillable = [
         'type_utilisateur',
@@ -32,3 +31,4 @@ class PresenceAbsence extends Model
         return $this->belongsTo(Enseignant::class);
     }
 }
+

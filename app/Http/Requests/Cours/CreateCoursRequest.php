@@ -25,13 +25,24 @@ class CreateCoursRequest extends FormRequest
     public function rules()
     {
         return [
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'niveau_education' => 'required|string|max:255',
-           'duree' => 'required|regex:/^([0-9]+):([0-5][0-9]):([0-5][0-9])$/',
-           'etat' => ['sometimes', 'string', Rule::in(['encours', 'terminé','annulé'])],
-            'credits' => 'nullable|integer|min:0',
-            'enseignant_id' => 'nullable|exists:enseignants,id',
+        'nom' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'niveau_education' => 'required|string|max:255',
+        'niveau_classe' => 'required|string|max:255',
+        'heure_allouee' => 'required|string|max:255',
+        'etat' => ['sometimes', 'string', Rule::in(['encours', 'terminé','annulé'])],
+        'credits' => 'nullable|integer|min:0',
+        'enseignant_id' => 'nullable|exists:enseignants,id',
+        'duree_recommander_sceance'=> 'nullable|string|max:255',
+        'categorie_cours' =>'nullable|string|max:255',
+        'etat'=>'nullable|string|max:255',
+        'bareme' =>'nullable|string|max:255',
+        'frequence_evaluation' => 'nullable|string|max:255' ,
+        'type_evaluation' => 'nullable|string|max:255',
+        'credit' => 'nullable|string|max:255',
+        'type_exercice' => 'nullable|string|max:255',
+        'coefficient' => 'nullable|string|max:255',
+        'semestre' => 'nullable|string|max:255',
         ];
     }
 

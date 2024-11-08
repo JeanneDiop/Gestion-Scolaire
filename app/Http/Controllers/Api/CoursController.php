@@ -21,10 +21,19 @@ class CoursController extends Controller
             $cours->nom = $request->nom;
             $cours->description = $request->description;
             $cours->niveau_education = $request->niveau_education;
-            $cours->heure_allouée = $request->heure_allouée;
+            $cours->niveau_classe = $request->niveau_classe;
+            $cours->heure_allouee = $request->heure_allouee;
             $cours->etat = $request->etat ?? 'encours';
             $cours->credits = $request->credits;
-            $cours->coefficient = $request->coefficient;
+            $cours->duree_recommander_sceance=$request->duree_recommander_sceance ?? null;
+            $cours->frequence_evaluation=$request->frequence_evaluation ?? null;
+            $cours->type_evaluation=$request->type_evaluation ?? null;
+            $cours->type_exercice=$request->type_exercice ?? null;
+            $cours->coefficient=$request->coefficient ?? null;
+            $cours->bareme=$request->bareme ?? null;
+            $cours->categorie_cours=$request->categorie_cours ?? null;
+            $cours->semestre=$request->semestre ?? null;
+            $cours->leçons=$request->leçons ?? null;
             $cours->enseignant_id = $request->enseignant_id;
             $cours->save();
 
@@ -74,7 +83,7 @@ public function index()
                 ],
                 'evaluations' => $cours->evaluations->map(function ($evaluation) {
                     $apprenant = $evaluation->apprenant;
-                    $classe = $apprenant->classe; 
+                    $classe = $apprenant->classe;
                     $salle = $classe ? $classe->salle : null;
 
                     return [

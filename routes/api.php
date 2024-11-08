@@ -15,7 +15,7 @@ use App\Http\Controllers\API\EvaluationController;
 use App\Http\Controllers\API\ParcoursController;
 use App\Http\Controllers\API\NoteController;
 use App\Http\Controllers\API\ProgrammeController;
-use App\Http\Controllers\API\PresenceAbsenceController;
+use App\Http\Controllers\API\PresenceController;
 use App\Http\Controllers\API\ApprenantClasseController;
 use App\Http\Controllers\API\EcoleController;
 use App\Http\Controllers\API\NiveauController;
@@ -326,24 +326,23 @@ Route::post('programmeclassecours/ajouter', [ProgrammeController::class, 'storeP
 Route::put('programmeclassecours/edit/{id}', [ProgrammeController::class, 'updateProgrammeCours']);
 
 //gestion PresenceAbsence-----------------
-Route::get('/presenceabsence/test', [PresenceAbsenceController::class, 'index']);
-Route::post('/presenceabsence/create', [PresenceAbsenceController::class, 'storePresence']);
+Route::post('/presence/absence/create', [PresenceController::class, 'storePresence']);
 //modifier presenceabsence
-Route::put('presenceabsence/edit/{id}', [PresenceAbsenceController::class, 'update']);
+Route::put('presenceabsence/edit/{id}', [PresenceController::class, 'updatePresence']);
 //supprimer  presenceabsence
-Route::delete('presenceabsence/supprimer/{id}', [PresenceAbsenceController::class, 'destroy']);
+Route::delete('presenceabsence/supprimer/{id}', [PresenceController::class, 'destroy']);
 //lister presenceabsence
-Route::get('presenceabsence/lister', [PresenceAbsenceController::class, 'index']);
+Route::get('presenceabsence/lister', [PresenceController::class, 'index']);
 //afficher presenceabsence
-Route::get('presenceabsence/detail/{id}', [PresenceAbsenceController::class, 'show']);
+Route::get('presenceabsence/detail/{id}', [PresenceController::class, 'show']);
 //afficher present
-Route::get('present/detail/{id}', [PresenceAbsenceController::class, 'showpresent']);
+Route::get('present/detail/{id}', [PresenceController::class, 'showpresent']);
 //afficher absent
-Route::get('absent/detail/{id}', [PresenceAbsenceController::class, 'showabsent']);
+Route::get('absent/detail/{id}', [PresenceController::class, 'showabsent']);
 //lister tous les absent
-Route::get('absent/lister', [PresenceAbsenceController::class, 'indexabsent']);
+Route::get('absent/lister', [PresenceController::class, 'indexAbsent']);
 //lister tous les present
-Route::get('present/lister', [PresenceAbsenceController::class, 'indexpresent']);
+Route::get('present/lister', [PresenceController::class, 'indexPresent']);
 
 //gestion ApprenantClasse-----------------
 Route::post('apprenantclasse/create', [ApprenantClasseController::class, 'store']);

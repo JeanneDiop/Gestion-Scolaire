@@ -8,7 +8,7 @@ use App\Models\Enseignant;
 use App\Models\Planifiercour;
 use App\Models\Evaluation;
 
-use App\Models\PresenceAbsence;
+use App\Models\Presence;
 use App\Models\Programme;
 use App\Models\ClasseAssociation;
 use App\Models\CategorieCours;
@@ -21,16 +21,16 @@ class Cours extends Model
         'niveau_education',
         'niveau_classe',
         'heure_allouee',
-        'duree_recommander_sceance',
-        'categories_cours',
+        //'duree_recommander_sceance',
+        //'categories_cours',
         'etat',
-        'bareme',
-        'frequence_evaluation',
-        'type_evaluation',
+        //'bareme',
+        //'frequence_evaluation',
+        //'type_evaluation',
         'credit',
-        'type_exercice',
-        'coefficient',
-        'semestre',
+        //'type_exercice',
+        //'coefficient',
+        //'semestre',
     ];
     public function enseignant(){
         return $this->belongsTo(Enseignant::class);
@@ -42,9 +42,9 @@ class Cours extends Model
     public function categoriecours(){
         return $this->hasMany(CategorieCours::class);
     }
-    public function presenceabsences()
+    public function presences()
     {
-        return $this->hasMany(PresenceAbsence::class ,'cours_id');
+        return $this->hasMany(Presence::class ,'cours_id');
     }
     public function evaluations()
     {

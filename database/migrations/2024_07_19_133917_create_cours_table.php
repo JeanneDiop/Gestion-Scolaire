@@ -20,7 +20,7 @@ return new class extends Migration
         $table->string('niveau_classe');
         $table->string('heure_allouee')->nullable();
         $table->string('duree_recommander_sceance')->nullable();
-        $table->string('categorie_cours');
+        $table->string('categorie_cours')->nullable();
         $table->string('bareme')->nullable();
         $table->string('leçons')->nullable();
         $table->string('type_exercice')->nullable();

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Tuteur;
 use App\Models\Classe;
 use App\Models\User;
-use App\Models\PresenceAbsence;
+use App\Models\Presence;
 use App\Models\Evaluation;
 use App\Models\Parcours;
 use App\Models\ClasseAssociation;
@@ -58,9 +58,9 @@ class Apprenant extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function presenceabsences()
+    public function presences()
     {
-        return $this->hasMany(PresenceAbsence::class, 'apprenant_id');
+        return $this->hasMany(Presence::class, 'apprenant_id');
     }
     public function evaluations()
     {

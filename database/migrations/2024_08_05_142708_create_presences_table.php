@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\Apprenant;
 use App\Models\Cours;
 use App\Models\Enseignant;
-
 return new class extends Migration
 {
     /**
@@ -14,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('presence_absences', function (Blueprint $table) {
+        Schema::create('presences', function (Blueprint $table) {
             $table->id();
             $table->enum('type_utilisateur', ['apprenant', 'enseignant'])->default('apprenant');
             $table->enum('statut', ['present', 'absent', 'retard'])->default('present');
@@ -26,6 +25,7 @@ return new class extends Migration
             $table->foreignIdFor(Apprenant::class)->nullable()->constrained('apprenants')->onDelete('cascade');
             $table->foreignIdFor(Cours::class)->constrained('cours')->onDelete('cascade');
             $table->foreignIdFor(Enseignant::class)->nullable()->constrained('enseignants')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('presence_absences');
+        Schema::dropIfExists('presences');
     }
 };
