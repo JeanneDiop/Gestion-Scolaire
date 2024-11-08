@@ -36,10 +36,46 @@ class CreatePresenceAbsenceRequest extends FormRequest
         'apprenant_id' => 'required_if:type_utilisateur,apprenant|exists:apprenants,id',
         'enseignant_id' => 'required_if:type_utilisateur,enseignant|exists:enseignants,id',
         'cours_id' => 'required|exists:cours,id',
+
     ];
 
 }
 
+public function withValidator($validator)
+{
+    $validator->after(function ($validator) {
+        // Validation pour le type utilisateur
+        $typeUtilisateur = $this->input('type_utilisateur');
+        if ($typeUtilisateur === 'apprenant' && !$this->input('apprenant_id')) {
+            $validator->errors()->add('apprenant_id', 'L\'apprenant_id est requis lorsque le type d\'utilisateur est apprenant.');
+        }
+        if ($typeUtilisateur === 'enseignant' && !$this->input('enseignant_id')) {
+            $validator->errors()->add('enseignant_id', 'L\'enseignant_id est requis lorsque le type d\'utilisateur est enseignant.');
+        }
+
+        // Validation pour le statut
+        $statut = $this->input('statut');
+        if ($statut === 'present' && !$this->input('date_present')) {
+            $validator->errors()->add('date_present', 'La date de présence est requise lorsque le statut est présent.');
+        }
+        if ($statut === 'absent') {
+            if (!$this->input('date_absent')) {
+                $validator->errors()->add('date_absent', 'La date d\'absence est requise lorsque le statut est absent.');
+            }
+            if (!$this->input('raison_absence')) {
+                $validator->errors()->add('raison_absence', 'La raison de l\'absence est requise lorsque le statut est absent.');
+            }
+        }
+        if ($statut === 'retard') {
+            if (!$this->input('heure_arrivee')) {
+                $validator->errors()->add('heure_arrivee', 'L\'heure d\'arrivée est requise lorsque le statut est en retard.');
+            }
+            if (!$this->input('duree_retard')) {
+                $validator->errors()->add('duree_retard', 'La durée du retard est requise lorsque le statut est en retard.');
+            }
+        }
+    });
+}
     public function messages()
 {
     return [
