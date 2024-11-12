@@ -13,11 +13,14 @@ class CategorieCours extends Model
         'nom',
         'description',
         'leçons',
-        'type_exercice',
+        'type_exercices',
         'volume_horaire',
-        'duree_recommander_sceance',
+        'duree_seance',
         'mode_evaluation',
-        'bareme',
+        'frequence_evaluation',
+        'heure_debut',
+        'heure_fin',
+        'bareme'
 
     ];
     public function cours(){

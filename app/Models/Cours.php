@@ -21,16 +21,12 @@ class Cours extends Model
         'niveau_education',
         'niveau_classe',
         'heure_allouee',
-        //'duree_recommander_sceance',
-        //'categories_cours',
         'etat',
-        //'bareme',
-        //'frequence_evaluation',
-        //'type_evaluation',
         'credit',
-        //'type_exercice',
-        //'coefficient',
-        //'semestre',
+        'coefficient',
+        'semestre',
+        'objectif_generaux',
+        'objectif_specifiques'
     ];
     public function enseignant(){
         return $this->belongsTo(Enseignant::class);
@@ -39,8 +35,8 @@ class Cours extends Model
     public function planifiercours(){
         return $this->hasMany(Planifiercour::class);
     }
-    public function categoriecours(){
-        return $this->hasMany(CategorieCours::class);
+    public function categories(){
+        return $this->hasMany(CategorieCours::class, 'cours_id');
     }
     public function presences()
     {
@@ -53,7 +49,7 @@ class Cours extends Model
 
     public function programme()
     {
-        return $this->hasMany(Programme::class, 'cours_id');
+        return $this->belongsTo(Programme::class);
     }
     public function classeassociations()
     {

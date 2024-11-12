@@ -20,7 +20,10 @@ return new class extends Migration
             $table->string('leçons')->nullable();
             $table->string('type_exercices')->nullable();
             $table->string('duree_seance')->nullable();
-            $table->string('mode_evaluation')->nullable();
+            $table->enum('frequence_evaluation', ['Hebdomadaire', 'Mensuel', 'Trimestriel'])->nullable();
+            $table->enum('mode_evaluation', ['Formative', 'Sommative'])->nullable();
+            $table->string('heure_debut')->nullable();
+            $table->string('heure_fin')->nullable();
             $table->string('bareme')->nullable();
             $table->timestamps();
         });

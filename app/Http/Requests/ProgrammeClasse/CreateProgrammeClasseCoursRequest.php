@@ -30,12 +30,14 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'niveau_classe' => 'required|string|max:255',
         'cycle' => 'required|string',
         'langue_enseignee' => 'nullable|string|max:255',
-        'cours' => 'required|array',
+        'classe_id' => 'nullable|exists:classes,id',
+
+        // Cours validations
         'cours.*.nom' => 'required|string|max:255',
         'cours.*.description' => 'nullable|string',
         'cours.*.niveau_education' => 'nullable|in:maternelle,primaire,secondaire,supérieur',
         'cours.*.niveau_classe' => 'required|string|max:255',
-        'cours.*.heure_allouee' => 'nullable|regex:/^[0-9]+(h|min)$/',
+        'cours.*.heure_allouee' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',  
         'cours.*.etat' => 'nullable|string|in:encours,complet',
         'cours.*.credits' => 'nullable|integer|min:0',
         'cours.*.coefficient' => 'nullable|integer|min:0',
@@ -44,13 +46,18 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.semestre' => 'nullable|integer|min:1|max:2',
         'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
 
-        'cours.*.categorie_cours.*.type_exercice' => 'nullable|string|max:255',
+        // CategorieCours validations
+       
+
+
+        'cours.*.categorie_cours.*.type_exercices' => 'nullable|string|max:255',
+        'cours.*.categorie_cours.*.leçons' => 'nullable|string|max:255',
         'cours.*.categorie_cours.*.bareme' => [
             'nullable',
             'string',
             'max:255',
             function ($attribute, $value, $fail) {
-                $index = explode('.', $attribute)[1];
+                $index = explode('.', $attribute)[1];  // Gets the index of the course
                 $niveauEducation = request()->input("cours.$index.niveau_education");
 
                 // Validation pour le niveau "maternelle"
@@ -69,14 +76,19 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         ],
 
         'cours.*.categorie_cours.*.frequence_evaluation' => 'nullable|in:Hebdomadaire,Mensuel,Semestre,Trimestriel',
-        'cours.*.categorie_cours.*.type_evaluation' => 'nullable|in:Formative,Sommative',
-        'cours.*.categorie_cours.*.duree_recommander_sceance' => 'nullable|regex:/^[0-9]+(h|min)$/',
-        'cours.*.categorie_cours' => 'nullable|string|max:255',
+        'cours.*.categorie_cours.*.mode_evaluation' => 'nullable|in:Formative,Sommative',
+      
+    'cours.*.categorie_cours.*.heure_debut' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+'cours.*.categorie_cours.*.duree_seance' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+'cours.*.categorie_cours.*.heure_fin' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+
+        // Competences validations
         'cours.*.competences' => 'nullable|array',
         'cours.*.competences.*.nom' => 'required|string|max:255',
         'cours.*.competences.*.description' => 'nullable|string',
     ];
 }
+ 
     /**
      * Messages d'erreur personnalisés.
      */
@@ -100,11 +112,13 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cycle.required' => 'Le champ cycle est obligatoire.',
         'cycle.string' => 'Le champ cycle doit être une chaîne de caractères.',
 
+        'classe_id.exists' => 'La classe sélectionné n\'existe pas.',
+        
         'langue_enseignee.string' => 'Le champ langue enseignée doit être une chaîne de caractères.',
         'langue_enseignee.max' => 'Le champ langue enseignée ne peut pas dépasser 255 caractères.',
 
-        'cours.required' => 'Le champ cours est obligatoire.',
-        'cours.array' => 'Le champ cours doit être un tableau.',
+
+
 
         'cours.*.nom.required' => 'Le nom du cours est obligatoire.',
         'cours.*.nom.string' => 'Le nom du cours doit être une chaîne de caractères.',
@@ -140,8 +154,8 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
 
         'cours.*.enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
 
-        'cours.*.categorie_cours.*.type_exercice.string' => 'Le type d\'exercice doit être une chaîne de caractères.',
-        'cours.*.categorie_cours.*.type_exercice.max' => 'Le type d\'exercice ne peut pas dépasser 255 caractères.',
+        'cours.*.categorie_cours.*.type_exercices.string' => 'Le type d\'exercice doit être une chaîne de caractères.',
+        'cours.*.categorie_cours.*.type_exercices.max' => 'Le type d\'exercice ne peut pas dépasser 255 caractères.',
 
         'cours.*.categorie_cours.*.bareme.string' => 'Le barème doit être une chaîne de caractères.',
         'cours.*.categorie_cours.*.bareme.max' => 'Le barème ne peut pas dépasser 255 caractères.',

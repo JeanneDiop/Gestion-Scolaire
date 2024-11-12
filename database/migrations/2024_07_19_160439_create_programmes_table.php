@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Classe;
-use App\Models\Cours;
+
 return new class extends Migration
 {
     /**
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('bareme')->nullable();
             $table->string('source')->default('manuel');
             $table->foreignIdFor(Classe::class)->nullable()->constrained()->onDelete('cascade');
-            $table->foreignIdFor(Cours::class)->nullable()->constrained()->onDelete('set null');
+
             $table->timestamps();
             });
     }

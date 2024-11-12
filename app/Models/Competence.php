@@ -13,7 +13,7 @@ class Competence extends Model
         'description',
 
     ];
-    public function categoriecours(){
+    public function categories(){
         return $this->belongsTo(CategorieCours::class, 'categorie_cours_id');
     }
 }

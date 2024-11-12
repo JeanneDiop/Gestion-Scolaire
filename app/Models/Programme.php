@@ -47,6 +47,6 @@ class Programme extends Model
     }
     public function cours()
     {
-        return $this->belongsTo(Cours::class, 'cours_id');
+        return $this->hasMany(Cours::class);
     }
 }
