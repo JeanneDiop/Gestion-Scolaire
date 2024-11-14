@@ -118,21 +118,94 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
 public function show($id)
 {
     try {
-        // Récupérer le programme de classe avec ses classes, cours, compétences et salle associée
-        $programmeClasse = Programme::with(['classes.salle', 'cours.enseignant', 'cours.competences'])
-            ->findOrFail($id); // Si le programme de classe n'existe pas, une exception sera lancée
+        // Récupérer un programme de classe spécifique avec ses relations associées
+        $programme = Programme::where('source', 'manuel')
+            ->with([
+                'classe', // Classe associée au programme
+                'cours.programme', // Cours associés au programme
+                'cours.categories', // Accéder aux catégories via le modèle Cours
+            ])
+            ->findOrFail($id); // Utilisation de findOrFail pour obtenir un 404 si non trouvé
 
+        // Formatage des données pour une meilleure présentation
+        $programmeData = [
+            // Attributs spécifiques au modèle Programme
+            'id' => $programme->id,
+            'source' => $programme->source,
+            'niveau_education' => $programme->niveau_education,
+            'niveau_classe' => $programme->niveau_classe,
+            'cycle' => $programme->cycle,
+            'annee_scolaire' => $programme->annee_scolaire,
+            'langue_enseignee' => $programme->langue_enseignee,
+            'importer_programme' => $programme->importer_programme,
+            'exporter_programme' => $programme->exporter_programme,
+
+            // Classe associée au programme
+            'classe' => $programme->classe ? [
+                'id' => $programme->classe->id,
+                'nom' => $programme->classe->nom,
+                'niveau_education' => $programme->classe->niveau_education,
+                'niveau_classe' => $programme->classe->niveau_classe,
+                'salle_id' => $programme->classe->salle_id,
+            ] : null,
+
+            // Cours associés au programme
+            'cours' => $programme->cours->map(function ($cours) {
+                return [
+                    'id' => $cours->id,
+                    'nom' => $cours->nom,
+                    'description' => $cours->description,
+                    'niveau_education'  => $cours->niveau_education,
+                    'niveau_classe' => $cours->niveau_classe,
+                    'heure_allouee' => $cours->heure_allouee,
+                    'etat' => $cours->etat,
+                    'credits'  => $cours->credits,
+                    'coefficient'  => $cours->coefficient,
+                    'semestre'  => $cours->semestre,
+                    'objectif_generaux'  => $cours->objectif_generaux,
+                    'objectif_specifiques' => $cours->objectif_specifiques,
+                    'enseignant' => $cours->enseignant ? [
+                        'id' => $cours->enseignant->user->id,
+                        'nom' => $cours->enseignant->user->nom,
+                        'prenom' => $cours->enseignant->user->prenom,
+                        'matiere_enseignée' => $cours->enseignant->matiere_enseignée,
+                    ] : null,
+
+                    // CategorieCours associés
+                    'categorie_cours' => $cours->categories->map(function ($categorieCours) {
+                        return [
+                            'id' => $categorieCours->id,
+                            'nom' => $categorieCours->nom,
+                            'leçons' => $categorieCours->leçons,
+                            'type_exercices' => $categorieCours->type_exercices,
+                            'volume_horaire' => $categorieCours->volume_horaire,
+                            'duree_seance' => $categorieCours->duree_seance,
+                            'mode_evaluation' => $categorieCours->mode_evaluation,
+                            'frequence_evaluation' => $categorieCours->frequence_evaluation,
+                            'heure_debut' => $categorieCours->heure_debut,
+                            'heure_fin' => $categorieCours->heure_fin,
+                            'bareme' => $categorieCours->bareme,
+                            'competences' => $categorieCours->competences->map(function ($competence) {
+                                return [
+                                    'id' => $competence->id,
+                                    'nom' => $competence->nom,
+                                    'description' => $competence->description,
+                                ];
+                            }),
+                        ];
+                    }),
+                ];
+            }),
+        ];
+
+        // Réponse JSON avec les données formatées
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Programme de classe récupéré avec succès',
-            'data' => $programmeClasse,
+            'data' => $programmeData,
         ], 200);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Programme de classe non trouvé',
-        ], 404);
     } catch (Exception $e) {
+        // En cas d'erreur
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la récupération du programme de classe',
@@ -140,6 +213,7 @@ public function show($id)
         ], 500);
     }
 }
+
 
 
 
