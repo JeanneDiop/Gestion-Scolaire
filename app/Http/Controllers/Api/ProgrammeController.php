@@ -17,61 +17,7 @@ use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseCoursRequest;
 use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseRequest;
 class ProgrammeController extends Controller
 {
-    public function store(CreateProgrammeClasseRequest $request)
-    {
-        try {
-            $programme = new Programme();
-            $programme->nom = $request->nom;
-            $programme->niveau_education = $request->niveau_education;
-            $programme->description= $request->description;
-            $programme->periode= $request->periode;
-            $programme->save();
-
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'ProgrammeClasse a été ajoutée',
-                'data' => $programme,
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la programmeclasse',
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    public function update(UpdateProgrammeClasseRequest $request, $id)
-{
-    try {
-        // Trouver le programme de classe par son ID
-        $programme = Programme::findOrFail($id);
-        $programme->nom = $request->nom;
-        $programme->niveau_education = $request->niveau_education;
-        $programme->description = $request->description;
-        $programme->periode = $request->periode;
-        $programme->update();
-
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'ProgrammeClasse a été mise à jour',
-            'data' => $programme,
-        ]);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'ProgrammeClasse non trouvée',
-        ], 404);
-    } catch (Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la programmeclasse',
-            'error' => $e->getMessage(),
-        ]);
-    }
-}
-
-
+    
 
 public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request, $id)
 {
@@ -118,7 +64,6 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
                     // Récupération ou création de la catégorie de cours
                     $categorie = isset($categorieData['id']) ? CategorieCours::find($categorieData['id']) : new CategorieCours();
                     $categorie->nom = $categorieData['nom'];
-                    $categorie->description = $categorieData['description'] ?? null;
                     $categorie->cours_id = $cours->id;
                     $categorie->volume_horaire = $categorieData['volume_horaire'] ?? null;
                     $categorie->type_exercices = $categorieData['type_exercices'] ?? null;
@@ -196,18 +141,102 @@ public function show($id)
     }
 }
 
+
+
 public function index()
 {
     try {
-        // Récupérer tous les programmes de classe avec leurs classes, cours et compétences associées
-        $programmeClasses = Programme::with(['classes.salle', 'cours.enseignant', 'cours.categorie_cours','competence.categorie_cours'])->get();
+        // Récupérer tous les programmes de classe avec leurs relations associées
+        // Filtrer par la source 'manuel'
+        $programmeClasses = Programme::where('source', 'manuel')
+            ->with([
+                'classe', // Classe associée au programme
+                'cours.programme', // Cours associés au programme
+                'cours.categories', // Accéder aux catégories via le modèle Cours (pas directement via Programme)
+            ])
+            ->get();
 
+        // Utilisation de map pour formater les données
+        $programmeClassesData = $programmeClasses->map(function ($programme) {
+            return [
+                // Attributs spécifiques au modèle Programme
+                'id' => $programme->id,
+                'source' => $programme->source,
+                'niveau_education' => $programme->niveau_education,
+                'niveau_classe' => $programme->niveau_classe,
+                'cycle' => $programme->cycle,
+                'annee_scolaire' => $programme->annee_scolaire,
+                'langue_enseignee' => $programme->langue_enseignee,
+                'importer_programme' => $programme->importer_programme,
+                'exporter_programme' => $programme->exporter_programme,
+
+                // Classe associée au programme
+                'classe' => $programme->classe ? [
+                    'id' => $programme->classe->id,
+                    'nom' => $programme->classe->nom,
+                    'niveau_education' => $programme->classe->niveau_education,
+                    'niveau_classe' => $programme->classe->niveau_classe,
+                    'salle_id' => $programme->classe->salle_id,
+                ] : null,
+
+                // Cours associés au programme
+                'cours' => $programme->cours->map(function ($cours) {
+                    return [
+                        'id' => $cours->id,
+                        'nom' => $cours->nom,
+                        'description' => $cours-> description,
+                        'niveau_education'  => $cours-> niveau_education,
+                        'niveau_classe' => $cours->niveau_classe,
+                        'heure_allouee' => $cours->heure_allouee,
+                        'etat' => $cours->etat,
+                        'credits'  => $cours->credits,
+                        'coefficient'  => $cours-> coefficient,
+                        'semestre'  => $cours->semestre,
+                       'objectif_generaux'  => $cours->objectif_generaux,
+                       'objectif_specifiques' => $cours->objectif_specifiques,
+                        'enseignant' => $cours->enseignant ? [
+                            'id' => $cours->enseignant->user->id,
+                            'nom' => $cours->enseignant->user->nom,
+                            'prenom' => $cours->enseignant->user->prenom,
+                            'matiere_enseignée' =>$cours->enseignant->matiere_enseignée,
+                        ] : null,
+
+                        // CategorieCours associés (utilisation de categories)
+                        'categorie_cours' => $cours->categories->map(function ($categorieCours) {
+                            return [
+                                'id' => $categorieCours->id,
+                                'nom' => $categorieCours->nom,
+                                'leçons'=> $categorieCours->leçons,
+                                'type_exercices'=> $categorieCours->type_exercices,
+                                'volume_horaire' => $categorieCours->volume_horaire,
+                                'duree_seance' => $categorieCours->duree_seance,
+                                'mode_evaluation'=> $categorieCours->mode_evaluation,
+                                'frequence_evaluation'=> $categorieCours->frequence_evaluation,
+                                'heure_debut' =>$categorieCours->heure_debut,
+                                'heure_fin'=> $categorieCours->heure_fin,
+                                'bareme'=> $categorieCours->bareme,
+                                'competences' => $categorieCours->competences->map(function ($competence) {
+                                    return [
+                                        'id' => $competence->id,
+                                        'nom' => $competence->nom,
+                                        'description' => $competence->description,
+                                    ];
+                                }),
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+        });
+
+        // Réponse JSON avec les données formatées
         return response()->json([
             'status_code' => 200,
             'status_message' => 'Liste des programmes de classe récupérée avec succès',
-            'data' => $programmeClasses,
+            'data' => $programmeClassesData,
         ], 200);
     } catch (Exception $e) {
+        // En cas d'erreur
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la récupération des programmes de classe',
@@ -215,30 +244,6 @@ public function index()
         ], 500);
     }
 }
-
-public function destroy($id)
-{
-    try {
-        $programme = Programme::findOrFail($id);
-        $programme->delete();
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'ProgrammeClasse supprimé avec succès',
-        ]);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'ProgrammeClasse introuvable',
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la suppression du ProgrammeClasse',
-            'error' => $e->getMessage(),
-        ]);
-    }
-}
-
 
 
 public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
@@ -286,7 +291,6 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                     // Création de la catégorie de cours et lien avec le cours
                     $categorie = new CategorieCours();
                     $categorie->nom = $categorieData['nom'];
-                    $categorie->description = $categorieData['description'] ?? null;
                     $categorie->cours_id = $cours->id; // Associer la catégorie au cours
                     $categorie->volume_horaire = $categorieData['volume_horaire'] ?? null;
                     $categorie->type_exercices = $categorieData['type_exercices'] ?? null;

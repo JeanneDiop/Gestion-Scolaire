@@ -11,7 +11,6 @@ class CategorieCours extends Model
     use HasFactory;
     protected $fillable = [
         'nom',
-        'description',
         'leçons',
         'type_exercices',
         'volume_horaire',
@@ -24,10 +23,10 @@ class CategorieCours extends Model
 
     ];
     public function cours(){
-        return $this->belongsTo(Cours::class);
+        return $this->belongsTo(Cours::class,'cours_id');
     }
     public function competences()
     {
-        return $this->hasMany(Competence::class);
+        return $this->hasMany(Competence::class, 'categorie_cours_id');
     }
 }

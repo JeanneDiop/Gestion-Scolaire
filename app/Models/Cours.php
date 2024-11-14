@@ -49,7 +49,7 @@ class Cours extends Model
 
     public function programme()
     {
-        return $this->belongsTo(Programme::class);
+        return $this->belongsTo(Programme::class, 'programme_id');
     }
     public function classeassociations()
     {
