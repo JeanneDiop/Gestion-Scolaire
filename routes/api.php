@@ -20,6 +20,7 @@ use App\Http\Controllers\API\ApprenantClasseController;
 use App\Http\Controllers\API\EcoleController;
 use App\Http\Controllers\API\NiveauController;
 use App\Http\Controllers\API\NiveauEcoleController;
+use App\Http\Controllers\API\EvenementController;
 
 
 
@@ -306,7 +307,12 @@ Route::delete('parcours/supprimer/{id}', [ParcoursController::class, 'destroy'])
 Route::get('parcours/lister', [ParcoursController::class, 'index']);
 //afficher parcours
 Route::get('parcours/detail/{id}', [ParcoursController::class, 'show']);
-
+//gestion evenement
+Route::post('evenement/create', [EvenementController::class, 'store']);
+Route::put('evenement/modifier/{id}', [EvenementController::class, 'update']);
+Route::get('evenement/afficher/{id}', [EvenementController::class, 'show']);
+Route::get('evenement/lister', [EvenementController::class, 'index']);
+Route::delete('evenement/supprimer/{id}', [EvenementController::class, 'destroy']);
 
 //gestion programme-----------------------------------------------------
 Route::post('programmeclasse/create', [ProgrammeController::class, 'store']);

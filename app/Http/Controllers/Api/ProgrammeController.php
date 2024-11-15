@@ -131,6 +131,7 @@ public function show($id)
         $programmeData = [
             // Attributs spécifiques au modèle Programme
             'id' => $programme->id,
+            'nom' => $programme->nom,
             'source' => $programme->source,
             'niveau_education' => $programme->niveau_education,
             'niveau_classe' => $programme->niveau_classe,
@@ -235,6 +236,7 @@ public function index()
             return [
                 // Attributs spécifiques au modèle Programme
                 'id' => $programme->id,
+                'nom' => $programme->nom,
                 'source' => $programme->source,
                 'niveau_education' => $programme->niveau_education,
                 'niveau_classe' => $programme->niveau_classe,

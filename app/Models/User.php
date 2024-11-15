@@ -8,6 +8,7 @@ use App\Models\Apprenant;
 use App\Models\Directeur;
 use App\Models\Admin;
 use App\Models\Enseignant;
+use App\Models\Evenement;
 use App\Models\PersonnelAdministratif;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -82,4 +83,15 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(PersonnelAdministratif::class);
     }
+
+    
+    //public function evenements(){
+       // return $this->hasMany(Evenement::class);
+//}
+
+
+public function evenements()
+{
+    return $this->belongsToMany(Evenement::class, 'evenement_users', 'user_id', 'evenement_id');
+}
 }

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Enseignant;
+use App\Models\Apprenant;
+use App\Models\Cours;
 class Presence extends Model
 {
 
