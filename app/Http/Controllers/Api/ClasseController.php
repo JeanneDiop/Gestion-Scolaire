@@ -31,7 +31,7 @@ class ClasseController extends Controller
         $classe->niveau_classe = $request->niveau_classe;
         $classe->niveau_education = $request->niveau_education;
         $classe->salle_id = $request->salle_id;
-        $classe->save();
+        $classe->update();
 
         // Récupérer les programmes qui correspondent au niveau d'éducation et au niveau de classe mis à jour
         $query = Programme::where('niveau_education', $classe->niveau_education)
@@ -44,8 +44,9 @@ class ClasseController extends Controller
         $programmes = $query->get();
 
         // Associer la classe à chaque programme
-        foreach ($programmes as $programme) {
-            $programme->classe = $classe;
+        if ($programmes->niveau_classe === $classe->niveau_classe) {
+            $programmes->classe_id = $classe->id;
+            $programmes->update();
         }
 
         // Retourner la classe mise à jour et les programmes correspondants (par exemple en JSON)
@@ -66,7 +67,71 @@ class ClasseController extends Controller
     }
 }
 
+public function updateClasses(EditClasseRequest $request, $id)
+{
+    try {
+        // Récupérer la classe par son identifiant
+        $classe = Classe::find($id);
 
+        // Vérifier si la classe existe
+        if (!$classe) {
+            return response()->json([
+                'status_code' => 404,
+                'status_message' => 'Classe non trouvée'
+            ], 404);
+        }
+
+        // Vérifier l'existence d'un programme correspondant au niveau d'éducation et de classe
+        $query = Programme::where('niveau_education', $request->niveau_education)
+            ->where('niveau_classe', $request->niveau_classe);
+
+        if ($request->filled('source')) {
+            $query->where(function($q) use ($request) {
+                $q->where('source', 'manuel')
+                  ->orWhere('source', 'import_excel');
+            });
+        }
+
+        // Récupérer un programme qui correspond aux critères
+        $programme = $query->first();
+
+        // Si aucun programme ne correspond, retourner une erreur
+        if (is_null($programme)) {
+            return response()->json([
+                'status_code' => 400,
+                'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
+            ], 400);
+        }
+
+        // Mettre à jour les attributs de la classe
+        $classe->nom = $request->nom;
+        $classe->niveau_classe = $request->niveau_classe;
+        $classe->niveau_education = $request->niveau_education;
+        $classe->salle_id = $request->salle_id;
+        $classe->save();
+
+        // Associer la classe au programme correspondant
+        if ($programme->niveau_classe === $classe->niveau_classe) {
+            $programme->classe_id = $classe->id;
+            $programme->save();
+        }
+
+        // Retourner la classe mise à jour et le programme correspondant
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Classe mise à jour avec succès',
+            'classe' => $classe,
+            'programme' => $programme
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de la classe',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 public function showClasse($id)
 {
     try {
@@ -83,42 +148,45 @@ public function showClasse($id)
         // Récupération des programmes importés via Excel
         $programmesImportExcel = Programme::where('source', 'import_excel')
         ->where('niveau_classe', $classe->niveau_classe)
+        ->where('niveau_education', $classe->niveau_education)
         ->get()
-            ->map(function ($programme) {
-                return [
-                    'id' => $programme->id,
-                    'nom' => $programme->nom,
-                    'niveau_classe' => $programme->niveau_classe,
-                    'niveau_education' => $programme->niveau_education,
-                    'matiere' => $programme->matiere,
-                    'categorie' => $programme->categorie,
-                    'importer_programme' => $programme->importer_programme,
-                    'exporter_programme' => $programme->exporter_programme,
-                    'competences_essentielles' => $programme->competences_essentielles,
-                    'lecons' => $programme->lecons,
-                    'volume_horaire' => $programme->volume_horaire,
-                    'duree_seance' => $programme->duree_seance,
-                    'mode_evaluation' => $programme->mode_evaluation,
-                    'bareme' => $programme->bareme,
-                    'file_name' => $programme->file_name,
-                ];
+        ->map(function ($programme) {
+            return [
+                'id' => $programme->id,
+                'nom' => $programme->nom,
+                'niveau_classe' => $programme->niveau_classe,
+                'niveau_education' => $programme->niveau_education,
+                'matiere' => $programme->matiere,
+                'categorie' => $programme->categorie,
+                'importer_programme' => $programme->importer_programme,
+                'exporter_programme' => $programme->exporter_programme,
+                'competences_essentielles' => $programme->competences_essentielles,
+                'lecons' => $programme->lecons,
+                'volume_horaire' => $programme->volume_horaire,
+                'duree_seance' => $programme->duree_seance,
+                'mode_evaluation' => $programme->mode_evaluation,
+                'bareme' => $programme->bareme,
+                'file_name' => $programme->file_name,
+            ];
             });
         // Récupération des programmes manuels
-       $programmesManuels = Programme::where('source', 'manuel')
-        ->where('classe_id', $classe->id) // Utilisation de classe_id pour filtrer les programmes manuels de la classe spécifique
-         ->get()
-            ->get()
-            ->map(function ($programme) {
-                return [
-                    'id' => $programme->id,
-                    'nom' => $programme->nom,
-                    'niveau_classe' => $programme->niveau_classe,
-                    'niveau_education' => $programme->niveau_education,
-                    'cycle' => $programme->cycle,
-                    'annee_scolaire' => $programme->annee_scolaire,
-                    'langue_enseignee' => $programme->langue_enseignee,
-                ];
-            });
+        $programmeManuel = Programme::where('source', 'manuel')
+        ->where('niveau_classe', $classe->niveau_classe)
+        ->where('niveau_education', $classe->niveau_education)
+        ->whereNotIn('id', $classe->programmes->pluck('id'))
+        ->first(); // Récupérer seulement le premier programme correspondant
+
+    if ($programmeManuel) {
+        $programmesManuels[] = [
+            'id' => $programmeManuel->id,
+            'nom' => $programmeManuel->nom,
+            'niveau_classe' => $programmeManuel->niveau_classe,
+            'niveau_education' => $programmeManuel->niveau_education,
+            'cycle' => $programmeManuel->cycle,
+            'annee_scolaire' => $programmeManuel->annee_scolaire,
+            'langue_enseignee' => $programmeManuel->langue_enseignee,
+        ];
+    }
 
         // Préparer la structure des données pour la réponse
         $classeData = [
@@ -201,7 +269,6 @@ public function showClasse($id)
 public function indexClasse(Request $request)
 {
     try {
-
         $classes = Classe::with([
             'salle',
             'programmes',
@@ -211,10 +278,15 @@ public function indexClasse(Request $request)
             'classeAssociations.enseignant.user'
         ])->get();
 
+        // Parcours de chaque classe pour obtenir les détails et les programmes associés
         $classesData = $classes->map(function ($classe) {
-            // Récupération des programmes importés Excel pour la classe actuelle
+            // Initialiser la variable $programmesManuels pour éviter l'erreur "Undefined variable"
+            $programmesManuels = [];
+
+            // Récupération des programmes importés par Excel pour la classe actuelle
             $programmesImportExcel = Programme::where('source', 'import_excel')
                 ->where('niveau_classe', $classe->niveau_classe)
+                ->where('niveau_education', $classe->niveau_education)
                 ->get()
                 ->map(function ($programme) {
                     return [
@@ -237,20 +309,23 @@ public function indexClasse(Request $request)
                 });
 
             // Récupération des programmes manuels pour la classe actuelle
-            $programmesManuels = Programme::where('source', 'manuel')
-                ->where('classe_id', $classe->id) // Utilisation de classe_id pour filtrer les programmes manuels de la classe spécifique
-                ->get()
-                ->map(function ($programme) {
-                    return [
-                        'id' => $programme->id,
-                        'nom' => $programme->nom,
-                        'niveau_classe' => $programme->niveau_classe,
-                        'niveau_education' => $programme->niveau_education,
-                        'cycle' => $programme->cycle,
-                        'annee_scolaire' => $programme->annee_scolaire,
-                        'langue_enseignee' => $programme->langue_enseignee,
-                    ];
-                });
+            $programmeManuel = Programme::where('source', 'manuel')
+                ->where('niveau_classe', $classe->niveau_classe)
+                ->where('niveau_education', $classe->niveau_education)
+                ->whereNotIn('id', $classe->programmes->pluck('id'))
+                ->first(); // Récupérer seulement le premier programme correspondant
+
+            if ($programmeManuel) {
+                $programmesManuels[] = [
+                    'id' => $programmeManuel->id,
+                    'nom' => $programmeManuel->nom,
+                    'niveau_classe' => $programmeManuel->niveau_classe,
+                    'niveau_education' => $programmeManuel->niveau_education,
+                    'cycle' => $programmeManuel->cycle,
+                    'annee_scolaire' => $programmeManuel->annee_scolaire,
+                    'langue_enseignee' => $programmeManuel->langue_enseignee,
+                ];
+            }
 
             return [
                 'id' => $classe->id,
@@ -388,11 +463,31 @@ public function showNotes($classeId)
     ]);
 }
 
-
-
 public function ajouterClasse(CreateClasseRequest $request)
 {
     try {
+        // Vérifier l'existence d'un programme correspondant au niveau d'éducation et de classe
+        $query = Programme::where('niveau_education', $request->niveau_education)
+            ->where('niveau_classe', $request->niveau_classe);
+
+        if ($request->filled('source')) {
+            $query->where(function($q) use ($request) {
+                $q->where('source', 'manuel')
+                  ->orWhere('source', 'import_excel');
+            });
+        }
+
+        // Récupérer un seul programme qui correspond aux critères
+        $programme = $query->first();
+
+        // Si aucun programme ne correspond, retourner une erreur
+        if (is_null($programme)) {
+            return response()->json([
+                'status_code' => 400,
+                'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
+            ], 400);
+        }
+
         // Créer une nouvelle classe
         $classe = new Classe();
         $classe->nom = $request->nom;
@@ -400,34 +495,28 @@ public function ajouterClasse(CreateClasseRequest $request)
         $classe->niveau_education = $request->niveau_education;
         $classe->salle_id = $request->salle_id;
         $classe->save();
-        // Récupérer les programmes qui correspondent au niveau d'éducation et au niveau de classe de la classe nouvellement créée
-        $query = Programme::where('niveau_education', $classe->niveau_education)
-        ->where('niveau_classe', $classe->niveau_classe);
 
-        if ($request->filled('source')) {
-        $query->where('source', $request->source);
+        // Associer la classe au programme correspondant
+        if ($programme->niveau_classe === $classe->niveau_classe) {
+            $programme->classe_id = $classe->id;
+            $programme->save();
         }
-       $programmes = $query->get();
 
-            foreach ($programmes as $programme) {
-                $programme->classe = $classe; // Ajoutez la classe associée à chaque programme
-            }
-
-        // Retourner la classe et les programmes correspondants (par exemple en JSON)
+        // Retourner la classe et le programme correspondant (par exemple en JSON)
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'classe ajouter avec succès',
+            'status_message' => 'Classe ajoutée avec succès',
             'classe' => $classe,
-            'programmes' => $programmes
+            'programme' => $programme // Utilisation de $programme ici
         ], 200);
 
     } catch (\Exception $e) {
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de lenregistrement de la  classe',
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de la classe',
             'error' => $e->getMessage(),
         ], 500);
-}
+    }
 }
 
 

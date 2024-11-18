@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Evenement;
 use App\Models\User;
+use App\Models\Classe;
 class EvenementUser extends Model
 {
     use HasFactory;
     protected $fillable = [
         'evenement_id',
         'user_id',
+        'classe_id',
 
     ];
 
@@ -23,5 +25,9 @@ class EvenementUser extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'cours_id');
+    }
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'classe_id');
     }
 }

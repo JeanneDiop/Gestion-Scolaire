@@ -24,55 +24,36 @@ class EvenementController extends Controller
             $evenement ->type_evenement = $request->type_evenement ?? null;
             $evenement ->responsable_id = $request->responsable_id ?? null;
             $evenement ->save();
-            if ($request->has('participant')) {
+            //if ($request->has('participant')) {
                 // Extraire les IDs des participants
-                $participantIds = collect($request->participant)->pluck('id');
-    
+                //$participantIds = collect($request->participant)->pluck('id');
+
                 // Attacher les participants à l'événement
-                $evenement->participants()->attach($participantIds);
+                //$evenement->participants()->attach($participantIds);
+            //}
+            if ($request->has('participant')) {
+                // Extraire les participants depuis la requête
+                $participants = $request->participant;
+
+                // On parcourt chaque participant pour l'ajouter à l'événement
+                foreach ($participants as $participant) {
+                    // On prépare les données pour la table pivot, incluant le classe_id
+                    $data = [
+                        'classe_id' => $participant['classe_id'] ?? null, // Ajouter le classe_id, s'il est fourni
+                    ];
+
+                    // Attacher chaque type de participant à l'événement
+                    if (isset($participant['apprenant_id'])) {
+                        $evenement->participants()->attach($participant['apprenant_id'], $data);
+                    }
+                    if (isset($participant['tuteur_id'])) {
+                        $evenement->participants()->attach($participant['tuteur_id'], $data);
+                    }
+                    if (isset($participant['enseignant_id'])) {
+                        $evenement->participants()->attach($participant['enseignant_id'], $data);
+                    }
+                }
             }
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'evenement a été ajoutée',
-                'data' =>  $evenement ,
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de l\'evenement',
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-
-    public function update(UpdateEvenementRequest $request, $id)
-{
-    try {
-        // Recherche de l'événement par ID
-        $evenement = Evenement::findOrFail($id);
-
-        // Mise à jour des champs de l'événement avec l'opérateur ?? null
-        $evenement->titre = $request->titre ?? null;
-        $evenement->description = $request->description ?? null;
-        $evenement->date_heure = $request->date_heure ?? null;
-        $evenement->lieu = $request->lieu ?? null;
-        $evenement->recurrence = $request->recurrence ?? null;
-        $evenement->ressource = $request->ressource ?? null;
-        $evenement->type_evenement = $request->type_evenement ?? null;
-        $evenement->responsable_id = $request->responsable_id ?? null;
-
-        // Sauvegarde des modifications
-        $evenement->update();
-
-        if ($request->has('participant')) {
-            // Extraire les IDs des participants
-            $participantIds = collect($request->participant)->pluck('id');
-
-            // Synchroniser les participants avec l'événement (ajouter ou supprimer)
-            $evenement->participants()->sync($participantIds);
-        }
-
         // Réponse en cas de succès
         return response()->json([
             'status_code' => 200,
@@ -171,7 +152,7 @@ public function index()
         ]);
     }
 }
-    
+
 public function destroy($id)
 {
     try {

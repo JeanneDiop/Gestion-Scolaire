@@ -30,7 +30,9 @@ class Evenement extends Model
 
     public function participants()
     {
-        return $this->belongsToMany(User::class, 'evenement_users', 'evenement_id', 'user_id');
+        return $this->belongsToMany(User::class, 'evenement_users', 'evenement_id', 'user_id')
+        ->withPivot('classe_id');
+
     }
 }
 

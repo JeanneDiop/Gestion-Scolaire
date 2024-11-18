@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('evenement_id')->nullable()->constrained('evenements')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('classe_id')->nullable()->constrained('classes')->onDelete('cascade'); // Ajout de classe_id
             $table->timestamps();
 
-    // Index pour une recherche rapide
-    $table->unique(['evenement_id', 'user_id']);
-
+            // Index pour une recherche rapide
+            $table->unique(['evenement_id', 'user_id', 'classe_id']); // Mise à jour de l'index pour inclure classe_id
         });
     }
 
