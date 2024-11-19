@@ -59,6 +59,7 @@ class UpdatePersonnelAdministratifRequest extends FormRequest
             'evaluation_performance' => ['nullable', 'numeric'],
             'commentaires_notes' => ['nullable', 'string'],
             'numero_CNI' => ['string'],
+            'numero_identification_employe' => 'required|string|max:255|',
         ];
 }
 public function messages(): array
@@ -144,10 +145,10 @@ public function messages(): array
 
 
 
-        'numero_identification_employé.required' => 'Le numéro d\'identification de l\'enseignant est requis.',
-        'numero_identification_employé.string' => 'Le numéro d\'identification doit être une chaîne de caractères.',
-        'numero_identification_employé.max' => 'Le numéro d\'identification ne doit pas dépasser 255 caractères.',
-        'numero_identification_employé.unique' => 'Ce numéro d\'identification est déjà utilisé.',
+        'numero_identification_employe.required' => 'Le numéro d\'identification de l\'enseignant est requis.',
+        'numero_identification_employe.string' => 'Le numéro d\'identification doit être une chaîne de caractères.',
+        'numero_identification_employe.max' => 'Le numéro d\'identification ne doit pas dépasser 255 caractères.',
+        'numero_identification_employe.unique' => 'Ce numéro d\'identification est déjà utilisé.',
         'contrat_travail.string' => 'Le contrat de travail doit être une chaîne de caractères.',
 
         'ancienneté.string' => 'L\'ancienneté doit être une chaîne de caractères.',
