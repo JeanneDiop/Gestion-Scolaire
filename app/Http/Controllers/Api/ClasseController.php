@@ -42,11 +42,19 @@ class ClasseController extends Controller
         }
 
         $programmes = $query->get();
+        if ($programmes->isEmpty()) {
+            return response()->json([
+                'status_code' => 404,
+                'status_message' => 'Le programme que vous avez choisi n\'existe pas dans la base de données.',
+            ], 404);
+        }
 
         // Associer la classe à chaque programme
-        if ($programmes->niveau_classe === $classe->niveau_classe) {
-            $programmes->classe_id = $classe->id;
-            $programmes->update();
+        foreach ($programmes as $programme) {
+            if ($programme->niveau_classe === $classe->niveau_classe) {
+                $programme->classe_id = $classe->id;
+                $programme->save(); // Utilisez save() pour enregistrer chaque programme modifié
+            }
         }
 
         // Retourner la classe mise à jour et les programmes correspondants (par exemple en JSON)
@@ -149,44 +157,44 @@ public function showClasse($id)
         $programmesImportExcel = Programme::where('source', 'import_excel')
         ->where('niveau_classe', $classe->niveau_classe)
         ->where('niveau_education', $classe->niveau_education)
-        ->get()
-        ->map(function ($programme) {
-            return [
-                'id' => $programme->id,
-                'nom' => $programme->nom,
-                'niveau_classe' => $programme->niveau_classe,
-                'niveau_education' => $programme->niveau_education,
-                'matiere' => $programme->matiere,
-                'categorie' => $programme->categorie,
-                'importer_programme' => $programme->importer_programme,
-                'exporter_programme' => $programme->exporter_programme,
-                'competences_essentielles' => $programme->competences_essentielles,
-                'lecons' => $programme->lecons,
-                'volume_horaire' => $programme->volume_horaire,
-                'duree_seance' => $programme->duree_seance,
-                'mode_evaluation' => $programme->mode_evaluation,
-                'bareme' => $programme->bareme,
-                'file_name' => $programme->file_name,
-            ];
-            });
-        // Récupération des programmes manuels
-        $programmeManuel = Programme::where('source', 'manuel')
-        ->where('niveau_classe', $classe->niveau_classe)
-        ->where('niveau_education', $classe->niveau_education)
-        ->whereNotIn('id', $classe->programmes->pluck('id'))
-        ->first(); // Récupérer seulement le premier programme correspondant
 
-    if ($programmeManuel) {
-        $programmesManuels[] = [
-            'id' => $programmeManuel->id,
-            'nom' => $programmeManuel->nom,
-            'niveau_classe' => $programmeManuel->niveau_classe,
-            'niveau_education' => $programmeManuel->niveau_education,
-            'cycle' => $programmeManuel->cycle,
-            'annee_scolaire' => $programmeManuel->annee_scolaire,
-            'langue_enseignee' => $programmeManuel->langue_enseignee,
-        ];
-    }
+            ->get()
+            ->map(function ($programme) {
+                return [
+                    'id' => $programme->id,
+                    'nom' => $programme->nom,
+                    'niveau_classe' => $programme->niveau_classe,
+                    'niveau_education' => $programme->niveau_education,
+                    'matiere' => $programme->matiere,
+                    'categorie' => $programme->categorie,
+                    'importer_programme' => $programme->importer_programme,
+                    'exporter_programme' => $programme->exporter_programme,
+                    'competences_essentielles' => $programme->competences_essentielles,
+                    'lecons' => $programme->lecons,
+                    'volume_horaire' => $programme->volume_horaire,
+                    'duree_seance' => $programme->duree_seance,
+                    'mode_evaluation' => $programme->mode_evaluation,
+                    'bareme' => $programme->bareme,
+                    'file_name' => $programme->file_name,
+                ];
+            });
+
+        // Récupération des programmes manuels
+        $programmesManuels = Programme::where('source', 'manuel')
+        ->where('niveau_classe', $classe->niveau_classe)
+            ->where('niveau_education', $classe->niveau_education)
+            ->get()
+            ->map(function ($programmeManuel) {
+                return [
+                    'id' => $programmeManuel->id,
+                    'nom' => $programmeManuel->nom,
+                    'niveau_classe' => $programmeManuel->niveau_classe,
+                    'niveau_education' => $programmeManuel->niveau_education,
+                    'cycle' => $programmeManuel->cycle,
+                    'annee_scolaire' => $programmeManuel->annee_scolaire,
+                    'langue_enseignee' => $programmeManuel->langue_enseignee,
+                ];
+            });
 
         // Préparer la structure des données pour la réponse
         $classeData = [
@@ -266,9 +274,11 @@ public function showClasse($id)
     }
 }
 
+
 public function indexClasse(Request $request)
 {
     try {
+
         $classes = Classe::with([
             'salle',
             'programmes',
@@ -280,52 +290,49 @@ public function indexClasse(Request $request)
 
         // Parcours de chaque classe pour obtenir les détails et les programmes associés
         $classesData = $classes->map(function ($classe) {
-            // Initialiser la variable $programmesManuels pour éviter l'erreur "Undefined variable"
             $programmesManuels = [];
-
             // Récupération des programmes importés par Excel pour la classe actuelle
             $programmesImportExcel = Programme::where('source', 'import_excel')
-                ->where('niveau_classe', $classe->niveau_classe)
-                ->where('niveau_education', $classe->niveau_education)
-                ->get()
-                ->map(function ($programme) {
-                    return [
-                        'id' => $programme->id,
-                        'nom' => $programme->nom,
-                        'niveau_classe' => $programme->niveau_classe,
-                        'niveau_education' => $programme->niveau_education,
-                        'matiere' => $programme->matiere,
-                        'categorie' => $programme->categorie,
-                        'importer_programme' => $programme->importer_programme,
-                        'exporter_programme' => $programme->exporter_programme,
-                        'competences_essentielles' => $programme->competences_essentielles,
-                        'lecons' => $programme->lecons,
-                        'volume_horaire' => $programme->volume_horaire,
-                        'duree_seance' => $programme->duree_seance,
-                        'mode_evaluation' => $programme->mode_evaluation,
-                        'bareme' => $programme->bareme,
-                        'file_name' => $programme->file_name,
-                    ];
-                });
+        ->where('niveau_classe', $classe->niveau_classe)
+        ->where('niveau_education', $classe->niveau_education)
+        ->get()
+        ->map(function ($programme) {
+            return [
+                'id' => $programme->id,
+                'nom' => $programme->nom,
+                'niveau_classe' => $programme->niveau_classe,
+                'niveau_education' => $programme->niveau_education,
+                'matiere' => $programme->matiere,
+                'categorie' => $programme->categorie,
+                'importer_programme' => $programme->importer_programme,
+                'exporter_programme' => $programme->exporter_programme,
+                'competences_essentielles' => $programme->competences_essentielles,
+                'lecons' => $programme->lecons,
+                'volume_horaire' => $programme->volume_horaire,
+                'duree_seance' => $programme->duree_seance,
+                'mode_evaluation' => $programme->mode_evaluation,
+                'bareme' => $programme->bareme,
+                'file_name' => $programme->file_name,
+            ];
+        });
 
             // Récupération des programmes manuels pour la classe actuelle
             $programmeManuel = Programme::where('source', 'manuel')
-                ->where('niveau_classe', $classe->niveau_classe)
-                ->where('niveau_education', $classe->niveau_education)
-                ->whereNotIn('id', $classe->programmes->pluck('id'))
-                ->first(); // Récupérer seulement le premier programme correspondant
+        ->where('niveau_classe', $classe->niveau_classe)
+        ->where('niveau_education', $classe->niveau_education)
+        ->first(); // Récupérer seulement le premier programme correspondant
 
-            if ($programmeManuel) {
-                $programmesManuels[] = [
-                    'id' => $programmeManuel->id,
-                    'nom' => $programmeManuel->nom,
-                    'niveau_classe' => $programmeManuel->niveau_classe,
-                    'niveau_education' => $programmeManuel->niveau_education,
-                    'cycle' => $programmeManuel->cycle,
-                    'annee_scolaire' => $programmeManuel->annee_scolaire,
-                    'langue_enseignee' => $programmeManuel->langue_enseignee,
-                ];
-            }
+    if ($programmeManuel) {
+        $programmesManuels[] = [
+            'id' => $programmeManuel->id,
+            'nom' => $programmeManuel->nom,
+            'niveau_classe' => $programmeManuel->niveau_classe,
+            'niveau_education' => $programmeManuel->niveau_education,
+            'cycle' => $programmeManuel->cycle,
+            'annee_scolaire' => $programmeManuel->annee_scolaire,
+            'langue_enseignee' => $programmeManuel->langue_enseignee,
+        ];
+    }
 
             return [
                 'id' => $classe->id,
