@@ -25,7 +25,7 @@ class UpdateClasseAssociationRequest extends FormRequest
     {
         return [
             'apprenant_id' => 'required|exists:apprenants,id',
-            'cours_id' => 'required|exists:cours,id',
+            'cours_id' => 'nullable|exists:cours,id',
             'enseignant_id' => 'required|exists:enseignants,id',
         ];
     }
@@ -36,7 +36,7 @@ class UpdateClasseAssociationRequest extends FormRequest
         'apprenant_id.required' => 'Le champ apprenant_id est requis.',
         'apprenant_id.exists' => 'L\'apprenant sélectionné n\'existe pas.',
 
-        'cours_id.required' => 'Le champ cours_id est requis.',
+    
         'cours_id.exists' => 'Le cours sélectionné n\'existe pas.',
 
         'enseignant_id.required' => 'Le champ enseignant_id est requis.',

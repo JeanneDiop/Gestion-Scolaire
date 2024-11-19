@@ -16,7 +16,7 @@ class CreateClasseAssociationsTable extends Migration
         Schema::create('classe_associations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('apprenant_id')->nullable();
-            $table->unsignedBigInteger('cours_id');
+            $table->unsignedBigInteger('cours_id')->nullable();
             $table->unsignedBigInteger('enseignant_id');
             $table->unsignedBigInteger('classe_id')->nullable();
 

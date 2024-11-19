@@ -193,9 +193,51 @@ public function showClasse($id)
                     'cycle' => $programmeManuel->cycle,
                     'annee_scolaire' => $programmeManuel->annee_scolaire,
                     'langue_enseignee' => $programmeManuel->langue_enseignee,
+            'cours' => $programmeManuel->cours->map(function ($cours) {
+                        return [
+                            'nom' => $cours->nom,
+                            'description' => $cours->description,
+                            'niveau_education' => $cours->niveau_education,
+                            'niveau_classe' => $cours->niveau_classe,
+                            'heure_allouee' => $cours->heure_allouee,
+                            'etat' => $cours->etat,
+                            'credits' => $cours->credits,
+                            'coefficient' => $cours->coefficient,
+                            'semestre' => $cours->semestre,
+                            'objectif_generaux' => $cours->objectif_generaux,
+                            'objectif_specifiques' => $cours->objectif_specifiques,
+                           'enseignant' => $cours->enseignant ? [
+    'id' => $cours->enseignant->id,
+    'nom' => $cours->enseignant->user->nom ?? null,
+    'prenom' => $cours->enseignant->user->prenom ?? null,
+    'specialite' => $cours->enseignant->user->specialite ?? null,
+    'telephone' => $cours->enseignant->user->telephone ?? null,
+    'email' => $cours->enseignant->user->email ?? null,
+] : null,
+                            'categories' => $cours->categories->map(function ($categorie) {
+                                return [
+                                    'nom' => $categorie->nom,
+                                    'volume_horaire' => $categorie->volume_horaire,
+                                    'duree_seance' => $categorie->duree_seance,
+                                    'mode_evaluation' => $categorie->mode_evaluation,
+                                    'frequence_evaluation' => $categorie->frequence_evaluation,
+                                    'lecons' => $categorie->lecons,
+                                    'type_exercices' => $categorie->type_exercices,
+                                    'heure_debut' => $categorie->heure_debut,
+                                    'heure_fin' => $categorie->heure_fin,
+                                    'bareme' => $categorie->bareme,
+                                    'competences' => $categorie->competences->map(function ($competence) {
+                                        return [
+                                            'nom' => $competence->nom,
+                                            'description' => $competence->description,
+                                        ];
+                                    }),
+                                ];
+                            })
+                        ];
+                    }),
                 ];
             });
-
         // Préparer la structure des données pour la réponse
         $classeData = [
             'id' => $classe->id,
@@ -331,6 +373,49 @@ public function indexClasse(Request $request)
             'cycle' => $programmeManuel->cycle,
             'annee_scolaire' => $programmeManuel->annee_scolaire,
             'langue_enseignee' => $programmeManuel->langue_enseignee,
+            'cours' => $programmeManuel->cours->map(function ($cours) {
+                return [
+                    'nom' => $cours->nom,
+                    'description' => $cours->description,
+                    'niveau_education' => $cours->niveau_education,
+                    'niveau_classe' => $cours->niveau_classe,
+                    'heure_allouee' => $cours->heure_allouee,
+                    'etat' => $cours->etat,
+                    'credits' => $cours->credits,
+                    'coefficient' => $cours->coefficient,
+                    'semestre' => $cours->semestre,
+                    'objectif_generaux' => $cours->objectif_generaux,
+                    'objectif_specifiques' => $cours->objectif_specifiques,
+                    'enseignant' => $cours->enseignant ? [
+                        'id' => $cours->enseignant->id,
+                        'nom' => $cours->enseignant->user->nom ?? null,
+                        'prenom' => $cours->enseignant->user->prenom ?? null,
+                        'specialite' => $cours->enseignant->user->specialite ?? null,
+                        'telephone' => $cours->enseignant->user->telephone ?? null,
+                        'email' => $cours->enseignant->user->email ?? null,
+                    ] : null,
+                    'categories' => $cours->categories->map(function ($categorie) {
+                        return [
+                            'nom' => $categorie->nom,
+                            'volume_horaire' => $categorie->volume_horaire,
+                            'duree_seance' => $categorie->duree_seance,
+                            'mode_evaluation' => $categorie->mode_evaluation,
+                            'frequence_evaluation' => $categorie->frequence_evaluation,
+                            'lecons' => $categorie->lecons,
+                            'type_exercices' => $categorie->type_exercices,
+                            'heure_debut' => $categorie->heure_debut,
+                            'heure_fin' => $categorie->heure_fin,
+                            'bareme' => $categorie->bareme,
+                            'competences' => $categorie->competences->map(function ($competence) {
+                                return [
+                                    'nom' => $competence->nom,
+                                    'description' => $competence->description,
+                                ];
+                            }),
+                        ];
+                    })
+                ];
+            }),
         ];
     }
 
