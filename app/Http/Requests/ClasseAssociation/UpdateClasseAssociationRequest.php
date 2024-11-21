@@ -24,22 +24,22 @@ class UpdateClasseAssociationRequest extends FormRequest
     public function rules()
     {
         return [
-            'apprenant_id' => 'required|exists:apprenants,id',
+            'apprenant_id' => 'nullable|exists:apprenants,id',
             'cours_id' => 'nullable|exists:cours,id',
-            'enseignant_id' => 'required|exists:enseignants,id',
+            'enseignant_id' => 'nullable|exists:enseignants,id',
         ];
     }
 
     public function messages()
 {
     return [
-        'apprenant_id.required' => 'Le champ apprenant_id est requis.',
+
         'apprenant_id.exists' => 'L\'apprenant sélectionné n\'existe pas.',
 
-    
+
         'cours_id.exists' => 'Le cours sélectionné n\'existe pas.',
 
-        'enseignant_id.required' => 'Le champ enseignant_id est requis.',
+       
         'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
     ];
 }

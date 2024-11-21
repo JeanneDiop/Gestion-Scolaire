@@ -573,12 +573,12 @@ public function ajouterClasse(CreateClasseRequest $request)
         $programme = $query->first();
 
         // Si aucun programme ne correspond, retourner une erreur
-        if (is_null($programme)) {
-            return response()->json([
-                'status_code' => 400,
-                'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
-            ], 400);
-        }
+        //if (is_null($programme)) {
+            //return response()->json([
+                //'status_code' => 400,
+                //'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
+            //], 400);
+        //}
 
         // Créer une nouvelle classe
         $classe = new Classe();

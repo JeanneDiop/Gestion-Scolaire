@@ -21,6 +21,7 @@ use App\Http\Controllers\API\EcoleController;
 use App\Http\Controllers\API\NiveauController;
 use App\Http\Controllers\API\NiveauEcoleController;
 use App\Http\Controllers\API\EvenementController;
+use App\Http\Controllers\API\HistoriqueController;
 
 
 
@@ -395,3 +396,5 @@ Route::delete('niveauecole/supprimer/{id}', [NiveauEcoleController::class, 'dest
 Route::get('niveauecole/lister', [NiveauEcoleController::class, 'index']);
 //afficher niveauecole
 Route::get('niveauecole/detail/{id}', [NiveauEcoleController::class, 'show']);
+//gerer les historiques
+Route::get('/historiques/aujourdhui', [HistoriqueController::class, 'getHistoriquesAujourdhui']);

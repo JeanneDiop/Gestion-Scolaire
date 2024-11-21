@@ -21,7 +21,7 @@ class CreateClasseAssociationRequest extends FormRequest
             return [
                 'apprenant_id' => 'nullable|exists:apprenants,id',
                 'cours_id' => 'nullable|exists:cours,id',
-                'enseignant_id' => 'required|exists:enseignants,id',
+                'enseignant_id' => 'nullable|exists:enseignants,id',
                 'classe_id' => 'nullable|exists:classes,id',
             ];
         }
@@ -29,15 +29,15 @@ class CreateClasseAssociationRequest extends FormRequest
         public function messages()
     {
         return [
-            'apprenant_id.required' => 'Le champ apprenant_id est requis.',
+
             'apprenant_id.exists' => 'L\'apprenant sélectionné n\'existe pas.',
 
 
             'cours_id.exists' => 'Le cours sélectionné n\'existe pas.',
 
-            'enseignant_id.required' => 'Le champ enseignant_id est requis.',
+           
             'enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
-          
+
             'classe_id.exists' => 'Le classe sélectionné n\'existe pas.',
         ];
     }

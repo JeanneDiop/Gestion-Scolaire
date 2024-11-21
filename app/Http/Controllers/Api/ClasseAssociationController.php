@@ -19,10 +19,10 @@ public function store(CreateClasseAssociationRequest $request)
     try {
         // Créer l'association
         $classeAssociation = ClasseAssociation::create([
-            'classe_id' => $request->classe_id,
-            'apprenant_id' => $request->apprenant_id,
-            'enseignant_id' => $request->enseignant_id,
-            'cours_id' => $request->cours_id,
+            'classe_id' => $request->classe_id ?? null,
+            'apprenant_id' => $request->apprenant_id ?? null,
+            'enseignant_id' => $request->enseignant_id ?? null,
+            'cours_id' => $request->cours_id ?? null,
         ]);
 
         // Optionnel : tu peux ajouter une variable pour stocker la classe associée

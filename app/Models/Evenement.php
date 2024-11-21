@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Classe;
 class Evenement extends Model
 {
     use HasFactory;
@@ -32,6 +33,13 @@ class Evenement extends Model
     {
         return $this->belongsToMany(User::class, 'evenement_users', 'evenement_id', 'user_id')
         ->withPivot('classe_id');
+
+
+    }
+    public function classes()
+    {
+        return $this->belongsToMany(Classe::class, 'evenement_users', 'evenement_id', 'classe_id')
+        ->withPivot('user_id');
 
     }
 }

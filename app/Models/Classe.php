@@ -11,7 +11,7 @@ use App\Models\EnseignantClasse;
 use App\Models\ApprenantClasse;
 use App\Models\ClasseAssociation;
 use App\Models\Programme;
-use App\Models\EvenementUser;
+use App\Models\Evenement;
 
 use App\Models\Enseignant;
 
@@ -62,8 +62,16 @@ class Classe extends Model
  {
      return $this->hasMany(ClasseAssociation::class, 'classe_id');
  }
- public function evenementUsers()
-    {
-        return $this->hasMany(EvenementUser::class, 'classe_id');
-    }
+
+    //public function evenements()
+//{
+    //return $this->belongsToMany(Evenement::class, 'evenement_users', 'classe_id', 'evenement_id');
+//}
+public function evenements()
+{
+    return $this->belongsToMany(Evenement::class, 'evenement_user')
+    ->withPivot('user_id');
+
+
+}
 }

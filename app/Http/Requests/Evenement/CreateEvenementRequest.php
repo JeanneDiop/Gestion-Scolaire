@@ -32,9 +32,9 @@ class CreateEvenementRequest extends FormRequest
             'ressource' => 'nullable|string|max:255',
             'responsable_id' => 'nullable|exists:users,id',
             'type_evenement' => 'nullable|string|max:255',
-            'participant' => 'nullable|array', // Tableau de participants
-            'participant.*.id' => 'exists:users,id',
-            'participant.*.classe_id' => 'nullable|exists:classes,id',
+            'participant' => 'required|array', // Tableau de participants
+            'participant.*.user_id' => 'nullable|exists:users,id',
+        'participant.*.classe_id' => 'nullable|exists:classes,id'
         ];
     }
 
@@ -63,7 +63,8 @@ class CreateEvenementRequest extends FormRequest
 
             'type_evenement.string' => 'Le type d\'événement doit être une chaîne de caractères.',
             'type_evenement.max' => 'Le type d\'événement ne doit pas dépasser 255 caractères.',
-            'participant.*.id.exists' => 'Chaque participant doit être un utilisateur valide.',
+            'participant.*.user_id.exists' => 'L\'identifiant de l\'utilisateur n\'existe pas dans la base de données.',
+            'participant.*.user_id.nullable' => 'L\'identifiant de l\'utilisateur est facultatif.',
             'participant.*.classe_id.exists' => 'L\'ID de la classe doit exister dans la table des classes.',
             'participant.*.classe_id.nullable' => 'La classe_id est optionnelle et peut être laissée vide.',
         ];

@@ -31,35 +31,41 @@ class EvenementController extends Controller
                 // Attacher les participants à l'événement
                 //$evenement->participants()->attach($participantIds);
             //}
+
+
+            //if ($request->has('participant')) {
+                //foreach ($request->participant as $participant) {
+                    // Vérifier si l'élément a 'id' (utilisateur)
+                    //if (isset($participant['id'])) {
+                        // Attacher l'utilisateur à l'événement
+                        //$evenement->participants()->attach($participant['id']);
+                    //}
+
+                    // Vérifier si l'élément a 'classe_id' (classe)
+                    //if (isset($participant['classe_id'])) {
+                        // Attacher la classe à l'événement
+                        //$evenement->classes()->attach($participant['classe_id']);
+                    //}
+                //}
+            //}
             if ($request->has('participant')) {
-                // Extraire les participants depuis la requête
-                $participants = $request->participant;
-
-                // On parcourt chaque participant pour l'ajouter à l'événement
-                foreach ($participants as $participant) {
-                    // On prépare les données pour la table pivot, incluant le classe_id
-                    $data = [
-                        'classe_id' => $participant['classe_id'] ?? null, // Ajouter le classe_id, s'il est fourni
-                    ];
-
-                    // Attacher chaque type de participant à l'événement
-                    if (isset($participant['apprenant_id'])) {
-                        $evenement->participants()->attach($participant['apprenant_id'], $data);
-                    }
-                    if (isset($participant['tuteur_id'])) {
-                        $evenement->participants()->attach($participant['tuteur_id'], $data);
-                    }
-                    if (isset($participant['enseignant_id'])) {
-                        $evenement->participants()->attach($participant['enseignant_id'], $data);
+                foreach ($request->participant as $participant) {
+                    // Vérifier si 'id' (utilisateur) est défini
+                    if (isset($participant['id'])) {
+                        $evenement->participants()->attach($participant['id'], [
+                            'classe_id' => $participant['classe_id'] ?? null, // Ajouter classe_id si fourni
+                        ]);
                     }
                 }
             }
+
         // Réponse en cas de succès
         return response()->json([
             'status_code' => 200,
-            'status_message' => 'L\'événement a été mis à jour avec succès.',
+            'status_message' => 'L\'événement a été ajouter avec succès.',
             'data' => $evenement,
-        ]);
+            'participants_attaches' => $evenement->participants
+        ],200);
     } catch (ModelNotFoundException $e) {
         // Réponse si l'événement n'est pas trouvé
         return response()->json([
