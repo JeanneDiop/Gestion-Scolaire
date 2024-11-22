@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 use App\Models\Salle;
+use App\Models\Historique;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Salle\CreateSalleRequest;
 use App\Http\Requests\Salle\EditSalleRequest;
@@ -20,6 +22,14 @@ class SalleController extends Controller
             $salle->capacity = $request->capacity;
             $salle->type = $request->type;
             $salle->save();
+
+            Historique::create([
+                'action' => 'create',
+                'message' => 'Salle ajoutée : ' . $salle->nom,
+                'user_id' => auth()->id(),
+                'salle_id' => $salle->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                'created_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'status_code' => 200,
@@ -73,7 +83,13 @@ class SalleController extends Controller
               $salle->update();
 
               DB::commit(); // Valide la transaction
-
+              Historique::create([
+                'action' => 'update',  // Action 'update' pour la modification
+                'message' => 'Salle modifiée : ' . $salle->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'salle_id' => $salle->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
               return response()->json([
                   'status_code' => 200,
                   'status_message' => 'La salle a été modifiée avec succès',

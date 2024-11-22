@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Cours;
 use App\Models\Competence;
+use App\Models\Historique;
 class CategorieCours extends Model
 {
     use HasFactory;
@@ -28,5 +29,9 @@ class CategorieCours extends Model
     public function competences()
     {
         return $this->hasMany(Competence::class, 'categorie_cours_id');
+    }
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
     }
 }

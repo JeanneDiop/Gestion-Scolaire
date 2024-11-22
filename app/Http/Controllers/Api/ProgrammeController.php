@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Models\Historique;
+use Carbon\Carbon;
 use App\Models\Programme;
 use App\Models\Cours;
 use App\Models\Competence;
@@ -34,6 +36,13 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
         $programme->langue_enseignee = $request->langue_enseignee ?? null;
         $programme->classe_id = $request->classe_id ?? null;
         $programme->save();
+        Historique::create([
+            'action' => 'update',  // Action 'update' pour la modification
+            'message' => 'Programme modifiée : ' . $programme->nom,
+            'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+            'programme_id' => $programme->id,  // ID de la salle modifiée
+            'created_at' => Carbon::now(),
+        ]);
 
         // Mise à jour ou ajout des cours et leurs catégories/compétences
         foreach ($request->cours as $coursData) {
@@ -53,7 +62,13 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
             $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
             $cours->programme_id = $programme->id;
             $cours->save();
-
+            Historique::create([
+                'action' => 'update',  // Action 'update' pour la modification
+                'message' => 'Salle modifiée : ' . $cours->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'cours_id' => $cours->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
             // Mise à jour ou ajout des catégories (compétences) à ce cours
             if (isset($coursData['categories'])) {
                 foreach ($coursData['categories'] as $categorieData) {
@@ -75,7 +90,13 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
                     $categorie->frequence_evaluation = $categorieData['frequence_evaluation'] ?? null;
                     $categorie->bareme = $bareme;
                     $categorie->save();
-
+                    Historique::create([
+                        'action' => 'update',  // Action 'update' pour la modification
+                        'message' => 'Categorie modifiée : ' . $categorie->nom,
+                        'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                        'categorie_id' => $categorie->id,  // ID de la salle modifiée
+                        'created_at' => Carbon::now(),
+                    ]);
                     // Mise à jour ou ajout des compétences spécifiques pour cette catégorie
                     if (isset($categorieData['competences'])) {
                         foreach ($categorieData['competences'] as $competenceData) {
@@ -85,6 +106,13 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
                             $competence->description = $competenceData['description'] ?? null;
                             $competence->categorie_cours_id = $categorie->id;
                             $competence->save();
+                            Historique::create([
+                                'action' => 'update',  // Action 'update' pour la modification
+                                'message' => 'Competence modifiée : ' . $competence->nom,
+                                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                                'competence_id' => $competence->id,  // ID de la salle modifiée
+                                'created_at' => Carbon::now(),
+                            ]);
                         }
                     }
                 }
@@ -337,7 +365,13 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
         $programme->langue_enseignee = $request->langue_enseignee ?? null;
         $programme->classe_id = $request->classe_id ?? null;
         $programme->save();
-
+        Historique::create([
+            'action' => 'create',
+            'message' => 'Programme ajoutée : ' . $programme->nom,
+            'user_id' => auth()->id(),
+            'programme_id' => $programme->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+            'created_at' => Carbon::now(),
+        ]);
         // Boucle pour ajouter chaque cours et ses compétences
         foreach ($request->cours as $coursData) {
             // Création du cours et lien avec le programme
@@ -356,7 +390,13 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
             $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
             $cours->programme_id = $programme->id; // Associer le cours au programme
             $cours->save();
-
+            Historique::create([
+                'action' => 'create',
+                'message' => 'Cours ajoutée : ' . $cours->nom,
+                'user_id' => auth()->id(),
+                'cours_id' => $cours->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                'created_at' => Carbon::now(),
+            ]);
             // Validation et ajout des catégories (compétences) à ce cours
             if (isset($coursData['categories'])) {
                 foreach ($coursData['categories'] as $categorieData) {
@@ -378,7 +418,13 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                     $categorie->frequence_evaluation = $categorieData['frequence_evaluation'] ?? null;
                     $categorie->bareme = $bareme; // Associer le barème à la catégorie
                     $categorie->save();
-
+                    Historique::create([
+                        'action' => 'create',
+                        'message' => 'Categorie ajoutée : ' . $categorie->nom,
+                        'user_id' => auth()->id(),
+                        'categorie_id' => $categorie->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                        'created_at' => Carbon::now(),
+                    ]);
                     // Ajouter les compétences spécifiques pour cette catégorie
                     if (isset($categorieData['competences'])) {
                         foreach ($categorieData['competences'] as $competenceData) {
@@ -387,6 +433,13 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
                             $competence->description = $competenceData['description'] ?? null;
                             $competence->categorie_cours_id = $categorie->id; // Associer la compétence à la catégorie
                             $competence->save();
+                            Historique::create([
+                                'action' => 'create',
+                                'message' => 'Competence ajoutée : ' . $competence->nom,
+                                'user_id' => auth()->id(),
+                                'competence_id' => $competence->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                                'created_at' => Carbon::now(),
+                            ]);
                         }
                     }
                 }

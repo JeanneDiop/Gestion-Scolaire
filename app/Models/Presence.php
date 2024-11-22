@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Enseignant;
 use App\Models\Apprenant;
 use App\Models\Cours;
+use App\Models\Historique;
 class Presence extends Model
 {
 
@@ -31,6 +32,10 @@ class Presence extends Model
     }
     public function enseignant(){
         return $this->belongsTo(Enseignant::class);
+    }
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
     }
 }
 

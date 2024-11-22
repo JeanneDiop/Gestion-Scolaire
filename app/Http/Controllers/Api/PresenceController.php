@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Presence;
+
 use App\Http\Requests\Presence\CreatePresenceRequest;
 use App\Http\Requests\Presence\UpdatePresenceRequest;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,13 @@ class PresenceController extends Controller
 
             // Sauvegarder l'objet PresenceAbsence dans la base de données
             $presenceAbsence->save();
+            Historique::create([
+                'action' => 'create',  // Action 'update' pour la modification
+                'message' => 'Salle modifiée : ' . $presenceAbsence->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'presence_id' => $presenceAbsence->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
 
             // Log après l'enregistrement réussi
             Log::info('Présence/Absence enregistrée avec succès', ['presenceAbsence' => $presenceAbsence]);

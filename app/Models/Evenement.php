@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Classe;
+use App\Models\Historique;
 class Evenement extends Model
 {
     use HasFactory;
@@ -41,6 +42,10 @@ class Evenement extends Model
         return $this->belongsToMany(Classe::class, 'evenement_users', 'evenement_id', 'classe_id')
         ->withPivot('user_id');
 
+    }
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
     }
 }
 

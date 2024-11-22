@@ -9,6 +9,10 @@ use App\Http\Requests\Evaluation\UpdateEvaluationRequest;
 use App\Models\Evaluation;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
+use App\Models\Note;
+use App\Models\Historique;
+use Carbon\Carbon;
+
 
 class EvaluationController extends Controller
 {
@@ -24,6 +28,13 @@ class EvaluationController extends Controller
             $evaluation->apprenant_id = $request->apprenant_id;
             $evaluation->cours_id = $request->cours_id;
             $evaluation->save();
+            Historique::create([
+                'action' => 'create',  // Action 'update' pour la modification
+                'message' => 'Evaluation ajouté : ' . $evaluation->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'evaluation_id' => $evaluation->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'status_code' => 200,
@@ -53,6 +64,13 @@ class EvaluationController extends Controller
         $evaluation->apprenant_id = $request->apprenant_id;
         $evaluation->cours_id = $request->cours_id;
         $evaluation->save();
+        Historique::create([
+            'action' => 'update',
+            'message' => 'Evaluation modifiée : ' . $evaluation->nom,
+            'user_id' => auth()->id(),
+            'evaluation_id' => $evaluation->id,
+            'created_at' => Carbon::now(),
+        ]);
 
         return response()->json([
             'status_code' => 200,

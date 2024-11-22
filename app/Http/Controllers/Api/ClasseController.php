@@ -11,6 +11,8 @@ use App\Models\Cours;
 use App\Models\Programme;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Models\Historique;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\Classe\CreateClasseRequest;
 use App\Http\Requests\Classe\EditClasseRequest;
@@ -104,12 +106,7 @@ public function updateClasses(EditClasseRequest $request, $id)
         $programme = $query->first();
 
         // Si aucun programme ne correspond, retourner une erreur
-        if (is_null($programme)) {
-            return response()->json([
-                'status_code' => 400,
-                'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
-            ], 400);
-        }
+       
 
         // Mettre à jour les attributs de la classe
         $classe->nom = $request->nom;
@@ -117,11 +114,21 @@ public function updateClasses(EditClasseRequest $request, $id)
         $classe->niveau_education = $request->niveau_education;
         $classe->salle_id = $request->salle_id;
         $classe->save();
+        Historique::create([
+            'action' => 'update',
+            'message' => 'Classe modifiée : ' . $classe->nom,
+            'user_id' => auth()->id(),
+            'classe_id' => $classe->id,
+            'created_at' => Carbon::now(),
+        ]);
 
         // Associer la classe au programme correspondant
-        if ($programme->niveau_classe === $classe->niveau_classe) {
+        if (!is_null($programme) && $programme->niveau_classe === $classe->niveau_classe) {
             $programme->classe_id = $classe->id;
             $programme->save();
+        } else {
+            
+            $programme = [];
         }
 
         // Retourner la classe mise à jour et le programme correspondant
@@ -195,6 +202,7 @@ public function showClasse($id)
                     'langue_enseignee' => $programmeManuel->langue_enseignee,
             'cours' => $programmeManuel->cours->map(function ($cours) {
                         return [
+                             'id' => $cours->id,
                             'nom' => $cours->nom,
                             'description' => $cours->description,
                             'niveau_education' => $cours->niveau_education,
@@ -216,6 +224,7 @@ public function showClasse($id)
 ] : null,
                             'categories' => $cours->categories->map(function ($categorie) {
                                 return [
+                                    'id' => $categorie->id,
                                     'nom' => $categorie->nom,
                                     'volume_horaire' => $categorie->volume_horaire,
                                     'duree_seance' => $categorie->duree_seance,
@@ -228,6 +237,7 @@ public function showClasse($id)
                                     'bareme' => $categorie->bareme,
                                     'competences' => $categorie->competences->map(function ($competence) {
                                         return [
+                                            'id' => $competence->id,
                                             'nom' => $competence->nom,
                                             'description' => $competence->description,
                                         ];
@@ -375,6 +385,7 @@ public function indexClasse(Request $request)
             'langue_enseignee' => $programmeManuel->langue_enseignee,
             'cours' => $programmeManuel->cours->map(function ($cours) {
                 return [
+                    'id' => $cours->id,
                     'nom' => $cours->nom,
                     'description' => $cours->description,
                     'niveau_education' => $cours->niveau_education,
@@ -396,6 +407,7 @@ public function indexClasse(Request $request)
                     ] : null,
                     'categories' => $cours->categories->map(function ($categorie) {
                         return [
+                            'id' => $categorie->id,
                             'nom' => $categorie->nom,
                             'volume_horaire' => $categorie->volume_horaire,
                             'duree_seance' => $categorie->duree_seance,
@@ -408,6 +420,7 @@ public function indexClasse(Request $request)
                             'bareme' => $categorie->bareme,
                             'competences' => $categorie->competences->map(function ($competence) {
                                 return [
+                                    'id' => $competence->id,
                                     'nom' => $competence->nom,
                                     'description' => $competence->description,
                                 ];
@@ -572,13 +585,7 @@ public function ajouterClasse(CreateClasseRequest $request)
         // Récupérer un seul programme qui correspond aux critères
         $programme = $query->first();
 
-        // Si aucun programme ne correspond, retourner une erreur
-        //if (is_null($programme)) {
-            //return response()->json([
-                //'status_code' => 400,
-                //'status_message' => 'Aucun programme ne correspond au niveau d\'éducation et de classe spécifiés.',
-            //], 400);
-        //}
+       
 
         // Créer une nouvelle classe
         $classe = new Classe();
@@ -587,11 +594,25 @@ public function ajouterClasse(CreateClasseRequest $request)
         $classe->niveau_education = $request->niveau_education;
         $classe->salle_id = $request->salle_id;
         $classe->save();
+        Historique::create([
+            'action' => 'create',  // Action 'update' pour la modification
+            'message' => 'Classe ajouté : ' . $classe->nom,
+            'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+            'classe_id' => $classe->id,  // ID de la salle modifiée
+            'created_at' => Carbon::now(),
+        ]);
 
         // Associer la classe au programme correspondant
-        if ($programme->niveau_classe === $classe->niveau_classe) {
+        //if ($programme->niveau_classe === $classe->niveau_classe) {
+           // $programme->classe_id = $classe->id;
+            //$programme->save();
+        //}
+        if (!is_null($programme) && $programme->niveau_classe === $classe->niveau_classe) {
             $programme->classe_id = $classe->id;
             $programme->save();
+        } else {
+            
+            $programme = [];
         }
 
         // Retourner la classe et le programme correspondant (par exemple en JSON)

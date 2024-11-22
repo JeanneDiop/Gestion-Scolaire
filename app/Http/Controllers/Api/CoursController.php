@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\Cours\CreateCoursRequest;
 use App\Http\Requests\Cours\updateCoursRequest;
+use App\Models\Historique;
+use Carbon\Carbon;
 
 class CoursController extends Controller
 {
@@ -36,6 +38,13 @@ class CoursController extends Controller
             $cours->leçons=$request->leçons ?? null;
             $cours->enseignant_id = $request->enseignant_id;
             $cours->save();
+            Historique::create([
+                'action' => 'create',  // Action 'update' pour la modification
+                'message' => 'Cours ajouté : ' . $cours->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'cours_id' => $cours->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'status_code' => 200,

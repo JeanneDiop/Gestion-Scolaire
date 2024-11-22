@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Note\CreateNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Models\Note;
+use App\Models\Historique;
+use Carbon\Carbon;
 
 use App\Models\Apprenant;
 use Exception;
@@ -22,6 +24,13 @@ class NoteController extends Controller
             $note->date_note = $request->date_note;
             $note->evaluation_id = $request->evaluation_id;
             $note->save();
+            Historique::create([
+                'action' => 'create',  // Action 'update' pour la modification
+                'message' => 'Note ajouté : ' . $note->nom,
+                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
+                'note_id' => $note->id,  // ID de la salle modifiée
+                'created_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'status_code' => 200,
@@ -51,6 +60,13 @@ class NoteController extends Controller
 
         // Sauvegarder les modifications
         $note->update();
+        Historique::create([
+            'action' => 'update',
+            'message' => 'Note modifiée : ' . $note->nom,
+            'user_id' => auth()->id(),
+            'note_id' => $note->id,
+            'created_at' => Carbon::now(),
+        ]);
 
         return response()->json([
             'status_code' => 200,

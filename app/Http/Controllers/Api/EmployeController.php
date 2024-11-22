@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Employe;
 use Exception;
+use App\Models\Historique;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\Employe\CreateEmployeRequest;
 use App\Http\Requests\Employe\EditEmployeRequest;
@@ -68,6 +70,13 @@ class EmployeController extends Controller
 
             // Save the employe to the database
             $employe->save();
+            Historique::create([
+                'action' => 'create',
+                'message' => 'Employe ajouté : ' . $employe->nom,
+                'user_id' => auth()->id(),
+                'employe_id' => $employe->id,
+                'created_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'status_code' => 200,
@@ -140,6 +149,13 @@ class EmployeController extends Controller
 
         // Save the updated employe data
         $employe->update();
+        Historique::create([
+            'action' => 'update',
+            'message' => 'Employe modifiée : ' . $employe->nom,
+            'user_id' => auth()->id(),
+            'employe_id' => $employe->id,
+            'created_at' => Carbon::now(),
+        ]);
 
         return response()->json([
             'status_code' => 200,

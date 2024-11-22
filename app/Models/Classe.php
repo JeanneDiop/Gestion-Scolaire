@@ -12,7 +12,7 @@ use App\Models\ApprenantClasse;
 use App\Models\ClasseAssociation;
 use App\Models\Programme;
 use App\Models\Evenement;
-
+use App\Models\Historique;
 use App\Models\Enseignant;
 
 class Classe extends Model
@@ -73,5 +73,9 @@ public function evenements()
     ->withPivot('user_id');
 
 
+}
+public function historiques()
+{
+    return $this->hasMany(Historique::class);
 }
 }

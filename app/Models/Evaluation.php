@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Apprenant;
 use App\Models\Cours;
 use App\Models\Note;
+use App\Models\Historique;
 class Evaluation extends Model
 {
     protected $fillable = [
@@ -17,7 +18,10 @@ class Evaluation extends Model
         'date_evaluation',
     ];
     use HasFactory;
-
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
+    }
     public function apprenant(){
         return $this->belongsTo(Apprenant::class);
     }

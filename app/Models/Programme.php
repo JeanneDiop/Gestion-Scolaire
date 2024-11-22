@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Cours;
 use App\Models\Classe;
+use App\Models\Historique;
 class Programme extends Model
 {
     use HasFactory;
@@ -40,7 +41,10 @@ class Programme extends Model
         'competences_essentielles' => 'array',
     ];
 
-
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
+    }
     public function classe()
     {
         return $this->belongsTo(Classe::class, 'classe_id');

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Enseignant;
 use App\Models\Planifiercour;
 use App\Models\Evaluation;
-
+use App\Models\Historique;
 use App\Models\Presence;
 use App\Models\Programme;
 use App\Models\ClasseAssociation;
@@ -56,6 +56,9 @@ class Cours extends Model
         return $this->hasMany(ClasseAssociation::class, 'cours_id');
     }
 
-
+    public function historiques()
+    {
+        return $this->hasMany(Historique::class);
+    }
 }
 
