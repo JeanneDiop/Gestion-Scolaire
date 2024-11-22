@@ -67,7 +67,7 @@ public function index()
             'enseignant.user',
             'evaluations.apprenant.user',
             'classeAssociations.classe',
-            'programmeclasse'
+            'programme'
         ])->get();
 
         $result = $cours->map(function ($cours) {
@@ -145,7 +145,7 @@ public function show($id)
             'enseignant.user',
             'evaluations.apprenant.user',
             'classeAssociations.classe',
-            'programmeclasse'
+            'programme'
         ])->findOrFail($id);
         $coursData = [
             'id' => $cours->id,
