@@ -2032,8 +2032,7 @@ public function ListerApprenant()
 public function getApprenantDetailsWithPresence($id)
 {
     // Récupérer l'apprenant avec ses enregistrements de présence et absence
-    $apprenant = Apprenant::with(['absencePresences.cours'])
-        ->find($id);
+    $apprenant = Apprenant::with(['presences.cours'])->find($id);
 
     // Vérifier si l'apprenant existe
     if (!$apprenant) {
@@ -2045,25 +2044,33 @@ public function getApprenantDetailsWithPresence($id)
     // Initialiser un tableau pour stocker les détails de présence/absence
     $presenceDetails = [];
 
-    // Boucler à travers les enregistrements de présence/absence
-    foreach ($apprenant->absencePresences as $presenceAbsence) {
-        $statut = strtolower($presenceAbsence->present) === 'oui' ? 'Présent' : 'Absent';
+    // Boucler à travers les enregistrements de présence/absence/retard seulement si la relation existe
+    if ($apprenant->presences) {
+        foreach ($apprenant->presences as $presence) {
+            $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
 
-        // Vérifier si le statut est "Absent"
-        if ($statut === 'Absent') {
-            $presenceDetails[] = [
-                'statut' => $statut,
-                'date' => $presenceAbsence->date_absent,
-                'raison' => $presenceAbsence->raison_absence,
-                'cours' => $presenceAbsence->cours ? $presenceAbsence->cours->nom : 'N/A',
-            ];
-        } else {
-            // Ajouter uniquement si le statut est "Présent"
-            $presenceDetails[] = [
-                'statut' => $statut,
-                'date' => $presenceAbsence->date_present,
-                'cours' => $presenceAbsence->cours ? $presenceAbsence->cours->nom : 'N/A',
-            ];
+            // Ajouter les informations selon le statut
+            if ($statut === 'Absent') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_absent' => $presence->date_absent,
+                    'raison_absence' => $presence->raison_absence,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Present') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_present' => $presence->date_present,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Retard') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'heure_arrivee' => $presence->heure_arrivee,
+                    'duree_retard' => $presence->duree_retard,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            }
         }
     }
 
@@ -2088,7 +2095,7 @@ public function getApprenantDetailsWithPresence($id)
             'niveau_education' => $apprenant->niveau_education,
             'statut_marital' => $apprenant->statut_marital,
         ],
-        'absence' => $presenceDetails
+        'details' => $presenceDetails
     ];
 }
 

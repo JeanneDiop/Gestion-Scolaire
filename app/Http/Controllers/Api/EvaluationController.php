@@ -60,8 +60,8 @@ class EvaluationController extends Controller
             $evaluation = new Evaluation();
             $evaluation->nom_evaluation = $validatedData['nom_evaluation'];
             $evaluation->niveau_education = $validatedData['niveau_education'];
-            $evaluation->categorie = $validatedData['categorie'];
-            $evaluation->type_evaluation = $validatedData['type_evaluation'];
+            $evaluation->categorie = $validatedData['categorie'] ?? null;
+            $evaluation->type_evaluation = $validatedData['type_evaluation'] ?? null;
             $evaluation->date_evaluation = $validatedData['date_evaluation'];
             $evaluation->cours_id = $validatedData['cours_id'];
             $evaluation->save();

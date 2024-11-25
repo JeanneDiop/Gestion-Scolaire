@@ -24,11 +24,11 @@ class CreateEvaluationRequest extends FormRequest
     public function rules()
     {
         return [
-            'nom_evaluation' => 'required|string|max:255', // Nom de l'évaluation requis, chaîne de caractères, max 255 caractères
-            'niveau_education' => 'required|string|max:255', // Niveau d'éducation requis, chaîne de caractères
-            'categorie' => 'required|string|max:255', // Catégorie de l'évaluation
-            'type_evaluation' => 'required|string|max:255', // Type d'évaluation
-            'date_evaluation' => 'required|date', // Date de l'évaluation doit être valide
+            'nom_evaluation' => 'required|string|max:255',
+            'niveau_education' => 'required|string|max:255',
+            'categorie' => 'required|string|max:255',
+            'type_evaluation' => 'required|string|max:255',
+            'date_evaluation' => 'required|date', 
             'cours_id' => 'required|exists:cours,id', // L'ID du cours doit exister dans la table des cours
             'apprenant_id' => 'nullable|array', // Le champ apprenant_id est nullable mais doit être un tableau si présent
             'apprenant_id.*' => 'nullable|exists:apprenants,id', // Chaque élément du tableau, s'il existe, doit être un ID valide dans la table des apprenants
