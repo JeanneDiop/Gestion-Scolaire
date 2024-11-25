@@ -22,8 +22,9 @@ class Evaluation extends Model
     {
         return $this->hasMany(Historique::class);
     }
-    public function apprenant(){
-        return $this->belongsTo(Apprenant::class);
+    public function apprenants()
+    {
+        return $this->belongsToMany(Apprenant::class);
     }
     public function cours(){
         return $this->belongsTo(Cours::class);

@@ -24,13 +24,15 @@ class CreateEvaluationRequest extends FormRequest
     public function rules()
     {
         return [
-            'nom_evaluation' => 'required|string|max:255', // Nom de l'évaluation obligatoire
-            'niveau_education' => 'required|string|max:255', // Niveau d'éducation obligatoire
-            'categorie' => 'nullable|in:theorique,pratique,sport', // Catégorie peut être nulle ou doit être une des valeurs définies
-            'type_evaluation' => 'nullable|in:devoir1,devoir2,examen', // Type d'évaluation peut être nul ou doit être une des valeurs définies
-            'date_evaluation' => 'required|date', // Date d'évaluation obligatoire
-            'apprenant_id' => 'required|exists:apprenants,id', // Doit correspondre à un ID valide dans la table apprenants
-            'cours_id' => 'required|exists:cours,id', // Doit correspondre à un ID valide dans la table cours
+            'nom_evaluation' => 'required|string|max:255', // Nom de l'évaluation requis, chaîne de caractères, max 255 caractères
+            'niveau_education' => 'required|string|max:255', // Niveau d'éducation requis, chaîne de caractères
+            'categorie' => 'required|string|max:255', // Catégorie de l'évaluation
+            'type_evaluation' => 'required|string|max:255', // Type d'évaluation
+            'date_evaluation' => 'required|date', // Date de l'évaluation doit être valide
+            'cours_id' => 'required|exists:cours,id', // L'ID du cours doit exister dans la table des cours
+            'apprenant_id' => 'nullable|array', // Le champ apprenant_id est nullable mais doit être un tableau si présent
+            'apprenant_id.*' => 'nullable|exists:apprenants,id', // Chaque élément du tableau, s'il existe, doit être un ID valide dans la table des apprenants
+            'classe_id' => 'nullable|exists:classes,id',
         ];
     }
 
@@ -42,26 +44,32 @@ class CreateEvaluationRequest extends FormRequest
     public function messages()
     {
         return [
-            'nom_evaluation.required' => 'Le nom de l\'évaluation est obligatoire.',
+            'nom_evaluation.required' => 'Le nom de l\'évaluation est requis.',
             'nom_evaluation.string' => 'Le nom de l\'évaluation doit être une chaîne de caractères.',
             'nom_evaluation.max' => 'Le nom de l\'évaluation ne peut pas dépasser 255 caractères.',
 
-            'niveau_education.required' => 'Le niveau d\'éducation est obligatoire.',
+            'niveau_education.required' => 'Le niveau d\'éducation est requis.',
             'niveau_education.string' => 'Le niveau d\'éducation doit être une chaîne de caractères.',
             'niveau_education.max' => 'Le niveau d\'éducation ne peut pas dépasser 255 caractères.',
 
-            'categorie.in' => 'La catégorie doit être soit "theorique", "pratique" ou "sport".',
+            'categorie.required' => 'La catégorie est requise.',
+            'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
+            'categorie.max' => 'La catégorie ne peut pas dépasser 255 caractères.',
 
-            'type_evaluation.in' => 'Le type d\'évaluation doit être soit "devoir1", "devoir2" ou "examen".',
+            'type_evaluation.required' => 'Le type d\'évaluation est requis.',
+            'type_evaluation.string' => 'Le type d\'évaluation doit être une chaîne de caractères.',
+            'type_evaluation.max' => 'Le type d\'évaluation ne peut pas dépasser 255 caractères.',
 
-            'date_evaluation.required' => 'La date de l\'évaluation est obligatoire.',
+            'date_evaluation.required' => 'La date de l\'évaluation est requise.',
             'date_evaluation.date' => 'La date de l\'évaluation doit être une date valide.',
 
-            'apprenant_id.required' => 'L\'ID de l\'apprenant est obligatoire.',
-            'apprenant_id.exists' => 'L\'apprenant sélectionné n\'existe pas.',
+            'cours_id.required' => 'L\'ID du cours est requis.',
+            'cours_id.exists' => 'Le cours spécifié n\'existe pas.',
 
-            'cours_id.required' => 'L\'ID du cours est obligatoire.',
-            'cours_id.exists' => 'Le cours sélectionné n\'existe pas.',
+            'apprenant_id.array' => 'Les apprenants doivent être un tableau.',
+            'apprenant_id.*.exists' => 'Un ou plusieurs identifiants d\'apprenant sont invalides.',
+
+            'classe_id.exists' => 'La classe spécifiée n\'existe pas.',
         ];
     }
 

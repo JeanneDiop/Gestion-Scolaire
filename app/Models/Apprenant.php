@@ -64,7 +64,7 @@ class Apprenant extends Model
     }
     public function evaluations()
     {
-        return $this->hasMany(Evaluation::class);
+        return $this->belongsToMany(Evaluation::class);
     }
     public function parcours()
     {

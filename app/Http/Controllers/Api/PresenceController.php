@@ -30,13 +30,13 @@ class PresenceController extends Controller
 
             // Traitement en fonction du statut
             if ($presenceAbsence->statut === 'present') {
-                $presenceAbsence->date_present = $request->date_present;
+                $presenceAbsence->date_present = $request->date_present ?? null;
             } elseif ($presenceAbsence->statut === 'retard') {
-                $presenceAbsence->heure_arrivee = $request->heure_arrivee;
-                $presenceAbsence->duree_retard = $request->duree_retard;
+                $presenceAbsence->heure_arrivee = $request->heure_arrivee ?? null;
+                $presenceAbsence->duree_retard = $request->duree_retard ?? null;
             } elseif ($presenceAbsence->statut === 'absent') {
-                $presenceAbsence->date_absent = $request->date_absent;
-                $presenceAbsence->raison_absence = $request->raison_absence;
+                $presenceAbsence->date_absent = $request->date_absent ?? null;
+                $presenceAbsence->raison_absence = $request->raison_absence ?? null;
             } else {
                 // Log d'un statut invalide
                 Log::warning('Statut non valide reçu:', ['statut' => $request->statut]);
@@ -49,9 +49,9 @@ class PresenceController extends Controller
 
             // Assignation de l'ID de l'utilisateur en fonction du type
             if ($presenceAbsence->type_utilisateur === 'apprenant') {
-                $presenceAbsence->apprenant_id = $request->apprenant_id;
+                $presenceAbsence->apprenant_id = $request->apprenant_id ?? null;
             } elseif ($presenceAbsence->type_utilisateur === 'enseignant') {
-                $presenceAbsence->enseignant_id = $request->enseignant_id;
+                $presenceAbsence->enseignant_id = $request->enseignant_id ?? null;
             }
 
             // Sauvegarder l'objet PresenceAbsence dans la base de données
@@ -121,13 +121,13 @@ class PresenceController extends Controller
 
         // Mise à jour des champs en fonction du statut
         if ($presenceAbsence->statut === 'present') {
-            $presenceAbsence->date_present = $request->date_present;
+            $presenceAbsence->date_present = $request->date_present ?? null;
         } elseif ($presenceAbsence->statut === 'retard') {
-            $presenceAbsence->heure_arrivee = $request->heure_arrivee;
-            $presenceAbsence->duree_retard = $request->duree_retard;
+            $presenceAbsence->heure_arrivee = $request->heure_arrivee ?? null;
+            $presenceAbsence->duree_retard = $request->duree_retard ?? null;
         } elseif ($presenceAbsence->statut === 'absent') {
-            $presenceAbsence->date_absent = $request->date_absent;
-            $presenceAbsence->raison_absence = $request->raison_absence;
+            $presenceAbsence->date_absent = $request->date_absent ?? null;
+            $presenceAbsence->raison_absence = $request->raison_absence ?? null;
         } else {
             // Log d'un statut invalide
             Log::warning('Statut non valide reçu pour la mise à jour:', ['statut' => $request->statut]);
@@ -140,20 +140,20 @@ class PresenceController extends Controller
 
         // Mise à jour de l'ID de l'utilisateur en fonction du type
         if ($presenceAbsence->type_utilisateur === 'apprenant') {
-            $presenceAbsence->apprenant_id = $request->apprenant_id;
+            $presenceAbsence->apprenant_id = $request->apprenant_id ?? null;
             $presenceAbsence->enseignant_id = null; // Réinitialiser le champ non pertinent
         } elseif ($presenceAbsence->type_utilisateur === 'enseignant') {
-            $presenceAbsence->enseignant_id = $request->enseignant_id;
+            $presenceAbsence->enseignant_id = $request->enseignant_id ?? null;
             $presenceAbsence->apprenant_id = null;
         }
 
         // Sauvegarder les modifications dans la base de données
         $presenceAbsence->save();
         Historique::create([
-            'action' => 'update',  
+            'action' => 'update',
             'message' => 'Presence modifiée : ' . $presenceAbsence->nom,
             'user_id' => auth()->id(),
-            'presence_id' => $presenceAbsence->id,  
+            'presence_id' => $presenceAbsence->id,
             'created_at' => Carbon::now(),
         ]);
         // Log après la mise à jour réussie
