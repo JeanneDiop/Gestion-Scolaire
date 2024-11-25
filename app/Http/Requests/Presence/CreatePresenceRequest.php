@@ -23,20 +23,17 @@ class CreatePresenceRequest extends FormRequest
      */
     public function rules()
 {
-
     return [
-
         'type_utilisateur' => 'required|string|in:apprenant,enseignant',
         'statut' => 'required|string|in:present,absent,retard',
-        'date_present' => 'nullable_if:statut,present|date',
-        'date_absent' => 'nullable_if:statut,absent|date',
-        'heure_arrivee' => 'nullable_if:statut,retard|string',
-        'duree_retard' => 'nullable_if:statut,retard|string',
-        'raison_absence' => 'nullable_if:statut,absent|string|max:255',
-        'apprenant_id' => 'nullable_if:type_utilisateur,apprenant|exists:apprenants,id',
-        'enseignant_id' => 'nullable_if:type_utilisateur,enseignant|exists:enseignants,id',
+        'date_present' => 'nullable|date|required_if:statut,present',
+        'date_absent' => 'nullable|date|required_if:statut,absent',
+        'heure_arrivee' => 'nullable|string|required_if:statut,retard',
+        'duree_retard' => 'nullable|string|required_if:statut,retard',
+        'raison_absence' => 'nullable|string|max:255|required_if:statut,absent',
+        'apprenant_id' => 'nullable|exists:apprenants,id|required_if:type_utilisateur,apprenant',
+        'enseignant_id' => 'nullable|exists:enseignants,id|required_if:type_utilisateur,enseignant',
         'cours_id' => 'required|exists:cours,id',
-
     ];
 
 }
@@ -120,30 +117,41 @@ public function withValidator($validator)
         }
     });
 }
-    public function messages()
+public function messages()
 {
     return [
-       'type_utilisateur.required' => 'Le type d\'utilisateur est requis.',
-        'type_utilisateur.in' => 'Le type d\'utilisateur doit être soit "apprenant", soit "enseignant".',
-        'statut.required' => 'Le statut est requis.',
+        'type_utilisateur.required' => 'Le type d\'utilisateur est obligatoire.',
+        'type_utilisateur.string' => 'Le type d\'utilisateur doit être une chaîne de caractères.',
+        'type_utilisateur.in' => 'Le type d\'utilisateur doit être "apprenant" ou "enseignant".',
+
+        'statut.required' => 'Le statut est obligatoire.',
+        'statut.string' => 'Le statut doit être une chaîne de caractères.',
         'statut.in' => 'Le statut doit être "present", "absent" ou "retard".',
-        'date_present.nullable_if' => 'La date de présence est requise si le statut est "present".',
+
         'date_present.date' => 'La date de présence doit être une date valide.',
-        'date_absent.nullable_if' => 'La date d\'absence est requise si le statut est "absent".',
+        'date_present.required_if' => 'La date de présence est obligatoire lorsque le statut est "present".',
+
         'date_absent.date' => 'La date d\'absence doit être une date valide.',
-        'heure_arrivee.nullable_if' => 'L\'heure d\'arrivée est requise si le statut est "retard".',
+        'date_absent.required_if' => 'La date d\'absence est obligatoire lorsque le statut est "absent".',
+
         'heure_arrivee.string' => 'L\'heure d\'arrivée doit être une chaîne de caractères.',
-        'duree_retard.nullable_if' => 'La durée du retard est requise si le statut est "retard".',
+        'heure_arrivee.required_if' => 'L\'heure d\'arrivée est obligatoire lorsque le statut est "retard".',
+
         'duree_retard.string' => 'La durée du retard doit être une chaîne de caractères.',
-        'raison_absence.nullable_if' => 'La raison de l\'absence est requise si le statut est "absent".',
+        'duree_retard.required_if' => 'La durée du retard est obligatoire lorsque le statut est "retard".',
+
         'raison_absence.string' => 'La raison de l\'absence doit être une chaîne de caractères.',
         'raison_absence.max' => 'La raison de l\'absence ne peut pas dépasser 255 caractères.',
-        'apprenant_id.nullable_if' => 'L\'identifiant de l\'apprenant est requis si le type d\'utilisateur est "apprenant".',
-        'apprenant_id.exists' => 'L\'identifiant de l\'apprenant doit exister dans la table des apprenants.',
-        'enseignant_id.nullable_if' => 'L\'identifiant de l\'enseignant est requis si le type d\'utilisateur est "enseignant".',
-        'enseignant_id.exists' => 'L\'identifiant de l\'enseignant doit exister dans la table des enseignants.',
-        'cours_id.required' => 'L\'identifiant du cours est requis.',
-        'cours_id.exists' => 'L\'identifiant du cours doit exister dans la table des cours.',
+        'raison_absence.required_if' => 'La raison de l\'absence est obligatoire lorsque le statut est "absent".',
+
+        'apprenant_id.exists' => 'L\'identifiant de l\'apprenant n\'existe pas.',
+        'apprenant_id.required_if' => 'L\'identifiant de l\'apprenant est obligatoire lorsque le type d\'utilisateur est "apprenant".',
+
+        'enseignant_id.exists' => 'L\'identifiant de l\'enseignant n\'existe pas.',
+        'enseignant_id.required_if' => 'L\'identifiant de l\'enseignant est obligatoire lorsque le type d\'utilisateur est "enseignant".',
+
+        'cours_id.required' => 'L\'identifiant du cours est obligatoire.',
+        'cours_id.exists' => 'L\'identifiant du cours n\'existe pas.',
     ];
 }
     protected function failedValidation(Validator $validator)
