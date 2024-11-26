@@ -14,7 +14,7 @@ use App\Models\Programme;
 use App\Models\Evenement;
 use App\Models\Historique;
 use App\Models\Enseignant;
-use App\Models\EvaluationApprenant;
+use App\Models\Evaluation;
 
 class Classe extends Model
 {
@@ -33,10 +33,7 @@ class Classe extends Model
     public function programmes(){
         return $this->hasMany(Programme::class, 'classe_id');
     }
-    public function apprenants()
-    {
-        return $this->hasMany(Apprenant::class);
-    }
+
 
     public function enseignants()
     {
@@ -79,8 +76,22 @@ public function historiques()
 {
     return $this->hasMany(Historique::class);
 }
-public function evaluationapprenants()
+public function apprenants()
 {
-    return $this->belongsToMany(EvaluationApprenant::class); // Relation avec le modèle Evaluation via la table pivot
+    return $this->belongsToMany(
+        Apprenant::class,
+        'evaluation_apprenants',
+        'classe_id',
+        'apprenant_id'
+    );
+}
+public function evaluations()
+{
+    return $this->belongsToMany(
+        Evaluation::class,       // Le modèle final auquel on veut accéder
+        'evaluation_apprenants',  // Le nom de la table pivot
+        'classe_id',             // La clé étrangère sur la table pivot pointant vers `Classe`
+        'evaluation_id'          // La clé étrangère sur la table pivot pointant vers `Evaluation`
+    );
 }
 }

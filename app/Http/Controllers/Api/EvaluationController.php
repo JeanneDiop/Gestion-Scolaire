@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use App\Models\Note;
 use App\Models\Historique;
+use App\Models\Apprenant;
 use Carbon\Carbon;
 
 
@@ -55,7 +56,7 @@ class EvaluationController extends Controller
             // Récupération des données validées
             $validatedData = $request->validated();
             $apprenants = $validatedData['apprenant_id'] ?? []; // Utiliser un tableau vide par défaut
-    
+
             // Création de l'évaluation
             $evaluation = new Evaluation();
             $evaluation->nom_evaluation = $validatedData['nom_evaluation'];
@@ -65,20 +66,15 @@ class EvaluationController extends Controller
             $evaluation->date_evaluation = $validatedData['date_evaluation'];
             $evaluation->cours_id = $validatedData['cours_id'];
             $evaluation->save();
-    
+
             // Ajouter les relations dans la table pivot seulement si des apprenants sont fournis
-            if (!empty($apprenants)) {
-                foreach ($apprenants as $apprenantId) {
-                    // Récupérer la classe (peut être null)
-                    $classeId = $validatedData['classe_id'] ?? null; // Utilisation de null si 'classe_id' n'est pas défini
-    
-                    // Si 'apprenant_id' est fourni, l'attacher à l'évaluation
-                    if ($apprenantId !== null) {
-                        $evaluation->apprenants()->attach($apprenantId, ['classe_id' => $classeId]);
-                    }
-                }
-            }
-    
+            $apprenants = Apprenant::where('classe_id', $request->classe_id)->get();
+
+        // Attacher les apprenants à l'évaluation
+        foreach ($apprenants as $apprenant) {
+            $evaluation->apprenants()->attach($apprenant->id, ['classe_id' => $request->classe_id]);
+        }
+
             // Enregistrement dans l'historique
             Historique::create([
                 'action' => 'create',
@@ -87,7 +83,7 @@ class EvaluationController extends Controller
                 'evaluation_id' => $evaluation->id,
                 'created_at' => Carbon::now(),
             ]);
-    
+
             // Réponse avec l'évaluation créée
             return response()->json([
                 'status_code' => 200,

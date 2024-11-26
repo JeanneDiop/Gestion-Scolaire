@@ -90,12 +90,12 @@ class CoursController extends Controller
                         'niveau_education' => $cours->programme->classe->niveau_education,
                     ] : null,
                 ] : null,
-                'enseignant' => [
-                    'id' => $cours->enseignant->user->id,
-                    'nom' => $cours->enseignant->user->nom,
-                    'prenom' => $cours->enseignant->user->prenom,
-                    'specialite' => $cours->enseignant->specialite,
-                ],
+               'enseignant' => $cours->enseignant && $cours->enseignant->user ? [
+    'id' => $cours->enseignant->user->id,
+    'nom' => $cours->enseignant->user->nom,
+    'prenom' => $cours->enseignant->user->prenom,
+    'specialite' => $cours->enseignant->specialite,
+] : null,
                 'evaluations' => $cours->evaluations->map(function ($evaluation) {
                     // Suppression des informations liées à l'apprenant
                     return [
@@ -155,14 +155,14 @@ public function show($id)
                     'niveau_education' => $cours->programme->classe->niveau_education,
                 ] : null,
             ] : null,
-            'enseignant' => [
-                'id' => $cours->enseignant->user->id,
-                'nom' => $cours->enseignant->user->nom,
-                'prenom' => $cours->enseignant->user->prenom,
-                'specialite' => $cours->enseignant->specialite,
-            ],
+          'enseignant' => $cours->enseignant && $cours->enseignant->user ? [
+    'id' => $cours->enseignant->user->id,
+    'nom' => $cours->enseignant->user->nom,
+    'prenom' => $cours->enseignant->user->prenom,
+    'specialite' => $cours->enseignant->specialite,
+] : null,
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
-             
+
 
                 return [
                     'id' => $evaluation->id,
