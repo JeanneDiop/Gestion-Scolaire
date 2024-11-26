@@ -54,8 +54,8 @@ class EvaluationController extends Controller
         try {
             // Récupération des données validées
             $validatedData = $request->validated();
-            $apprenants = $validatedData['apprenant_id']; // Tableau d'IDs d'apprenants
-
+            $apprenants = $validatedData['apprenant_id'] ?? []; // Utiliser un tableau vide par défaut
+    
             // Création de l'évaluation
             $evaluation = new Evaluation();
             $evaluation->nom_evaluation = $validatedData['nom_evaluation'];
@@ -65,19 +65,20 @@ class EvaluationController extends Controller
             $evaluation->date_evaluation = $validatedData['date_evaluation'];
             $evaluation->cours_id = $validatedData['cours_id'];
             $evaluation->save();
-
-            // Ajouter les relations dans la table pivot
-            foreach ($apprenants as $apprenantId) {
-                // Récupérer la classe (peut être null)
-                $classeId = $validatedData['classe_id'] ?? null; // Utilisation de null si 'classe_id' n'est pas défini
-
-                // Si 'apprenant_id' est fourni, l'attacher à l'évaluation
-                if ($apprenantId !== null) {
-                    // Si 'classe_id' est fourni ou nul, l'attacher dans la table pivot
-                    $evaluation->apprenants()->attach($apprenantId, ['classe_id' => $classeId]);
+    
+            // Ajouter les relations dans la table pivot seulement si des apprenants sont fournis
+            if (!empty($apprenants)) {
+                foreach ($apprenants as $apprenantId) {
+                    // Récupérer la classe (peut être null)
+                    $classeId = $validatedData['classe_id'] ?? null; // Utilisation de null si 'classe_id' n'est pas défini
+    
+                    // Si 'apprenant_id' est fourni, l'attacher à l'évaluation
+                    if ($apprenantId !== null) {
+                        $evaluation->apprenants()->attach($apprenantId, ['classe_id' => $classeId]);
+                    }
                 }
             }
-
+    
             // Enregistrement dans l'historique
             Historique::create([
                 'action' => 'create',
@@ -86,7 +87,7 @@ class EvaluationController extends Controller
                 'evaluation_id' => $evaluation->id,
                 'created_at' => Carbon::now(),
             ]);
-
+    
             // Réponse avec l'évaluation créée
             return response()->json([
                 'status_code' => 200,
@@ -100,7 +101,7 @@ class EvaluationController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
-}
+    }
     public function update(UpdateEvaluationRequest $request, $id)
 {
     try {

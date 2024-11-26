@@ -61,94 +61,78 @@ class CoursController extends Controller
     }
 
     public function index()
-    {
-        try {
-            $cours = Cours::with([
-                'enseignant.user',
-                'evaluations.apprenant.user',
-                'classeAssociations.classe',
-                'programme'
-            ])->get();
+{
+    try {
+        $cours = Cours::with([
+            'enseignant.user',
+            'evaluations', // Enlever 'apprenant.user' ici
+            'classeAssociations.classe',
+            'programme'
+        ])->get();
 
-            $result = $cours->map(function ($cours) {
-                return [
-                    'id' => $cours->id,
-                    'nom' => $cours->nom,
-                    'description' => $cours->description,
-                    'duree' => $cours->duree,
-                    'programme' => $cours->programme ? [
-                        'id' => $cours->programme->id,
-                        'nom' => $cours->programme->nom,
-                        'niveau_education' => $cours->programme->niveau_education,
-                        'cycle' => $cours->programme->cycle,
-                        'anne_scolaire' => $cours->programme->annee_scolaire,
-                        'langue_enseignee' => $cours->programme->langue_enseignee,
-                        'classe' => $cours->programme->classe ? [
-                            'id' => $cours->programme->classe->id,
-                            'nom' => $cours->programme->classe->nom,
-                            'niveau_classe' => $cours->programme->classe->niveau_classe,
-                            'niveau_education' => $cours->programme->classe->niveau_education,
-                        ] : null,
+        $result = $cours->map(function ($cours) {
+            return [
+                'id' => $cours->id,
+                'nom' => $cours->nom,
+                'description' => $cours->description,
+                'duree' => $cours->duree,
+                'programme' => $cours->programme ? [
+                    'id' => $cours->programme->id,
+                    'nom' => $cours->programme->nom,
+                    'niveau_education' => $cours->programme->niveau_education,
+                    'cycle' => $cours->programme->cycle,
+                    'anne_scolaire' => $cours->programme->annee_scolaire,
+                    'langue_enseignee' => $cours->programme->langue_enseignee,
+                    'classe' => $cours->programme->classe ? [
+                        'id' => $cours->programme->classe->id,
+                        'nom' => $cours->programme->classe->nom,
+                        'niveau_classe' => $cours->programme->classe->niveau_classe,
+                        'niveau_education' => $cours->programme->classe->niveau_education,
                     ] : null,
-                    'enseignant' => [
-                        'id' => $cours->enseignant->user->id,
-                        'nom' => $cours->enseignant->user->nom,
-                        'prenom' => $cours->enseignant->user->prenom,
-                        'specialite' => $cours->enseignant->specialite,
-                    ],
-                    'evaluations' => $cours->evaluations->map(function ($evaluation) {
-                        $apprenant = $evaluation->apprenant;
-                        $classe = $apprenant->classe;
-                        $salle = $classe ? $classe->salle : null;
+                ] : null,
+                'enseignant' => [
+                    'id' => $cours->enseignant->user->id,
+                    'nom' => $cours->enseignant->user->nom,
+                    'prenom' => $cours->enseignant->user->prenom,
+                    'specialite' => $cours->enseignant->specialite,
+                ],
+                'evaluations' => $cours->evaluations->map(function ($evaluation) {
+                    // Suppression des informations liées à l'apprenant
+                    return [
+                        'id' => $evaluation->id,
+                        'nom_evaluation' => $evaluation->nom_evaluation,
+                        'date_evaluation' => $evaluation->date_evaluation,
+                        'type_evaluation' => $evaluation->type_evaluation,
+                    ];
+                }),
+                'classes_associées' => $cours->classeAssociations->map(function ($association) {
+                    return [
+                        'classe_id' => $association->classe_id,
+                        'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+                    ];
+                }),
+            ];
+        });
 
-                        return [
-                            'id' => $evaluation->id,
-                            'nom_evaluation' => $evaluation->nom_evaluation,
-                            'date_evaluation' => $evaluation->date_evaluation,
-                            'type_evaluation' => $evaluation->type_evaluation,
-                            'apprenant' => [
-                                'id' => $apprenant->user->id,
-                                'nom' => $apprenant->user->nom,
-                                'prenom' => $apprenant->user->prenom,
-                                'classe' => [
-                                    'id' => $classe ? $classe->id : null,
-                                    'nom_classe' => $classe ? $classe->nom : null,
-                                    'salle' => $salle ? [
-                                        'id' => $salle->id,
-                                        'nom_salle' => $salle->nom,
-                                    ] : null
-                                ]
-                            ]
-                        ];
-                    }),
-                    'classes_associées' => $cours->classeAssociations->map(function ($association) {
-                        return [
-                            'classe_id' => $association->classe_id,
-                            'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
-                        ];
-                    }),
-                ];
-            });
-
-            return response()->json([
-                'status_code' => 200,
-                'status_message' => 'Tous les cours ont été récupérés avec succès.',
-                'data' => $result,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status_code' => 500,
-                'status_message' => 'Une erreur s\'est produite lors de la récupération des cours.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Tous les cours ont été récupérés avec succès.',
+            'data' => $result,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la récupération des cours.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
 public function show($id)
 {
     try {
         $cours = Cours::with([
             'enseignant.user',
-            'evaluations.apprenant.user',
+            'evaluations',
             'classeAssociations.classe',
             'programme'
         ])->findOrFail($id);
@@ -178,22 +162,13 @@ public function show($id)
                 'specialite' => $cours->enseignant->specialite,
             ],
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
-                $apprenant = $evaluation->apprenant;
+             
 
                 return [
                     'id' => $evaluation->id,
                     'nom_evaluation' => $evaluation->nom_evaluation,
                     'date_evaluation' => $evaluation->date_evaluation,
                     'type_evaluation' => $evaluation->type_evaluation,
-                    'apprenant' => [
-                        'id' => $apprenant->user->id,
-                        'nom' => $apprenant->user->nom,
-                        'prenom' => $apprenant->user->prenom,
-                        'classe' => $apprenant->classe ? [
-                            'id' => $apprenant->classe->id,
-                            'nom_classe' => $apprenant->classe->nom,
-                        ] : null
-                    ]
                 ];
             }),
             'classes_associées' => $cours->classeAssociations->map(function ($association) {

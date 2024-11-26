@@ -8,7 +8,7 @@ use App\Models\Tuteur;
 use App\Models\Classe;
 use App\Models\User;
 use App\Models\Presence;
-use App\Models\Evaluation;
+use App\Models\EvaluationApprenant;
 use App\Models\Parcours;
 use App\Models\ClasseAssociation;
 use App\Models\ApprenantClasse;
@@ -62,9 +62,9 @@ class Apprenant extends Model
     {
         return $this->hasMany(Presence::class, 'apprenant_id');
     }
-    public function evaluations()
+    public function evaluationapprenants()
     {
-        return $this->belongsToMany(Evaluation::class);
+        return $this->belongsToMany(EvaluationApprenant::class);
     }
     public function parcours()
     {

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Evaluation;
+use App\Models\EvaluationApprenant;
 return new class extends Migration
 {
     /**
@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('type_note', ['devoir1', 'devoir2', 'examen'])->nullable();
             $table->string('semestre')->nullable();
             $table->date('date_note')->nullable();
-            $table->foreignIdFor(Evaluation::class)->nullable()->constrained()->onDelete('set null');
+            $table->foreignIdFor(EvaluationApprenant::class)->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
         });
     }

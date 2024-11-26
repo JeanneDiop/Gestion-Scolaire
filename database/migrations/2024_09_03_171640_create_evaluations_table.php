@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('categorie', ['theorique', 'pratique','sport'])->nullable();
             $table->enum('type_evaluation', ['devoir1','devoir2','examen'])->nullable();
             $table->date('date_evaluation');
-            $table->foreignIdFor(Apprenant::class)->constrained()->onDelete('cascade');
             $table->foreignIdFor(Cours::class)->constrained()->onDelete('cascade');
             $table->timestamps();
         });

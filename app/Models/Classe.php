@@ -14,7 +14,7 @@ use App\Models\Programme;
 use App\Models\Evenement;
 use App\Models\Historique;
 use App\Models\Enseignant;
-use App\Models\Evaluation;
+use App\Models\EvaluationApprenant;
 
 class Classe extends Model
 {
@@ -79,8 +79,8 @@ public function historiques()
 {
     return $this->hasMany(Historique::class);
 }
-public function evaluations()
+public function evaluationapprenants()
 {
-    return $this->belongsToMany(Evaluation::class); // Relation avec le modèle Evaluation via la table pivot
+    return $this->belongsToMany(EvaluationApprenant::class); // Relation avec le modèle Evaluation via la table pivot
 }
 }
