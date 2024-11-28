@@ -65,7 +65,7 @@ class CoursController extends Controller
     try {
         $cours = Cours::with([
             'enseignant.user',
-            'evaluations', // Enlever 'apprenant.user' ici
+            'evaluations.evaluationApprenants.apprenant.classe.salle',
             'classeAssociations.classe',
             'programme.classe', // Ajout de la classe liée à programme
             'categories.cours', // Assurez-vous que la relation 'cours' existe sur CategorieCours
@@ -126,6 +126,38 @@ class CoursController extends Controller
                         'nom_evaluation' => $evaluation->nom_evaluation,
                         'date_evaluation' => $evaluation->date_evaluation,
                         'type_evaluation' => $evaluation->type_evaluation,
+                        'evaluation_apprenants' => $evaluation->evaluationApprenants->map(function ($evaluationApprenant) {
+                            return [
+
+                                'classe_id_id' => $evaluationApprenant->classe_id,
+                                'evaluation_id' => $evaluationApprenant->evaluation_id,
+                                'apprenant_id' => $evaluationApprenant->apprenant_id,
+                                'apprenant' => $evaluationApprenant->apprenant ? [
+                                    'id' => $evaluationApprenant->apprenant->id,
+                                    'nom' => $evaluationApprenant->apprenant->user->nom ?? null,
+                                    'prenom' => $evaluationApprenant->apprenant->user->prenom ?? null,
+                                    'email' => $evaluationApprenant->apprenant->user->email ?? null,
+                                    'telephone' => $evaluationApprenant->apprenant->user->telephone ?? null,
+                                    'date_naissance'=> $evaluationApprenant->apprenant->date_naissance ?? null ,
+                                    'lieu_naissance'=> $evaluationApprenant->apprenant->lieu_naissance ?? null,
+                                    'numero_CNI'=> $evaluationApprenant->apprenant->numero_CNI ?? null,
+                                    'numero_identification_eleve'=> $evaluationApprenant->apprenant->numero_identification_eleve ?? null,
+                                    'niveau_education'=> $evaluationApprenant->apprenant->niveau_education ?? null,
+                                   'classe' => $evaluationApprenant->apprenant->classe ? [
+                        'id' => $evaluationApprenant->apprenant->classe->id,
+                        'nom' => $evaluationApprenant->apprenant->classe->nom,
+                        'niveau_classe' => $evaluationApprenant->apprenant->classe->niveau_classe,
+                        'niveau_education' => $evaluationApprenant->apprenant->classe->niveau_education,
+                        'salle' => $evaluationApprenant->apprenant->classe->salle ? [
+                            'id' => $evaluationApprenant->apprenant->classe->salle->id,
+                            'nom' => $evaluationApprenant->apprenant->classe->salle->nom,
+                            'capacity' => $evaluationApprenant->apprenant->classe->salle->capacity,
+                            'type' => $evaluationApprenant->apprenant->classe->salle->type,
+                        ] : null,
+                    ] : null,
+                                ] : null,
+                            ];
+                        }),
                     ];
                 }),
                 'classes_associées' => $cours->classeAssociations->map(function ($association) {
@@ -155,10 +187,11 @@ public function show($id)
     try {
         $cours = Cours::with([
             'enseignant.user',
-            'evaluations',
+
+            'evaluations.evaluationApprenants.apprenant.classe.salle',
             'classeAssociations.classe',
             'programme.classe',
-            'categories.cours', 
+            'categories.cours',
             'categories.competences',
         ])->findOrFail($id);
         $coursData = [
@@ -208,16 +241,46 @@ public function show($id)
                         }),
                     ];
                 }),
-            'evaluations' => $cours->evaluations->map(function ($evaluation) {
+               'evaluations' => $cours->evaluations->map(function ($evaluation) {
+    return [
+        'id' => $evaluation->id,
+        'nom_evaluation' => $evaluation->nom_evaluation,
+        'date_evaluation' => $evaluation->date_evaluation,
+        'type_evaluation' => $evaluation->type_evaluation,
+        'evaluation_apprenants' => $evaluation->evaluationApprenants->map(function ($evaluationApprenant) {
+            return [
 
-
-                return [
-                    'id' => $evaluation->id,
-                    'nom_evaluation' => $evaluation->nom_evaluation,
-                    'date_evaluation' => $evaluation->date_evaluation,
-                    'type_evaluation' => $evaluation->type_evaluation,
-                ];
-            }),
+                'classe_id_id' => $evaluationApprenant->classe_id,
+                                'evaluation_id' => $evaluationApprenant->evaluation_id,
+                                'apprenant_id' => $evaluationApprenant->apprenant_id,
+                                'apprenant' => $evaluationApprenant->apprenant ? [
+                                    'id' => $evaluationApprenant->apprenant->id,
+                                    'nom' => $evaluationApprenant->apprenant->user->nom ?? null,
+                                    'prenom' => $evaluationApprenant->apprenant->user->prenom ?? null,
+                                    'email' => $evaluationApprenant->apprenant->user->email ?? null,
+                                    'telephone' => $evaluationApprenant->apprenant->user->telephone ?? null,
+                                    'date_naissance'=> $evaluationApprenant->apprenant->date_naissance ?? null ,
+                                    'lieu_naissance'=> $evaluationApprenant->apprenant->lieu_naissance ?? null,
+                                    'numero_CNI'=> $evaluationApprenant->apprenant->numero_CNI ?? null,
+                                    'numero_identification_eleve'=> $evaluationApprenant->apprenant->numero_identification_eleve ?? null,
+                                    'niveau_education'=> $evaluationApprenant->apprenant->niveau_education ?? null,
+                                    'classe' => $evaluationApprenant->apprenant->classe ? [
+                        'id' => $evaluationApprenant->apprenant->classe->id,
+                        'nom' => $evaluationApprenant->apprenant->classe->nom,
+                        'niveau_classe' => $evaluationApprenant->apprenant->classe->niveau_classe,
+                        'niveau_education' => $evaluationApprenant->apprenant->classe->niveau_education,
+                        'salle' => $evaluationApprenant->apprenant->classe->salle ? [
+                            'id' => $evaluationApprenant->apprenant->classe->salle->id,
+                            'nom' => $evaluationApprenant->apprenant->classe->salle->nom,
+                            'capacity' => $evaluationApprenant->apprenant->classe->salle->capacity,
+                            'type' => $evaluationApprenant->apprenant->classe->salle->type,
+                        ] : null,
+                    ] : null,
+                ] : null,
+            ];
+        }),
+    ];
+}),
             'classes_associées' => $cours->classeAssociations->map(function ($association) {
                 return [
                     'classe_id' => $association->classe_id,

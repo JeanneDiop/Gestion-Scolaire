@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Apprenant;
+use App\Models\EvaluationApprenant;
 use App\Models\Cours;
 use App\Models\Note;
 use App\Models\Historique;
@@ -44,5 +45,9 @@ public function classes()
         'evaluation_id',         // La clé étrangère sur la table pivot pointant vers `Evaluation`
         'classe_id'              // La clé étrangère sur la table pivot pointant vers `Classe`
     );
+}
+public function evaluationApprenants()
+{
+    return $this->hasMany(EvaluationApprenant::class,'evaluation_id');
 }
 }

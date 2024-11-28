@@ -106,7 +106,7 @@ public function updateClasses(EditClasseRequest $request, $id)
         $programme = $query->first();
 
         // Si aucun programme ne correspond, retourner une erreur
-       
+
 
         // Mettre à jour les attributs de la classe
         $classe->nom = $request->nom;
@@ -127,7 +127,7 @@ public function updateClasses(EditClasseRequest $request, $id)
             $programme->classe_id = $classe->id;
             $programme->save();
         } else {
-            
+
             $programme = [];
         }
 
@@ -270,7 +270,6 @@ public function showClasse($id)
                     'niveau_education' => $apprenant->niveau_education,
                     'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
                     'numero_CNI' => $apprenant->numero_CNI,
-                    'statut_marital' => $apprenant->statut_marital,
                     'image' => $apprenant->image,
                     'user' => $apprenant->user ? [
                         'id' => $apprenant->user->id,
@@ -585,7 +584,7 @@ public function ajouterClasse(CreateClasseRequest $request)
         // Récupérer un seul programme qui correspond aux critères
         $programme = $query->first();
 
-       
+
 
         // Créer une nouvelle classe
         $classe = new Classe();
@@ -611,7 +610,7 @@ public function ajouterClasse(CreateClasseRequest $request)
             $programme->classe_id = $classe->id;
             $programme->save();
         } else {
-            
+
             $programme = [];
         }
 
