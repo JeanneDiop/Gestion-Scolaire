@@ -67,7 +67,9 @@ class CoursController extends Controller
             'enseignant.user',
             'evaluations', // Enlever 'apprenant.user' ici
             'classeAssociations.classe',
-            'programme'
+            'programme.classe', // Ajout de la classe liée à programme
+            'categories.cours', // Assurez-vous que la relation 'cours' existe sur CategorieCours
+            'categories.competences',
         ])->get();
 
         $result = $cours->map(function ($cours) {
@@ -90,14 +92,35 @@ class CoursController extends Controller
                         'niveau_education' => $cours->programme->classe->niveau_education,
                     ] : null,
                 ] : null,
-               'enseignant' => $cours->enseignant && $cours->enseignant->user ? [
-    'id' => $cours->enseignant->user->id,
-    'nom' => $cours->enseignant->user->nom,
-    'prenom' => $cours->enseignant->user->prenom,
-    'specialite' => $cours->enseignant->specialite,
-] : null,
+                'enseignant' => $cours->enseignant && $cours->enseignant->user ? [
+                    'id' => $cours->enseignant->user->id,
+                    'nom' => $cours->enseignant->user->nom,
+                    'prenom' => $cours->enseignant->user->prenom,
+                    'specialite' => $cours->enseignant->specialite,
+                ] : null,
+                'categorie_cours' => $cours->categories->map(function ($categorieCours) {
+                    return [
+                        'id' => $categorieCours->id,
+                        'nom' => $categorieCours->nom,
+                        'leçons' => $categorieCours->leçons,
+                        'type_exercices' => $categorieCours->type_exercices,
+                        'volume_horaire' => $categorieCours->volume_horaire,
+                        'duree_seance' => $categorieCours->duree_seance,
+                        'mode_evaluation' => $categorieCours->mode_evaluation,
+                        'frequence_evaluation' => $categorieCours->frequence_evaluation,
+                        'heure_debut' => $categorieCours->heure_debut,
+                        'heure_fin' => $categorieCours->heure_fin,
+                        'bareme' => $categorieCours->bareme,
+                        'competences' => $categorieCours->competences->map(function ($competence) {
+                            return [
+                                'id' => $competence->id,
+                                'nom' => $competence->nom,
+                                'description' => $competence->description,
+                            ];
+                        }),
+                    ];
+                }),
                 'evaluations' => $cours->evaluations->map(function ($evaluation) {
-                    // Suppression des informations liées à l'apprenant
                     return [
                         'id' => $evaluation->id,
                         'nom_evaluation' => $evaluation->nom_evaluation,
@@ -134,7 +157,9 @@ public function show($id)
             'enseignant.user',
             'evaluations',
             'classeAssociations.classe',
-            'programme'
+            'programme.classe',
+            'categories.cours', 
+            'categories.competences',
         ])->findOrFail($id);
         $coursData = [
             'id' => $cours->id,
@@ -161,6 +186,28 @@ public function show($id)
     'prenom' => $cours->enseignant->user->prenom,
     'specialite' => $cours->enseignant->specialite,
 ] : null,
+'categorie_cours' => $cours->categories->map(function ($categorieCours) {
+                    return [
+                        'id' => $categorieCours->id,
+                        'nom' => $categorieCours->nom,
+                        'leçons' => $categorieCours->leçons,
+                        'type_exercices' => $categorieCours->type_exercices,
+                        'volume_horaire' => $categorieCours->volume_horaire,
+                        'duree_seance' => $categorieCours->duree_seance,
+                        'mode_evaluation' => $categorieCours->mode_evaluation,
+                        'frequence_evaluation' => $categorieCours->frequence_evaluation,
+                        'heure_debut' => $categorieCours->heure_debut,
+                        'heure_fin' => $categorieCours->heure_fin,
+                        'bareme' => $categorieCours->bareme,
+                        'competences' => $categorieCours->competences->map(function ($competence) {
+                            return [
+                                'id' => $competence->id,
+                                'nom' => $competence->nom,
+                                'description' => $competence->description,
+                            ];
+                        }),
+                    ];
+                }),
             'evaluations' => $cours->evaluations->map(function ($evaluation) {
 
 

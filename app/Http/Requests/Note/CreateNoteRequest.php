@@ -27,7 +27,7 @@ class CreateNoteRequest extends FormRequest
             'note' => 'required|numeric|min:0|max:20', // La note peut être décimale entre 0 et 20
             'type_note' => 'nullable|in:devoir1,devoir2,examen', // Le type de note peut être nul ou doit être l'une des valeurs spécifiées
             'date_note' => 'nullable|date', // La date de la note est optionnelle mais doit être au format date
-            'evaluation_id' => 'nullable|exists:evaluations,id', // Doit correspondre à un ID valide dans la table evaluations
+            'evaluation_apprenant_id' => 'nullable|exists:evaluation_apprenants,id', // Doit correspondre à un ID valide dans la table evaluations
         ];
     }
 
@@ -45,7 +45,7 @@ class CreateNoteRequest extends FormRequest
             'note.max' => 'La note ne peut pas dépasser 20.',
             'type_note.in' => 'Le type de note doit être soit "devoir1", "devoir2" ou "examen".',
             'date_note.date' => 'La date de la note doit être une date valide.',
-            'evaluation_id.exists' => 'L\'évaluation sélectionnée n\'existe pas.',
+            'evaluation_apprenant_id.exists' => 'L\'évaluation apprenant sélectionnée n\'existe pas.',
         ];
     }
     protected function failedValidation(Validator $validator)

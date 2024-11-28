@@ -18,7 +18,6 @@ class Evaluation extends Model
         'type_evaluation',
         'date_evaluation',
         'cours_id',
-        'classe_id'
     ];
     use HasFactory;
     public function historiques()

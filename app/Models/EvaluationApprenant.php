@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Apprenant;
 use App\Models\Evaluation;
 use App\Models\Classe;
+use App\Models\Note;
 class EvaluationApprenant extends Model
 {
     use HasFactory;
@@ -27,5 +28,9 @@ class EvaluationApprenant extends Model
     public function classe()
     {
         return $this->belongsTo(Classe::class, 'classe_id');
+    }
+    public function notes()
+    {
+        return $this->hasMany(Note::class,'evaluation_apprenant_id');
     }
 }

@@ -16,6 +16,7 @@ use App\Models\Historique;
 use App\Models\Enseignant;
 use App\Models\Evaluation;
 
+
 class Classe extends Model
 {
     use HasFactory;
@@ -88,10 +89,12 @@ public function apprenants()
 public function evaluations()
 {
     return $this->belongsToMany(
-        Evaluation::class,       // Le modèle final auquel on veut accéder
-        'evaluation_apprenants',  // Le nom de la table pivot
-        'classe_id',             // La clé étrangère sur la table pivot pointant vers `Classe`
-        'evaluation_id'          // La clé étrangère sur la table pivot pointant vers `Evaluation`
+        Evaluation::class,
+        'evaluation_apprenants',
+        'classe_id',
+        'evaluation_id'
     );
 }
+
 }
+
