@@ -77,7 +77,14 @@ class CoursController extends Controller
                 'id' => $cours->id,
                 'nom' => $cours->nom,
                 'description' => $cours->description,
-                'duree' => $cours->duree,
+                'niveau_education' => $cours->niveau_education,
+                'niveau_classe' => $cours->niveau_classe,
+                'heure_allouee' => $cours->heure_allouee,
+                'etat' => $cours->etat,
+                'credits' => $cours->credits,
+                'semestre' => $cours->semestre,
+                'objectif_generaux' => $cours->objectif_generaux,
+                'objectif_specifiques' => $cours->objectif_specifiques,
                 'programme' => $cours->programme ? [
                     'id' => $cours->programme->id,
                     'nom' => $cours->programme->nom,
@@ -129,7 +136,7 @@ class CoursController extends Controller
                         'evaluation_apprenants' => $evaluation->evaluationApprenants->map(function ($evaluationApprenant) {
                             return [
 
-                                'classe_id_id' => $evaluationApprenant->classe_id,
+                                'classe_id' => $evaluationApprenant->classe_id,
                                 'evaluation_id' => $evaluationApprenant->evaluation_id,
                                 'apprenant_id' => $evaluationApprenant->apprenant_id,
                                 'apprenant' => $evaluationApprenant->apprenant ? [
@@ -196,9 +203,16 @@ public function show($id)
         ])->findOrFail($id);
         $coursData = [
             'id' => $cours->id,
-            'nom' => $cours->nom,
-            'description' => $cours->description,
-            'duree' => $cours->duree,
+                'nom' => $cours->nom,
+                'description' => $cours->description,
+                'niveau_education' => $cours->niveau_education,
+                'niveau_classe' => $cours->niveau_classe,
+                'heure_allouee' => $cours->heure_allouee,
+                'etat' => $cours->etat,
+                'credits' => $cours->credits,
+                'semestre' => $cours->semestre,
+                'objectif_generaux' => $cours->objectif_generaux,
+                'objectif_specifiques' => $cours->objectif_specifiques,
              'programme' => $cours->programme  ? [
                 'id' => $cours->programme->id,
                 'nom' => $cours->programme->nom,
