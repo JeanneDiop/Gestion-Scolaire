@@ -38,7 +38,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','getApprenantDetailsWithNotes', 'getApprenantDetailsWithPresence','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','getApprenantDetailsWithNotes', 'getApprenantDetailsWithPresence', 'getEnseignantDetailsWithPresence','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -2091,9 +2091,9 @@ public function getApprenantDetailsWithPresence($id)
             'lieu_naissance' => $apprenant->lieu_naissance,
             'date_naissance' => $apprenant->date_naissance,
             'numero_CNI' => $apprenant->numero_CNI,
-            'numero_carte_scolaire' => $apprenant->numero_carte_scolaire,
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve,
             'niveau_education' => $apprenant->niveau_education,
-            'statut_marital' => $apprenant->statut_marital,
+
         ],
         'details' => $presenceDetails
     ];
@@ -2257,6 +2257,76 @@ public function getApprenantDetailsWithNotes($id)
     ]);
 }
 
+
+public function getEnseignantDetailsWithPresence($id)
+{
+    // Récupérer l'enseignant avec ses enregistrements de présence et absence
+    $enseignant = Enseignant::with(['presences.cours'])->find($id);
+
+    // Vérifier si l'enseignant existe
+    if (!$enseignant) {
+        return response()->json([
+            'message' => "Aucun enseignant trouvé avec l'ID {$id}."
+        ], 404);
+    }
+
+    // Initialiser un tableau pour stocker les détails de présence/absence
+    $presenceDetails = [];
+
+    // Boucler à travers les enregistrements de présence/absence/retard seulement si la relation existe
+    if ($enseignant->presences) {
+        foreach ($enseignant->presences as $presence) {
+            $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
+
+            // Ajouter les informations selon le statut
+            if ($statut === 'Absent') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_absent' => $presence->date_absent,
+                    'raison_absence' => $presence->raison_absence,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Present') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_present' => $presence->date_present,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Retard') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'heure_arrivee' => $presence->heure_arrivee,
+                    'duree_retard' => $presence->duree_retard,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            }
+        }
+    }
+
+    // Utiliser array_unique pour éviter les doublons (basé sur la date et le statut)
+    $presenceDetails = array_map("unserialize", array_unique(array_map("serialize", $presenceDetails)));
+
+    // Retourner les détails de l'enseignant avec ses informations de présence et absence
+    return [
+        'enseignant' => [
+            'id' => $enseignant->id,
+            'nom' => $enseignant->user->nom,
+            'prenom' => $enseignant->user->prenom,
+            'telephone' => $enseignant->user->telephone,
+            'email' => $enseignant->user->email,
+            'adresse' => $enseignant->user->adresse,
+            'genre' => $enseignant->user->genre,
+            'etat' => $enseignant->user->etat,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'date_naissance' => $enseignant->date_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'matiere_enseignée' => $enseignant->matiere_enseignée,
+            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
+            'niveau_enseignant' => $enseignant->niveau_enseignant,
+        ],
+        'details' => $presenceDetails
+    ];
+}
 //lister personnel administratif dans sa table
 
 public function ListerPersonnelAdministratif()

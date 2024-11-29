@@ -662,4 +662,89 @@ public function destroy($id)
         ], 500);
     }
 }
+
+
+public function getClassPresenceDetails($classeId)
+{
+    // Récupérer la classe avec ses apprenants et leurs présences
+    $classe = Classe::with(['apprenants.presences.cours'])->find($classeId);
+
+    // Vérifier si la classe existe
+    if (!$classe) {
+        return response()->json([
+            'message' => "Aucune classe trouvée avec l'ID {$classeId}."
+        ], 404);
+    }
+
+    // Initialiser un tableau pour stocker les détails
+    $classPresenceDetails = [];
+
+    // Boucler à travers les apprenants de la classe
+    foreach ($classe->apprenants as $apprenant) {
+        $presenceDetails = [];
+
+        // Vérifier si l'apprenant a des enregistrements de présence
+        if ($apprenant->presences) {
+            foreach ($apprenant->presences as $presence) {
+                $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
+
+                // Ajouter les informations selon le statut
+                if ($statut === 'Absent') {
+                    $presenceDetails[] = [
+                        'statut' => $statut,
+                        'date_absent' => $presence->date_absent,
+                        'raison_absence' => $presence->raison_absence,
+                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                    ];
+                } elseif ($statut === 'Present') {
+                    $presenceDetails[] = [
+                        'statut' => $statut,
+                        'date_present' => $presence->date_present,
+                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                    ];
+                } elseif ($statut === 'Retard') {
+                    $presenceDetails[] = [
+                        'statut' => $statut,
+                        'heure_arrivee' => $presence->heure_arrivee,
+                        'duree_retard' => $presence->duree_retard,
+                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                    ];
+                }
+            }
+        }
+
+        // Ajouter les détails de l'apprenant et ses présences
+        $classPresenceDetails[] = [
+            'apprenant' => [
+                'id' => $apprenant->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'email' => $apprenant->user->email,
+                'adresse' => $apprenant->user->adresse,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'lieu_naissance' => $apprenant->lieu_naissance,
+                'date_naissance' => $apprenant->date_naissance,
+                'numero_CNI' => $apprenant->numero_CNI,
+                'numero_identification_eleve' => $apprenant->numero_identification_eleve,
+                'niveau_education' => $apprenant->niveau_education,
+
+            ],
+            'presences' => $presenceDetails,
+        ];
+    }
+
+    // Retourner les détails de la classe et les présences
+    return response()->json([
+        'classe' => [
+            'id' => $classe->id,
+            'nom' => $classe->nom,
+            'niveau_education' => $classe->niveau_education,
+            'niveau_classe' => $classe->niveau_classe,
+        ],
+        'details' => $classPresenceDetails,
+    ]);
+}
 }

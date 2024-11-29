@@ -23,6 +23,7 @@ use App\Http\Controllers\API\NiveauEcoleController;
 use App\Http\Controllers\API\EvenementController;
 use App\Http\Controllers\API\HistoriqueController;
 use App\Http\Controllers\API\ExcelController;
+use Illuminate\Support\Facades\Artisan;
 
 
 
@@ -110,6 +111,8 @@ Route::delete('/supprimerenseignant/{enseignant}', [AuthController::class, 'supp
 Route::delete('/supprimeruserenseignant/{user}', [AuthController::class, 'supprimerUserEnseignant']);
 //archiver ou desactiver un enseignant via sa table
 Route::post('archiverenseignant/{enseignant}',[AuthController::class,'archiverEnseignant']);
+//afficher les details de presence d'un enseignant
+Route::get('/enseignants/presences/{enseignantId}',[AuthController::class,'getEnseignantDetailsWithPresence']);
 
 //--------------gestion apprenant-------------
 Route::post('/registerapprenanttuteur', [AuthController::class, 'registerApprenantTuteur']);
@@ -197,6 +200,8 @@ Route::put('classeprogramme/edit/{id}', [ClasseController::class, 'updateClasse'
 Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroy']);
 //ajouter classe
 Route::post('ajouter/classeprogramme', [ClasseController::class, 'ajouterClasse']);
+//afficher tous les details de presence de la classe
+Route::get('/classes/presences/{classeId}', [ClasseController::class, 'getClassPresenceDetails']);
 
 //------------------gestion salle-------------------------
 Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);
@@ -401,3 +406,16 @@ Route::get('niveauecole/detail/{id}', [NiveauEcoleController::class, 'show']);
 Route::get('/historiques/aujourdhui', [HistoriqueController::class, 'getHistoriquesAujourdhui']);
 // gerer les modifications des programmes
 Route::get('modifier-fichier-excel/{fichierId}', [ExcelController::class, 'modifierFichierExcel']);
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -31,6 +31,7 @@ class Classe extends Model
     public function salle(){
         return $this->belongsTo(Salle::class);
     }
+
     public function programmes(){
         return $this->hasMany(Programme::class, 'classe_id');
     }
@@ -77,7 +78,7 @@ public function historiques()
 {
     return $this->hasMany(Historique::class);
 }
-public function apprenants()
+public function apprenant()
 {
     return $this->belongsToMany(
         Apprenant::class,
@@ -85,6 +86,10 @@ public function apprenants()
         'classe_id',
         'apprenant_id'
     );
+}
+public function apprenants()
+{
+    return $this->hasMany(Apprenant::class, 'classe_id');
 }
 public function evaluations()
 {
