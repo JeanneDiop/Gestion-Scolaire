@@ -21,6 +21,8 @@ class Programme extends Model
         'mode_evaluation',
         'bareme',
         'source',
+        'heure_debut',
+        'heure_fin',
         'niveau_education',
         'niveau_classe',
         'file_name',

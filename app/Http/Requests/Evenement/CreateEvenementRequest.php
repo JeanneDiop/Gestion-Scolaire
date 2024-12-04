@@ -32,9 +32,9 @@ class CreateEvenementRequest extends FormRequest
             'ressource' => 'nullable|string|max:255',
             'responsable_id' => 'nullable|exists:users,id',
             'type_evenement' => 'nullable|string|max:255',
-            'participant' => 'required|array', // Tableau de participants
+            'participant' => 'required|array',
             'participant.*.user_id' => 'nullable|exists:users,id',
-        'participant.*.classe_id' => 'nullable|exists:classes,id'
+            'participant.*.classe_id' => 'nullable|exists:classes,id'
         ];
     }
 

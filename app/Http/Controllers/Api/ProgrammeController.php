@@ -19,7 +19,7 @@ use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseCoursRequest;
 use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseRequest;
 class ProgrammeController extends Controller
 {
-    
+
 
 public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request, $id)
 {
@@ -514,6 +514,119 @@ public function listerprogrammesexcel()
         ], 500);
     }
 }
+
+
+public function RecupererProgrammes($niveau_classe, $niveau_education)
+{
+    try {
+        // Récupérer les programmes selon les paramètres niveau_classe et niveau_education
+        $programmes = Programme::where('niveau_classe', $niveau_classe)
+            ->where('niveau_education', $niveau_education)
+            ->where('source', 'import_excel') // Filtrer uniquement les programmes importés via Excel
+            ->get();
+
+        // Vérifier si aucun programme n'a été trouvé
+        if ($programmes->isEmpty()) {
+            return response()->json([
+                'status_code' => 404,
+                'status_message' => 'Aucun programme trouvé pour ces critères.',
+            ], 404);
+        }
+
+        // Retourner les programmes trouvés
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Programmes récupérés avec succès.',
+            'data' => $programmes,
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+public function updateProgramme(Request $request, $niveau_classe, $niveau_education,$id)
+{
+    try {
+        // Validation des données de la requête
+        $validatedData = $request->validate([
+
+            'matiere' => 'nullable|string|max:255',
+            'categorie' => 'nullable|string|max:255',
+            'competences_essentielles' => 'nullable|string',
+            'leçons' => 'nullable|string',
+            'type_exercices' => 'nullable|string',
+            'volume_horaire' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+            'duree_seance' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+            'heure_debut' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+            'heure_fin' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+            'mode_evaluation' => 'nullable|string|max:255',
+            'bareme' => 'nullable|string|max:255',
+            'file_name' => 'nullable|string|max:255',
+        ]);
+
+        $validatedData = $request->only([
+            'matiere',
+            'categorie',
+            'competences_essentielles',
+            'leçons',
+            'type_exercices',
+            'volume_horaire',
+            'duree_seance',
+            'mode_evaluation',
+            'bareme',
+            'source',
+            'heure_debut',
+            'heure_fin',
+            'niveau_education',
+            'niveau_classe',
+            'file_name',
+        ]);
+        // Trouver le programme correspondant aux critères
+        $programme = Programme::where('id', $id)
+            ->where('niveau_classe', $niveau_classe)
+            ->where('niveau_education', $niveau_education)
+            ->first();
+
+        // Vérifier si le programme existe
+        if (!$programme) {
+            return response()->json([
+                'status_code' => 404,
+                'status_message' => 'Programme non trouvé.',
+            ], 404);
+        }
+
+        // Mise à jour des données
+        $updated = $programme->update($validatedData);
+
+        // Vérifier si la mise à jour a eu lieu
+        if (!$updated) {
+            return response()->json([
+                'status_code' => 400,
+                'status_message' => 'Aucune modification effectuée.',
+            ], 400);
+        }
+
+        // Retourner une réponse de succès avec les données mises à jour
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Programme mis à jour avec succès.',
+            'data' => $programme,  // Retourne les données mises à jour
+        ], 200);
+
+    } catch (Exception $e) {
+        // Gérer les erreurs générales
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
 }
 
 

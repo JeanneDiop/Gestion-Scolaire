@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Evenement\CreateEvenementRequest;
 use App\Http\Requests\Evenement\UpdateEvenementRequest;
 use App\Models\Evenement;
+use App\Models\Classe;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 class EvenementController extends Controller
@@ -24,47 +25,44 @@ class EvenementController extends Controller
             $evenement ->type_evenement = $request->type_evenement ?? null;
             $evenement ->responsable_id = $request->responsable_id ?? null;
             $evenement ->save();
-            //if ($request->has('participant')) {
-                // Extraire les IDs des participants
-                //$participantIds = collect($request->participant)->pluck('id');
 
-                // Attacher les participants à l'événement
-                //$evenement->participants()->attach($participantIds);
-            //}
-
-
-            //if ($request->has('participant')) {
-                //foreach ($request->participant as $participant) {
-                    // Vérifier si l'élément a 'id' (utilisateur)
-                    //if (isset($participant['id'])) {
-                        // Attacher l'utilisateur à l'événement
-                        //$evenement->participants()->attach($participant['id']);
-                    //}
-
-                    // Vérifier si l'élément a 'classe_id' (classe)
-                    //if (isset($participant['classe_id'])) {
-                        // Attacher la classe à l'événement
-                        //$evenement->classes()->attach($participant['classe_id']);
-                    //}
-                //}
-            //}
             if ($request->has('participant')) {
                 foreach ($request->participant as $participant) {
-                    // Vérifier si 'id' (utilisateur) est défini
-                    if (isset($participant['id'])) {
-                        $evenement->participants()->attach($participant['id'], [
-                            'classe_id' => $participant['classe_id'] ?? null, // Ajouter classe_id si fourni
+                    // Cas où un apprenant est défini
+                    if (isset($participant['apprenant_id'])) {
+                        $evenement->participants()->attach($participant['apprenant_id'], [
+                            'classe_id' => $participant['classe_id'] ?? null,
                         ]);
+                    }
+
+                    // Cas où un enseignant est défini
+                    if (isset($participant['enseignant_id'])) {
+                        $evenement->participants()->attach($participant['enseignant_id'], [
+                            'classe_id' => $participant['classe_id'] ?? null,
+                        ]);
+                    }
+
+                    // Cas où une classe est définie
+                    if (isset($participant['classe_id'])) {
+                        // Traitez ici la logique pour les classes, comme attacher tous les membres de la classe
+                        $classe = Classe::with('apprenants')->find($participant['classe_id']);
+                        if ($classe) {
+                            foreach ($classe->apprenants as $apprenant) {
+                                $evenement->participants()->attach($apprenant->id, [
+                                    'classe_id' => $participant['classe_id'],
+                                ]);
+                            }
+                        }
                     }
                 }
             }
-
+            $evenement->load('responsable');
         // Réponse en cas de succès
         return response()->json([
             'status_code' => 200,
             'status_message' => 'L\'événement a été ajouter avec succès.',
             'data' => $evenement,
-            'participants_attaches' => $evenement->participants
+
         ],200);
     } catch (ModelNotFoundException $e) {
         // Réponse si l'événement n'est pas trouvé
@@ -79,6 +77,80 @@ class EvenementController extends Controller
             'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'événement.',
             'error' => $e->getMessage(),
         ]);
+    }
+}
+
+public function update(UpdateEvenementRequest $request, $id)
+{
+    try {
+        // Récupérer l'événement à mettre à jour
+        $evenement = Evenement::findOrFail($id);
+
+        // Mettre à jour les champs de l'événement
+        $evenement->titre = $request->titre ?? $evenement->titre;
+        $evenement->description = $request->description ?? $evenement->description;
+        $evenement->date_heure = $request->date_heure ?? $evenement->date_heure;
+        $evenement->lieu = $request->lieu ?? $evenement->lieu;
+        $evenement->recurrence = $request->recurrence ?? $evenement->recurrence;
+        $evenement->ressource = $request->ressource ?? $evenement->ressource;
+        $evenement->type_evenement = $request->type_evenement ?? $evenement->type_evenement;
+        $evenement->responsable_id = $request->responsable_id ?? $evenement->responsable_id;
+        $evenement->save();
+
+        // Gérer les participants
+        if ($request->has('participant')) {
+            foreach ($request->participant as $participant) {
+                // Si le participant a un `classe_id`, on doit mettre `user_id` à null
+                if (isset($participant['classe_id'])) {
+                    // Si la classe est définie, on attache tous les apprenants de cette classe
+                    $classe = Classe::with('apprenants')->find($participant['classe_id']);
+                    if ($classe) {
+                        foreach ($classe->apprenants as $apprenant) {
+                            // Attacher chaque apprenant de la classe à l'événement avec `user_id` null
+                            $evenement->participants()->attach($apprenant->id, [
+                                'classe_id' => $participant['classe_id'],  // Lier à la classe
+                            ]);
+                        }
+                    }
+                } else {
+                    // Cas où un apprenant ou un enseignant est défini (avec `user_id`)
+                    if (isset($participant['apprenant_id']) || isset($participant['enseignant_id'])) {
+                        $user_id = $participant['apprenant_id'] ?? $participant['enseignant_id'];
+                        $classe_id = $participant['classe_id'] ?? null;
+
+                        // Attacher le participant avec `user_id` et `classe_id` s'il est défini
+                        $evenement->participants()->attach($user_id, [
+                            'classe_id' => $classe_id,  // Attacher aussi la classe si définie
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // Charger la relation responsable
+        $evenement->load('responsable');
+
+
+        // Réponse en cas de succès
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'L\'événement a été mis à jour avec succès.',
+            'data' => $evenement,
+        ], 200);
+
+    } catch (ModelNotFoundException $e) {
+        // Réponse si l'événement n'est pas trouvé
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Événement non trouvé.',
+        ], 404);
+    } catch (Exception $e) {
+        // Réponse en cas d'erreur générale
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'événement.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
 }
 public function show($id)

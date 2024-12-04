@@ -91,6 +91,10 @@ public function apprenants()
 {
     return $this->hasMany(Apprenant::class, 'classe_id');
 }
+//public function apprenantss()
+//{
+    //return $this->belongsToMany(Apprenant::class, 'classe_associations', 'classe_id', 'apprenant_id');
+//}
 public function evaluations()
 {
     return $this->belongsToMany(

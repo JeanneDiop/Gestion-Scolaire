@@ -81,4 +81,5 @@ class Apprenant extends Model
         return $this->hasMany(ApprenantClasse::class);
     }
 
+  
 }

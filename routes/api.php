@@ -331,6 +331,10 @@ Route::delete('programmeclasse/supprimer/{id}', [ProgrammeController::class, 'de
 Route::get('programmeclasse/lister', [ProgrammeController::class, 'index']);
 //lister programme excel
 Route::get('programmes/lister', [ProgrammeController::class, 'listerprogrammesexcel']);
+//recuperer les programmes par niveau
+Route::put('/programme/modifier/{niveau_classe}/{niveau_education}/{id}', [ProgrammeController::class, 'updateProgramme']);
+//modifier les programme de source import_excel
+Route::get('/programmes/recuperer/{niveau_classe}/{niveau_education}', [ProgrammeController::class, 'RecupererProgrammes']);
 //afficher programmeclassecours
 Route::get('programmeclasse/detail/{id}', [ProgrammeController::class, 'show']);
 //ajouter programmeclassecours
