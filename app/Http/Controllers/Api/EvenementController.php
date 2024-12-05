@@ -28,31 +28,26 @@ class EvenementController extends Controller
 
             if ($request->has('participant')) {
                 foreach ($request->participant as $participant) {
-                    // Cas où un apprenant est défini
+                    // Vérifier si un 'apprenant_id' est défini
                     if (isset($participant['apprenant_id'])) {
                         $evenement->participants()->attach($participant['apprenant_id'], [
                             'classe_id' => $participant['classe_id'] ?? null,
                         ]);
                     }
-
-                    // Cas où un enseignant est défini
+            
+                    // Vérifier si un 'enseignant_id' est défini
                     if (isset($participant['enseignant_id'])) {
                         $evenement->participants()->attach($participant['enseignant_id'], [
                             'classe_id' => $participant['classe_id'] ?? null,
                         ]);
                     }
-
-                    // Cas où une classe est définie
-                    if (isset($participant['classe_id'])) {
-                        // Traitez ici la logique pour les classes, comme attacher tous les membres de la classe
-                        $classe = Classe::with('apprenants')->find($participant['classe_id']);
-                        if ($classe) {
-                            foreach ($classe->apprenants as $apprenant) {
-                                $evenement->participants()->attach($apprenant->id, [
-                                    'classe_id' => $participant['classe_id'],
-                                ]);
-                            }
-                        }
+            
+                    // Vérifier si une 'classe_id' est définie et que user_id est null
+                    if (isset($participant['classe_id']) && !isset($participant['user_id'])) {
+                        // Si une classe est spécifiée, mettre user_id à null
+                        $evenement->participants()->syncWithoutDetaching([null => [
+                            'classe_id' => $participant['classe_id']
+                        ]]);
                     }
                 }
             }
@@ -74,7 +69,7 @@ class EvenementController extends Controller
         // Réponse en cas d'erreur générale
         return response()->json([
             'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'événement.',
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement de l\'événement.',
             'error' => $e->getMessage(),
         ]);
     }

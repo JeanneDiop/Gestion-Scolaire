@@ -202,6 +202,9 @@ Route::delete('classe/supprimer/{id}', [ClasseController::class, 'destroy']);
 Route::post('ajouter/classeprogramme', [ClasseController::class, 'ajouterClasse']);
 //afficher tous les details de presence de la classe
 Route::get('/classes/presences/{classeId}', [ClasseController::class, 'getClassPresenceDetails']);
+//afficher la presence dans la classe association
+Route::get('classe/{classeId}/presences', [ClasseAssociationController::class, 'getClassPresenceDetailsWithAssociation']);
+
 
 //------------------gestion salle-------------------------
 Route::post('ajouter/salle', [SalleController::class, 'storeSalle']);

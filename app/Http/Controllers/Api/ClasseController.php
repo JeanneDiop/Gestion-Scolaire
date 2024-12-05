@@ -481,7 +481,7 @@ public function indexClasse(Request $request)
                             'id' => $association->enseignant->id,
                             'nom' => $association->enseignant->user->nom ?? null,
                             'prenom' => $association->enseignant->user->prenom ?? null,
-                            'specialite' => $association->enseignant->user->specialite ?? null,
+                            'specialite' => $association->enseignant->specialite ?? null,
                         ] : null,
                     ];
                 }),
@@ -666,8 +666,13 @@ public function destroy($id)
 
 public function getClassPresenceDetails($classeId)
 {
-    // Récupérer la classe avec ses apprenants et leurs présences
-    $classe = Classe::with(['apprenants.presences.cours'])->find($classeId);
+    // Récupérer la classe avec ses apprenants (directement dans la classe) et les apprenants via les associations
+    $classe = Classe::with([
+        'apprenants.presences.cours',
+        'classeAssociations.apprenant.presences.cours',
+        'classeAssociations.cours',
+        'classeAssociations.enseignant'
+    ])->find($classeId);
 
     // Vérifier si la classe existe
     if (!$classe) {
@@ -678,63 +683,107 @@ public function getClassPresenceDetails($classeId)
 
     // Initialiser un tableau pour stocker les détails
     $classPresenceDetails = [];
+    $apprenantIds = [];  // Tableau pour suivre les IDs des apprenants déjà traités
 
-    // Boucler à travers les apprenants de la classe
-    foreach ($classe->apprenants as $apprenant) {
-        $presenceDetails = [];
+    // Fonction pour ajouter les détails d'un apprenant et ses présences
+    $addApprenantDetails = function ($apprenant) use (&$classPresenceDetails, &$apprenantIds) {
+        // Si l'apprenant n'a pas déjà été ajouté, on l'ajoute
+        if (!in_array($apprenant->id, $apprenantIds)) {
+            $apprenantIds[] = $apprenant->id;  // Ajouter l'ID de l'apprenant dans le tableau
+            $presenceDetails = [];
 
-        // Vérifier si l'apprenant a des enregistrements de présence
-        if ($apprenant->presences) {
-            foreach ($apprenant->presences as $presence) {
-                $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
+            // Vérifier si l'apprenant a des enregistrements de présence
+            if ($apprenant->presences) {
+                foreach ($apprenant->presences as $presence) {
+                    $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
 
-                // Ajouter les informations selon le statut
-                if ($statut === 'Absent') {
-                    $presenceDetails[] = [
-                        'statut' => $statut,
-                        'date_absent' => $presence->date_absent,
-                        'raison_absence' => $presence->raison_absence,
-                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                    ];
-                } elseif ($statut === 'Present') {
-                    $presenceDetails[] = [
-                        'statut' => $statut,
-                        'date_present' => $presence->date_present,
-                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                    ];
-                } elseif ($statut === 'Retard') {
-                    $presenceDetails[] = [
-                        'statut' => $statut,
-                        'heure_arrivee' => $presence->heure_arrivee,
-                        'duree_retard' => $presence->duree_retard,
-                        'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                    ];
+                    // Ajouter les informations selon le statut
+                    if ($statut === 'Absent') {
+                        $presenceDetails[] = [
+                            'statut' => $statut,
+                            'date_absent' => $presence->date_absent,
+                            'raison_absence' => $presence->raison_absence,
+                            'cours' => $presence->cours ? [
+                                'id' => $presence->cours->id,
+                                'nom' => $presence->cours->nom,
+                            ] : null,
+                        ];
+                    } elseif ($statut === 'Present') {
+                        $presenceDetails[] = [
+                            'statut' => $statut,
+                            'date_present' => $presence->date_present,
+                            'cours' => $presence->cours ? [
+                                'id' => $presence->cours->id,
+                                'nom' => $presence->cours->nom,
+                            ] : null,
+                        ];
+                    } elseif ($statut === 'Retard') {
+                        $presenceDetails[] = [
+                            'statut' => $statut,
+                            'heure_arrivee' => $presence->heure_arrivee,
+                            'duree_retard' => $presence->duree_retard,
+                            'cours' => $presence->cours ? [
+                                'id' => $presence->cours->id,
+                                'nom' => $presence->cours->nom,
+                            ] : null,
+                        ];
+                    }
                 }
             }
+
+            // Ajouter les détails de l'apprenant et ses présences
+            $classPresenceDetails[] = [
+                'apprenant' => [
+                    'id' => $apprenant->id,
+                    'nom' => $apprenant->user->nom,
+                    'prenom' => $apprenant->user->prenom,
+                    'telephone' => $apprenant->user->telephone,
+                    'email' => $apprenant->user->email,
+                    'adresse' => $apprenant->user->adresse,
+                    'genre' => $apprenant->user->genre,
+                    'etat' => $apprenant->user->etat,
+                    'lieu_naissance' => $apprenant->lieu_naissance,
+                    'date_naissance' => $apprenant->date_naissance,
+                    'numero_CNI' => $apprenant->numero_CNI,
+                    'numero_identification_eleve' => $apprenant->numero_identification_eleve,
+                    'niveau_education' => $apprenant->niveau_education,
+                ],
+                'presences' => $presenceDetails,
+            ];
         }
+    };
 
-        // Ajouter les détails de l'apprenant et ses présences
-        $classPresenceDetails[] = [
-            'apprenant' => [
-                'id' => $apprenant->id,
-                'nom' => $apprenant->user->nom,
-                'prenom' => $apprenant->user->prenom,
-                'telephone' => $apprenant->user->telephone,
-                'email' => $apprenant->user->email,
-                'email' => $apprenant->user->email,
-                'adresse' => $apprenant->user->adresse,
-                'genre' => $apprenant->user->genre,
-                'etat' => $apprenant->user->etat,
-                'lieu_naissance' => $apprenant->lieu_naissance,
-                'date_naissance' => $apprenant->date_naissance,
-                'numero_CNI' => $apprenant->numero_CNI,
-                'numero_identification_eleve' => $apprenant->numero_identification_eleve,
-                'niveau_education' => $apprenant->niveau_education,
-
-            ],
-            'presences' => $presenceDetails,
-        ];
+    // Boucler à travers les apprenants de la classe (directement dans la classe)
+    foreach ($classe->apprenants as $apprenant) {
+        $addApprenantDetails($apprenant);  // Ajouter les détails de l'apprenant
     }
+
+    // Boucler à travers les apprenants dans les associations (si la classe a des associations)
+    foreach ($classe->classeAssociations as $association) {
+        $apprenant = $association->apprenant;
+        if ($apprenant) {
+            $addApprenantDetails($apprenant);  // Ajouter les détails de l'apprenant dans l'association
+        }
+    }
+    $associationsDetails = $classe->classeAssociations->map(function ($association) {
+        return [
+            'apprenant' => $association->apprenant ? [
+                'id' => $association->apprenant->id,
+                'nom' => $association->apprenant->user->nom ?? null,
+                'prenom' => $association->apprenant->user->prenom ?? null,
+            ] : null,
+            'cours' => $association->cours ? [
+                'id' => $association->cours->id,
+                'nom' => $association->cours->nom,
+            ] : null,
+            'enseignant' => $association->enseignant ? [
+                'id' => $association->enseignant->id,
+                'nom' => $association->enseignant->user->nom ?? null,
+                'prenom' => $association->enseignant->user->prenom ?? null,
+                'matiere_enseignée' => $association->enseignant->matiere_enseignée ?? null,
+            ] : null,
+        ];
+    });
 
     // Retourner les détails de la classe et les présences
     return response()->json([
@@ -745,6 +794,7 @@ public function getClassPresenceDetails($classeId)
             'niveau_classe' => $classe->niveau_classe,
         ],
         'details' => $classPresenceDetails,
+        'associations' => $associationsDetails,
     ]);
 }
 }
