@@ -311,14 +311,14 @@ public function getClassPresenceDetailsWithAssociation($classeId)
         // Ajouter les détails de l'apprenant et ses présences
         $classPresenceDetails[] = [
             'apprenant' => [
-                'id' => $apprenant->id,
-                'nom' => $apprenant->user ? $apprenant->user->nom : null,
-                'prenom' => $apprenant->user ? $apprenant->user->prenom : null,
-                'telephone' => $apprenant->user ? $apprenant->user->telephone : null,
-                'email' => $apprenant->user ? $apprenant->user->email : null,
-                'adresse' => $apprenant->user ? $apprenant->user->adresse : null,
-                'genre' => $apprenant->user ? $apprenant->user->genre : null,
-                'etat' => $apprenant->user ? $apprenant->user->etat : null,
+               'id' => $apprenant->id ?? null,
+                'nom' => $apprenant->user?->nom,
+                'prenom' => $apprenant->user?->prenom,
+                'telephone' => $apprenant->user?->telephone,
+                'email' => $apprenant->user?->email,
+                'adresse' => $apprenant->user?->adresse,
+                'genre' => $apprenant->user?->genre,
+                'etat' => $apprenant->user?->etat,
                 'lieu_naissance' => $apprenant->lieu_naissance ?? null,
                 'date_naissance' => $apprenant->date_naissance ?? null,
                 'numero_CNI' => $apprenant->numero_CNI ?? null,
@@ -356,19 +356,19 @@ foreach ($classe->apprenants as $apprenant) {
             $statut = ucfirst(strtolower($presence->statut));
             $presencesSansAssociation[] = [
                 'apprenant' => [
-                    'id' => $apprenant->id,
-                    'nom' => $apprenant->user ? $apprenant->user->nom : null,
-                    'prenom' => $apprenant->user ? $apprenant->user->prenom : null,
-                    'telephone' => $apprenant->user ? $apprenant->user->telephone : null,
-                    'email' => $apprenant->user ? $apprenant->user->email : null,
-                    'adresse' => $apprenant->user ? $apprenant->user->adresse : null,
-                    'genre' => $apprenant->user ? $apprenant->user->genre : null,
-                    'etat' => $apprenant->user ? $apprenant->user->etat : null,
-                    'lieu_naissance' => $apprenant->lieu_naissance ?? null,
-                    'date_naissance' => $apprenant->date_naissance ?? null,
-                    'numero_CNI' => $apprenant->numero_CNI ?? null,
-                    'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? null,
-                    'niveau_education' => $apprenant->niveau_education ?? null,
+                   'id' => $apprenant->id ?? null,
+                'nom' => $apprenant->user?->nom,
+                'prenom' => $apprenant->user?->prenom,
+                'telephone' => $apprenant->user?->telephone,
+                'email' => $apprenant->user?->email,
+                'adresse' => $apprenant->user?->adresse,
+                'genre' => $apprenant->user?->genre,
+                'etat' => $apprenant->user?->etat,
+                'lieu_naissance' => $apprenant->lieu_naissance ?? null,
+                'date_naissance' => $apprenant->date_naissance ?? null,
+                'numero_CNI' => $apprenant->numero_CNI ?? null,
+                'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? null,
+                'niveau_education' => $apprenant->niveau_education ?? null,
                 ],
                 'presence' => [
                     'statut' => $statut,
@@ -378,8 +378,8 @@ foreach ($classe->apprenants as $apprenant) {
                     'heure_arrivee' => $presence->heure_arrivee,
                     'duree_retard' => $presence->duree_retard,
                     'cours' => $presence->cours ? [
-                        'id' => $presence->cours->id,
-                        'nom' => $presence->cours->nom,
+                        'id' => $presence->cours->id ?? null,
+                        'nom' => $presence->cours->nom ?? null,
                     ] : null,
                 ]
             ];
