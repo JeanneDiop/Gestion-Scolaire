@@ -281,8 +281,8 @@ public function getClassPresenceDetailsWithAssociation($classeId)
                         'date_absent' => $presence->date_absent,
                         'raison_absence' => $presence->raison_absence,
                         'cours' => $presence->cours ? [
-                            'id' => $presence->cours->id,
-                            'nom' => $presence->cours->nom,
+                            'id' => $presence->cours->id ?? null,
+                            'nom' => $presence->cours->nom ?? null,
                         ] : null,
                     ];
                 } elseif ($statut === 'Present') {
@@ -290,8 +290,8 @@ public function getClassPresenceDetailsWithAssociation($classeId)
                         'statut' => $statut,
                         'date_present' => $presence->date_present,
                         'cours' => $presence->cours ? [
-                            'id' => $presence->cours->id,
-                            'nom' => $presence->cours->nom,
+                            'id' => $presence->cours->id ?? null,
+                            'nom' => $presence->cours->nom ?? null,
                         ] : null,
                     ];
                 } elseif ($statut === 'Retard') {
@@ -300,8 +300,8 @@ public function getClassPresenceDetailsWithAssociation($classeId)
                         'heure_arrivee' => $presence->heure_arrivee,
                         'duree_retard' => $presence->duree_retard,
                         'cours' => $presence->cours ? [
-                            'id' => $presence->cours->id,
-                            'nom' => $presence->cours->nom,
+                            'id' => $presence->cours->id ?? null,
+                            'nom' => $presence->cours->nom ?? null,
                         ] : null,
                     ];
                 }
@@ -312,13 +312,13 @@ public function getClassPresenceDetailsWithAssociation($classeId)
         $classPresenceDetails[] = [
             'apprenant' => [
                'id' => $apprenant->id ?? null,
-                'nom' => $apprenant->user?->nom,
-                'prenom' => $apprenant->user?->prenom,
-                'telephone' => $apprenant->user?->telephone,
-                'email' => $apprenant->user?->email,
-                'adresse' => $apprenant->user?->adresse,
-                'genre' => $apprenant->user?->genre,
-                'etat' => $apprenant->user?->etat,
+                'nom' => $apprenant->user?->nom ?? null,
+                'prenom' => $apprenant->user?->prenom ?? null,
+                'telephone' => $apprenant->user?->telephone ?? null,
+                'email' => $apprenant->user?->email ?? null,
+                'adresse' => $apprenant->user?->adresse ?? null,
+                'genre' => $apprenant->user?->genre ?? null,
+                'etat' => $apprenant->user?->etat ?? null,
                 'lieu_naissance' => $apprenant->lieu_naissance ?? null,
                 'date_naissance' => $apprenant->date_naissance ?? null,
                 'numero_CNI' => $apprenant->numero_CNI ?? null,
@@ -329,16 +329,16 @@ public function getClassPresenceDetailsWithAssociation($classeId)
             'associations' => $classe->classeAssociations->map(function ($association) {
                 return [
                     'apprenant' => $association->apprenant ? [
-                        'id' => $association->apprenant->id,
+                        'id' => $association->apprenant->id ?? null,
                         'nom' => $association->apprenant->user->nom ?? null,
                         'prenom' => $association->apprenant->user->prenom ?? null,
                     ] : null,
                     'cours' => $association->cours ? [
-                        'id' => $association->cours->id,
-                        'nom' => $association->cours->nom,
+                        'id' => $association->cours->id ?? null,
+                        'nom' => $association->cours->nom ?? null,
                     ] : null,
                     'enseignant' => $association->enseignant ? [
-                        'id' => $association->enseignant->id,
+                        'id' => $association->enseignant->id ?? null,
                         'nom' => $association->enseignant->user->nom ?? null,
                         'prenom' => $association->enseignant->user->prenom ?? null,
                         'matiere_enseignée' => $association->enseignant->matiere_enseignée ?? null,
@@ -357,13 +357,13 @@ foreach ($classe->apprenants as $apprenant) {
             $presencesSansAssociation[] = [
                 'apprenant' => [
                    'id' => $apprenant->id ?? null,
-                'nom' => $apprenant->user?->nom,
-                'prenom' => $apprenant->user?->prenom,
-                'telephone' => $apprenant->user?->telephone,
-                'email' => $apprenant->user?->email,
-                'adresse' => $apprenant->user?->adresse,
-                'genre' => $apprenant->user?->genre,
-                'etat' => $apprenant->user?->etat,
+                'nom' => $apprenant->user?->nom ?? null,
+                'prenom' => $apprenant->user?->prenom ?? null,
+                'telephone' => $apprenant->user?->telephone ?? null,
+                'email' => $apprenant->user?->email ?? null,
+                'adresse' => $apprenant->user?->adresse ?? null,
+                'genre' => $apprenant->user?->genre ?? null,
+                'etat' => $apprenant->user?->etat ?? null,
                 'lieu_naissance' => $apprenant->lieu_naissance ?? null,
                 'date_naissance' => $apprenant->date_naissance ?? null,
                 'numero_CNI' => $apprenant->numero_CNI ?? null,
