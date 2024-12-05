@@ -270,7 +270,7 @@ public function getClassPresenceDetailsWithAssociation($classeId)
         $presenceDetails = [];
 
         // Vérifier si l'apprenant a des enregistrements de présence
-        if ($apprenant->presences) {
+        if ($apprenant && $apprenant->presences) {
             foreach ($apprenant->presences as $presence) {
                 $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
 
