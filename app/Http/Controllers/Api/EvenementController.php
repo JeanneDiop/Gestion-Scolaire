@@ -25,29 +25,40 @@ class EvenementController extends Controller
             $evenement ->type_evenement = $request->type_evenement ?? null;
             $evenement ->responsable_id = $request->responsable_id ?? null;
             $evenement ->save();
-
             if ($request->has('participant')) {
                 foreach ($request->participant as $participant) {
-                    // Vérifier si un 'apprenant_id' est défini
-                    if (isset($participant['apprenant_id'])) {
+                    // Cas 1: Apprenant et/ou enseignant
+                    if (isset($participant['apprenant_id']) && isset($participant['enseignant_id'])) {
                         $evenement->participants()->attach($participant['apprenant_id'], [
                             'classe_id' => $participant['classe_id'] ?? null,
                         ]);
-                    }
-            
-                    // Vérifier si un 'enseignant_id' est défini
-                    if (isset($participant['enseignant_id'])) {
                         $evenement->participants()->attach($participant['enseignant_id'], [
                             'classe_id' => $participant['classe_id'] ?? null,
                         ]);
                     }
-            
-                    // Vérifier si une 'classe_id' est définie et que user_id est null
-                    if (isset($participant['classe_id']) && !isset($participant['user_id'])) {
-                        // Si une classe est spécifiée, mettre user_id à null
-                        $evenement->participants()->syncWithoutDetaching([null => [
-                            'classe_id' => $participant['classe_id']
-                        ]]);
+
+                    // Cas 2: Apprenant seulement
+                    elseif (isset($participant['apprenant_id']) && !isset($participant['enseignant_id'])) {
+                        $evenement->participants()->attach($participant['apprenant_id'], [
+                            'classe_id' => $participant['classe_id'] ?? null,
+                        ]);
+                    }
+
+                    // Cas 3: Enseignant seulement
+                    elseif (!isset($participant['apprenant_id']) && isset($participant['enseignant_id'])) {
+                        $evenement->participants()->attach($participant['enseignant_id'], [
+                            'classe_id' => $participant['classe_id'] ?? null,
+                        ]);
+                    }
+
+                    // Cas 4: Classe seulement (Si `user_id` est null)
+                    elseif (isset($participant['classe_id']) && !isset($participant['apprenant_id']) && !isset($participant['enseignant_id'])) {
+                        // Eviter d'insérer un 'user_id' vide ou null dans la table pivot
+                        $evenement->participants()->syncWithoutDetaching([
+                            null => [
+                                'classe_id' => $participant['classe_id']
+                            ]
+                        ]);
                     }
                 }
             }

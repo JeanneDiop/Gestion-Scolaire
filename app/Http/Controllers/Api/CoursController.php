@@ -136,6 +136,7 @@ class CoursController extends Controller
                         'evaluation_apprenants' => $evaluation->evaluationApprenants->map(function ($evaluationApprenant) {
                             return [
 
+                                'id' => $evaluationApprenant->id,
                                 'classe_id' => $evaluationApprenant->classe_id,
                                 'evaluation_id' => $evaluationApprenant->evaluation_id,
                                 'apprenant_id' => $evaluationApprenant->apprenant_id,
@@ -264,7 +265,7 @@ public function show($id)
         'evaluation_apprenants' => $evaluation->evaluationApprenants->map(function ($evaluationApprenant) {
             return [
 
-                'classe_id_id' => $evaluationApprenant->classe_id,
+                'id' => $evaluationApprenant->id,
                                 'evaluation_id' => $evaluationApprenant->evaluation_id,
                                 'apprenant_id' => $evaluationApprenant->apprenant_id,
                                 'apprenant' => $evaluationApprenant->apprenant ? [

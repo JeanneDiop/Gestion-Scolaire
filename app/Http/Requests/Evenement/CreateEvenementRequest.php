@@ -33,43 +33,12 @@ class CreateEvenementRequest extends FormRequest
             'responsable_id' => 'nullable|exists:users,id',
             'type_evenement' => 'nullable|string|max:255',
             'participant' => 'required|array', // Le participant doit être un tableau
-        'participant.*' => 'required|array', // Chaque élément de participant doit être un tableau
-        'participant.*.apprenant_id' => 'nullable|exists:users,id', // apprenant_id doit être un utilisateur existant
-        'participant.*.enseignant_id' => 'nullable|exists:users,id', // enseignant_id doit être un utilisateur existant
-        'participant.*.classe_id' => 'nullable|exists:classes,id', // classe_id doit être une classe existante
+            'participant' => 'array',
+            'participant.*.apprenant_id' => 'nullable|exists:apprenants,id',
+            'participant.*.enseignant_id' => 'nullable|exists:enseignants,id',
+            'participant.*.classe_id' => 'nullable|exists:classes,id', // classe_id doit être une classe existante
     ];
 }
-
-public function withValidator($validator)
-{
-    $validator->after(function ($validator) {
-        // Récupérer les participants
-        $participants = $this->input('participant', []);
-
-        foreach ($participants as $key => $participant) {
-            // Vérifiez que l'un des champs (apprenant_id, enseignant_id, classe_id) soit renseigné
-            if (!isset($participant['apprenant_id']) && !isset($participant['enseignant_id']) && !isset($participant['classe_id'])) {
-                $validator->errors()->add("participant.$key", "Un champ 'apprenant_id', 'enseignant_id' ou 'classe_id' doit être spécifié pour chaque participant.");
-            }
-
-            // Si 'apprenant_id' et 'enseignant_id' sont tous deux définis, cela crée une erreur
-            if (isset($participant['apprenant_id']) && isset($participant['enseignant_id'])) {
-                $validator->errors()->add("participant.$key", "Vous ne pouvez pas spécifier à la fois 'apprenant_id' et 'enseignant_id' pour un participant.");
-            }
-
-            // Si 'apprenant_id' et 'classe_id' sont tous deux définis, cela crée une erreur
-            if (isset($participant['apprenant_id']) && isset($participant['classe_id'])) {
-                $validator->errors()->add("participant.$key", "Vous ne pouvez pas spécifier à la fois 'apprenant_id' et 'classe_id' pour un participant.");
-            }
-
-            // Si 'enseignant_id' et 'classe_id' sont tous deux définis, cela crée une erreur
-            if (isset($participant['enseignant_id']) && isset($participant['classe_id'])) {
-                $validator->errors()->add("participant.$key", "Vous ne pouvez pas spécifier à la fois 'enseignant_id' et 'classe_id' pour un participant.");
-            }
-        }
-    });
-}
-    
 
     /**
      * Messages d'erreur personnalisés pour chaque règle.
