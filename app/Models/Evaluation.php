@@ -29,10 +29,7 @@ class Evaluation extends Model
     public function cours(){
         return $this->belongsTo(Cours::class);
     }
-    public function notes()
-    {
-        return $this->hasMany(Note::class);
-    }
+
     public function apprenants()
 {
     return $this->belongsToMany(Apprenant::class, 'evaluation_apprenants', 'evaluation_id', 'apprenant_id');
@@ -49,5 +46,9 @@ public function classes()
 public function evaluationApprenants()
 {
     return $this->hasMany(EvaluationApprenant::class,'evaluation_id');
+}
+public function notes()
+{
+    return $this->hasMany(Note::class, 'evaluation_apprenant_id');  // Remplacez 'evaluation_apprenant_id' par la clé étrangère appropriée
 }
 }

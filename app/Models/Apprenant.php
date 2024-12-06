@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Tuteur;
 use App\Models\Classe;
+use App\Models\Note;
 use App\Models\User;
 use App\Models\Presence;
 use App\Models\Evaluation;
+use App\Models\EvaluationApprenant;
 use App\Models\Parcours;
 use App\Models\ClasseAssociation;
 use App\Models\ApprenantClasse;
@@ -81,5 +83,17 @@ class Apprenant extends Model
         return $this->hasMany(ApprenantClasse::class);
     }
 
-  
+    public function evaluationApprenant()
+    {
+        return $this->hasMany(Note::class, 'evaluation_apprenant_id');
+    }
+    public function notes()
+{
+    return $this->hasMany(Note::class);
+}
+public function evaluationApprenants()
+{
+    return $this->hasMany(EvaluationApprenant::class, 'apprenant_id');
+}
+
 }

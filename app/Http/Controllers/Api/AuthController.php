@@ -2103,9 +2103,10 @@ public function getApprenantDetailsWithPresence($id)
 public function getApprenantDetailsWithNotes($id)
 {
     try {
+        // Charge l'apprenant avec ses évaluations et les notes associées
         $apprenant = Apprenant::with([
             'classe.salle',
-            'evaluations.cours.enseignant.user'
+            'evaluationApprenant.evaluation.cours.enseignant.user'  // Charger la relation correcte
         ])->find($id);
 
         if (!$apprenant) {
@@ -2117,25 +2118,32 @@ public function getApprenantDetailsWithNotes($id)
         $noteDetails = [];
 
         // Boucler à travers les évaluations et leurs notes
-        foreach ($apprenant->evaluations as $evaluation) {
-            foreach ($evaluation->notes as $note) {
-                $noteDetails[] = [
-                    'id' => $evaluation->id,
-                    'nom_evaluation' => $evaluation->nom_evaluation,
-                    'niveau_education' => $evaluation->niveau_education,
-                    'date_evaluation' => $evaluation->date_evaluation,
-                    'type_note' => $note->type_note,
-                    'note' => $note->note,
-                    'date_note' => $note->date_note,
-                    'id' => $evaluation->cours->id ?? null,
-                    'cours_nom' => $evaluation->cours->nom ?? null,
-                    'enseignant_nom' => $evaluation->cours->enseignant->user->nom ?? null,
-                    'enseignant_prenom' => $evaluation->cours->enseignant->user->prenom ?? null,
-                    'enseignant_email' => $evaluation->cours->enseignant->user->email ?? null,
-                    'enseignant_telephone' => $evaluation->cours->enseignant->user->telephone ?? null
-                ];
+        foreach ($apprenant->evaluationApprenant as $evaluationApprenant) {  // Accéder à l'apprenant et ses évaluations
+            $evaluation = $evaluationApprenant->evaluation;  // Accéder à l'évaluation associée à la note
+
+            if ($evaluation) {
+                // Pour chaque évaluation, récupérer les notes associées
+                foreach ($evaluation->notes as $note) {
+                    $noteDetails[] = [
+                        'id' => $evaluation->id,
+                        'nom_evaluation' => $evaluation->nom_evaluation,
+                        'niveau_education' => $evaluation->niveau_education,
+                        'date_evaluation' => $evaluation->date_evaluation,
+                        'type_note' => $note->type_note,
+                        'note' => $note->note,
+                        'date_note' => $note->date_note,
+                        'cours_id' => $evaluation->cours->id ?? null,
+                        'cours_nom' => $evaluation->cours->nom ?? null,
+                        'enseignant_id' => $evaluation->cours->enseignant->user->id ?? null,
+                        'enseignant_nom' => $evaluation->cours->enseignant->user->nom ?? null,
+                        'enseignant_prenom' => $evaluation->cours->enseignant->user->prenom ?? null,
+                        'enseignant_email' => $evaluation->cours->enseignant->user->email ?? null,
+                        'enseignant_telephone' => $evaluation->cours->enseignant->user->telephone ?? null
+                    ];
+                }
             }
         }
+
         return response()->json([
             'apprenant' => [
                 'id' => $apprenant->id,
@@ -2164,7 +2172,7 @@ public function getApprenantDetailsWithNotes($id)
                     ] : null
                 ] : null,
             ],
-            'notes' => $noteDetails
+            'notes' => array_unique($noteDetails, SORT_REGULAR)
         ], 200);
 
     } catch (\Exception $e) {
@@ -2309,20 +2317,20 @@ public function getEnseignantDetailsWithPresence($id)
     // Retourner les détails de l'enseignant avec ses informations de présence et absence
     return [
         'enseignant' => [
-            'id' => $enseignant->id,
-            'nom' => $enseignant->user->nom,
-            'prenom' => $enseignant->user->prenom,
-            'telephone' => $enseignant->user->telephone,
-            'email' => $enseignant->user->email,
-            'adresse' => $enseignant->user->adresse,
-            'genre' => $enseignant->user->genre,
-            'etat' => $enseignant->user->etat,
-            'lieu_naissance' => $enseignant->lieu_naissance,
-            'date_naissance' => $enseignant->date_naissance,
-            'numero_CNI' => $enseignant->numero_CNI,
-            'matiere_enseignée' => $enseignant->matiere_enseignée,
-            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
-            'niveau_enseignant' => $enseignant->niveau_enseignant,
+            'id' => $enseignant->id ?? null,
+            'nom' => $enseignant->user->nom  ?? null,
+            'prenom' => $enseignant->user->prenom  ?? null,
+            'telephone' => $enseignant->user->telephone  ?? null,
+            'email' => $enseignant->user->email  ?? null,
+            'adresse' => $enseignant->user->adresse  ?? null,
+            'genre' => $enseignant->user->genre  ?? null,
+            'etat' => $enseignant->user->etat  ?? null,
+            'lieu_naissance' => $enseignant->lieu_naissance  ?? null,
+            'date_naissance' => $enseignant->date_naissance  ?? null,
+            'numero_CNI' => $enseignant->numero_CNI  ?? null,
+            'matiere_enseignée' => $enseignant->matiere_enseignée  ?? null,
+            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant  ?? null,
+            'niveau_enseignant' => $enseignant->niveau_enseignant  ?? null,
         ],
         'details' => $presenceDetails
     ];
@@ -2447,6 +2455,7 @@ public function ListerPersonnelAdministratifPoste(Request $request, $poste)
         'personnel_administratifs' => $personnelAdministratifsData,
     ]);
 }
+
 
 public function ListerEnseignantNiveauEcole($niveauEcole)
 {

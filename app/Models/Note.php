@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\EvaluationApprenant;
 use App\Models\Historique;
+use App\Models\Apprenant;
+use App\Models\Evaluation;
 class Note extends Model
 {
     use HasFactory;
@@ -21,5 +23,14 @@ class Note extends Model
     {
         return $this->hasMany(Historique::class);
     }
-  
+    public function apprenant()
+    {
+        return $this->belongsTo(Apprenant::class, 'evaluation_apprenant_id');  // Adaptez le nom de la clé étrangère
+    }
+
+public function evaluation()
+{
+    return $this->belongsTo(Evaluation::class, 'evaluation_apprenant_id');  // Remplacez 'evaluation_apprenant_id' par la clé étrangère appropriée
+}
+
 }
