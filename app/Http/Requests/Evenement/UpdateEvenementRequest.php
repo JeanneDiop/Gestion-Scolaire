@@ -32,9 +32,10 @@ class UpdateEvenementRequest extends FormRequest
             'ressource' => 'nullable|string|max:255',
             'responsable_id' => 'nullable|exists:users,id',
             'type_evenement' => 'nullable|string|max:255',
-          'participant' => 'required|array', // Le tableau de participants est requis
-        'participant.*.user_id' => 'nullable|exists:users,id', // user_id doit exister dans la table users
-        'participant.*.classe_id' => 'nullable|exists:classes,id',
+            'participant' => 'array',
+            'participant.*.apprenant_id' => 'nullable|exists:apprenants,id',
+            'participant.*.enseignant_id' => 'nullable|exists:enseignants,id',
+            'participant.*.classe_id' => 'nullable|exists:classes,id', 
         ];
     }
 

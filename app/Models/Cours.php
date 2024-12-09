@@ -44,7 +44,7 @@ class Cours extends Model
     }
     public function evaluations()
     {
-        return $this->hasMany(Evaluation::class);
+        return $this->hasMany(Evaluation::class, 'cours_id');
     }
 
     public function programme()

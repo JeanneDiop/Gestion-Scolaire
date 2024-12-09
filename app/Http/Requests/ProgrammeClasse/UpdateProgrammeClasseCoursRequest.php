@@ -24,19 +24,19 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
     public function rules()
 {
     return [
-        'nom' => 'required|string|max:255',
-        'niveau_education' => 'required|string',
-        'annee_scolaire' => 'required|string',
-        'niveau_classe' => 'required|string|max:255',
-        'cycle' => 'required|string',
+        'nom' => 'nullable|string|max:255',
+        'niveau_education' => 'nullable|string',
+        'annee_scolaire' => 'nullable|string',
+        'niveau_classe' => 'nullable|string|max:255',
+        'cycle' => 'nullable|string',
         'langue_enseignee' => 'nullable|string|max:255',
         'classe_id' => 'nullable|exists:classes,id',
 
         // Cours validations
-        'cours.*.nom' => 'required|string|max:255',
+        'cours.*.nom' => 'nullable|string|max:255',
         'cours.*.description' => 'nullable|string',
         'cours.*.niveau_education' => 'nullable|in:maternelle,primaire,secondaire,supérieur',
-        'cours.*.niveau_classe' => 'required|string|max:255',
+        'cours.*.niveau_classe' => 'nullable|string|max:255',
         'cours.*.heure_allouee' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
         'cours.*.etat' => 'nullable|string|in:encours,terminé,annulé',
         'cours.*.credits' => 'nullable|integer|min:0',
@@ -95,21 +95,19 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
     public function messages()
     {
         return [
-            'nom.required' => 'Le champ nom est obligatoire.',
+
             'nom.string' => 'Le champ nom doit être une chaîne de caractères.',
             'nom.max' => 'Le champ nom ne peut pas dépasser 255 caractères.',
 
-            'niveau_education.required' => 'Le champ niveau d\'éducation est obligatoire.',
             'niveau_education.string' => 'Le champ niveau d\'éducation doit être une chaîne de caractères.',
 
-            'annee_scolaire.required' => 'Le champ année scolaire est obligatoire.',
+
             'annee_scolaire.string' => 'Le champ année scolaire doit être une chaîne de caractères.',
 
-            'niveau_classe.required' => 'Le champ niveau de classe est obligatoire.',
             'niveau_classe.string' => 'Le champ niveau de classe doit être une chaîne de caractères.',
             'niveau_classe.max' => 'Le champ niveau de classe ne peut pas dépasser 255 caractères.',
 
-            'cycle.required' => 'Le champ cycle est obligatoire.',
+
             'cycle.string' => 'Le champ cycle doit être une chaîne de caractères.',
 
             'classe_id.exists' => 'La classe sélectionné n\'existe pas.',
@@ -120,7 +118,7 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
 
 
 
-            'cours.*.nom.required' => 'Le nom du cours est obligatoire.',
+
             'cours.*.nom.string' => 'Le nom du cours doit être une chaîne de caractères.',
             'cours.*.nom.max' => 'Le nom du cours ne peut pas dépasser 255 caractères.',
 

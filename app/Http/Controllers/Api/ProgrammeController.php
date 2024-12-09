@@ -28,11 +28,11 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
 
         // Récupération du programme à mettre à jour
         $programme = Programme::findOrFail($id);
-        $programme->nom = $request->nom;
-        $programme->niveau_education = $request->niveau_education;
-        $programme->niveau_classe = $request->niveau_classe;
+        $programme->nom = $request->nom ?? null;
+        $programme->niveau_education = $request->niveau_education ?? null;
+        $programme->niveau_classe = $request->niveau_classe ?? null;
         $programme->cycle = $request->cycle ?? null;
-        $programme->annee_scolaire = $request->annee_scolaire;
+        $programme->annee_scolaire = $request->annee_scolaire ?? null;
         $programme->langue_enseignee = $request->langue_enseignee ?? null;
         $programme->classe_id = $request->classe_id ?? null;
         $programme->save();
@@ -48,11 +48,11 @@ public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request,
         foreach ($request->cours as $coursData) {
             // Récupération ou création du cours
             $cours = isset($coursData['id']) ? Cours::find($coursData['id']) : new Cours();
-            $cours->nom = $coursData['nom'];
+            $cours->nom = $coursData['nom'] ?? null;
             $cours->description = $coursData['description'] ?? null;
-            $cours->niveau_education = $coursData['niveau_education'];
-            $cours->niveau_classe = $coursData['niveau_classe'];
-            $cours->heure_allouee = $coursData['heure_allouee'];
+            $cours->niveau_education = $coursData['niveau_education'] ?? null;
+            $cours->niveau_classe = $coursData['niveau_classe'] ?? null;
+            $cours->heure_allouee = $coursData['heure_allouee'] ?? null;
             $cours->etat = $coursData['etat'] ?? 'encours';
             $cours->credits = $coursData['credits'] ?? null;
             $cours->coefficient = $coursData['coefficient'] ?? null;
@@ -357,11 +357,11 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
 
         // Création du Programme
         $programme = new Programme();
-        $programme->nom = $request->nom;
-        $programme->niveau_education = $request->niveau_education;
-        $programme->niveau_classe = $request->niveau_classe;
+        $programme->nom = $request->nom ?? null;
+        $programme->niveau_education = $request->niveau_education ?? null;
+        $programme->niveau_classe = $request->niveau_classe ?? null;
         $programme->cycle = $request->cycle ?? null;
-        $programme->annee_scolaire = $request->annee_scolaire;
+        $programme->annee_scolaire = $request->annee_scolaire ?? null;
         $programme->langue_enseignee = $request->langue_enseignee ?? null;
         $programme->classe_id = $request->classe_id ?? null;
         $programme->save();
@@ -378,8 +378,8 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
             $cours = new Cours();
             $cours->nom = $coursData['nom'];
             $cours->description = $coursData['description'] ?? null;
-            $cours->niveau_education = $coursData['niveau_education'];
-            $cours->niveau_classe = $coursData['niveau_classe'];
+            $cours->niveau_education = $coursData['niveau_education'] ?? null;
+            $cours->niveau_classe = $coursData['niveau_classe'] ?? null;
             $cours->heure_allouee = $coursData['heure_allouee'];
             $cours->etat = $coursData['etat'] ?? 'encours';
             $cours->credits = $coursData['credits'] ?? null;
