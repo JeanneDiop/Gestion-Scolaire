@@ -98,58 +98,37 @@ public function update(UpdateEvenementRequest $request, $id)
         $evenement->save();
 
         // Vérifier s'il y a des participants à ajouter ou modifier
-        if ($request->has('participant')) {
-            foreach ($request->participant as $participant) {
+         if ($request->has('participant')) {
+            // Supprimer tous les participants existants pour cet événement avant de les ajouter/modifier
+            $evenement->participants()->detach();
 
-                // Cas 1 : Si 'apprenant_id' est spécifié
-                if (isset($participant['apprenant_id'])) {
-                    // Attacher ou mettre à jour l'apprenant
-                    $evenement->participants()->syncWithoutDetaching([
-                        $participant['apprenant_id'] => [
-                            'user_id' => $participant['apprenant_id'],
-                            'classe_id' => null,
-                        ]
+            // Ajouter ou mettre à jour les participants dans la table pivot
+            foreach ($request->participant as $participant) {
+                // Cas 1 : Si 'classe_id' est spécifié
+                if (isset($participant['classe_id'])) {
+                    $evenement->participants()->attach($participant['classe_id'], [
+                        'user_id' => null,
+                        'classe_id' => $participant['classe_id'],
+                        'evenement_id' => $evenement->id, // Assurer que l'événement_id est bien stocké
                     ]);
                 }
 
                 // Cas 2 : Si 'enseignant_id' est spécifié
                 elseif (isset($participant['enseignant_id'])) {
-                    // Chercher si l'enseignant est déjà attaché à cet événement
-                    $existingParticipant = $evenement->participants()->where('user_id', $participant['enseignant_id'])->first();
-
-                    if ($existingParticipant) {
-                        // Si l'enseignant existe déjà mais avec un 'classe_id' attaché, on met à jour pour avoir 'user_id' et 'classe_id' = null
-                        $existingParticipant->update([
-                            'user_id' => $participant['enseignant_id'],
-                            'classe_id' => null,  // Remplacer classe_id par null
-                        ]);
-                    } else {
-                        // Sinon, ajouter l'enseignant en tant que participant
-                        $evenement->participants()->attach($participant['enseignant_id'], [
-                            'user_id' => $participant['enseignant_id'],
-                            'classe_id' => null,
-                        ]);
-                    }
+                    $evenement->participants()->attach($participant['enseignant_id'], [
+                        'user_id' => $participant['enseignant_id'],
+                        'classe_id' => null,
+                        'evenement_id' => $evenement->id, // Assurer que l'événement_id est bien stocké
+                    ]);
                 }
 
-                // Cas 3 : Si 'classe_id' est spécifié
-                elseif (isset($participant['classe_id'])) {
-                    // Chercher si une classe est déjà attachée
-                    $existingParticipant = $evenement->participants()->where('classe_id', $participant['classe_id'])->first();
-
-                    if ($existingParticipant) {
-                        // Si la classe existe déjà, on la met à jour en fonction de l'id de la classe
-                        $existingParticipant->update([
-                            'user_id' => null,
-                            'classe_id' => $participant['classe_id'],
-                        ]);
-                    } else {
-                        // Sinon, ajouter la classe en tant que participant
-                        $evenement->participants()->attach($participant['classe_id'], [
-                            'user_id' => null,
-                            'classe_id' => $participant['classe_id'],
-                        ]);
-                    }
+                // Cas 3 : Si 'apprenant' est spécifié
+                elseif (isset($participant['apprenant'])) {
+                    $evenement->participants()->attach($participant['apprenant'], [
+                        'user_id' => $participant['apprenant'],
+                        'classe_id' => null,
+                        'evenement_id' => $evenement->id, // Assurer que l'événement_id est bien stocké
+                    ]);
                 }
             }
         }

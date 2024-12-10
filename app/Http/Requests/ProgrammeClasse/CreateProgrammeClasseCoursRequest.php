@@ -45,6 +45,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.objectif_specifiques' => 'nullable|string|max:255',
         'cours.*.semestre' => 'nullable|integer|min:1|max:2',
         'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
+        
 
         // CategorieCours validations
 

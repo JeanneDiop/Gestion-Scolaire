@@ -17,131 +17,160 @@ use App\Http\Requests\ProgrammeClasse\CreateProgrammeClasseRequest;
 use App\Http\Requests\ProgrammeClasse\CreateProgrammeClasseCoursRequest;
 use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseCoursRequest;
 use App\Http\Requests\ProgrammeClasse\UpdateProgrammeClasseRequest;
+use Monolog\Handler\NullHandler;
+
 class ProgrammeController extends Controller
 {
 
 
-public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request, $id)
-{
-    try {
-        DB::beginTransaction();
+    public function updateProgrammeCours(UpdateProgrammeClasseCoursRequest $request, $id)
+    {
+        try {
+            DB::beginTransaction();
 
-        // Récupération du programme à mettre à jour
-        $programme = Programme::findOrFail($id);
-        $programme->nom = $request->nom ?? null;
-        $programme->niveau_education = $request->niveau_education ?? null;
-        $programme->niveau_classe = $request->niveau_classe ?? null;
-        $programme->cycle = $request->cycle ?? null;
-        $programme->annee_scolaire = $request->annee_scolaire ?? null;
-        $programme->langue_enseignee = $request->langue_enseignee ?? null;
-        $programme->classe_id = $request->classe_id ?? null;
-        $programme->save();
-        Historique::create([
-            'action' => 'update',  // Action 'update' pour la modification
-            'message' => 'Programme modifiée : ' . $programme->nom,
-            'user_id' => auth()->id(), // ID de l'utilisateur authentifié
-            'programme_id' => $programme->id,  // ID de la salle modifiée
-            'created_at' => Carbon::now(),
-        ]);
+            // Récupération du programme à mettre à jour
+            $programme = Programme::findOrFail($id);
+            $programme->nom = $request->nom ?? $programme->nom ?? null;
+            $programme->niveau_education = $request->niveau_education ?? $programme->niveau_education ?? null;
+            $programme->niveau_classe = $request->niveau_classe ?? $programme->niveau_classe ?? null;
+            $programme->cycle = $request->cycle ?? $programme->cycle ?? null;
+            $programme->annee_scolaire = $request->annee_scolaire ?? $programme->annee_scolaire ?? null;
+            $programme->langue_enseignee = $request->langue_enseignee ?? $programme->langue_enseignee ?? null;
+            $programme->classe_id = $request->classe_id ?? $programme->classe_id ?? null;
+            $programme->save();
 
-        // Mise à jour ou ajout des cours et leurs catégories/compétences
-        foreach ($request->cours as $coursData) {
-            // Récupération ou création du cours
-            $cours = isset($coursData['id']) ? Cours::find($coursData['id']) : new Cours();
-            $cours->nom = $coursData['nom'] ?? null;
-            $cours->description = $coursData['description'] ?? null;
-            $cours->niveau_education = $coursData['niveau_education'] ?? null;
-            $cours->niveau_classe = $coursData['niveau_classe'] ?? null;
-            $cours->heure_allouee = $coursData['heure_allouee'] ?? null;
-            $cours->etat = $coursData['etat'] ?? 'encours';
-            $cours->credits = $coursData['credits'] ?? null;
-            $cours->coefficient = $coursData['coefficient'] ?? null;
-            $cours->semestre = $coursData['semestre'] ?? null;
-            $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
-            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
-            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
-            $cours->programme_id = $programme->id;
-            $cours->save();
+            // Historique de la mise à jour du programme
             Historique::create([
-                'action' => 'update',  // Action 'update' pour la modification
-                'message' => 'Salle modifiée : ' . $cours->nom,
-                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
-                'cours_id' => $cours->id,  // ID de la salle modifiée
+                'action' => 'update',
+                'message' => 'Programme modifié : ' . $programme->nom,
+                'user_id' => auth()->id(),
+                'programme_id' => $programme->id,
                 'created_at' => Carbon::now(),
             ]);
-            // Mise à jour ou ajout des catégories (compétences) à ce cours
-            if (isset($coursData['categories'])) {
-                foreach ($coursData['categories'] as $categorieData) {
-                    // Validation du barème pour chaque niveau d'éducation
-                    $bareme = $categorieData['bareme'] ?? null;
-                    $this->validateBareme($coursData['niveau_education'], $bareme);
 
-                    // Récupération ou création de la catégorie de cours
-                    $categorie = isset($categorieData['id']) ? CategorieCours::find($categorieData['id']) : new CategorieCours();
-                    $categorie->nom = $categorieData['nom'];
-                    $categorie->cours_id = $cours->id;
-                    $categorie->volume_horaire = $categorieData['volume_horaire'] ?? null;
-                    $categorie->type_exercices = $categorieData['type_exercices'] ?? null;
-                    $categorie->leçons = $categorieData['leçons'] ?? null;
-                    $categorie->duree_seance = $categorieData['duree_seance'] ?? null;
-                    $categorie->mode_evaluation = $categorieData['mode_evaluation'] ?? null;
-                    $categorie->heure_debut = $categorieData['heure_debut'] ?? null;
-                    $categorie->heure_fin = $categorieData['heure_fin'] ?? null;
-                    $categorie->frequence_evaluation = $categorieData['frequence_evaluation'] ?? null;
-                    $categorie->bareme = $bareme;
-                    $categorie->save();
+            // Mise à jour des cours
+            foreach ($request->cours as $coursData) {
+                $cours = isset($coursData['id']) ? Cours::find($coursData['id']) : null;
+
+                if ($cours) {
+                    if ($coursData['niveau_education'] !== $programme->niveau_education) {
+                        return response()->json([
+                            'status_code' => 400,
+                            'status_message' => 'Le niveau d\'éducation du cours ne correspond pas au niveau d\'éducation du programme.',
+                        ], 400);
+                    }
+
+                    if ($coursData['niveau_classe'] !== $programme->niveau_classe) {
+                        return response()->json([
+                            'status_code' => 400,
+                            'status_message' => 'Le niveau de classe du cours ne correspond pas au niveau de classe du programme.',
+                        ], 400);
+                    }// Si le cours existe, on le met à jour
+                    $cours->nom = $coursData['nom'] ?? $cours->nom ?? null;
+                    $cours->description = $coursData['description'] ?? $cours->description ?? null;
+                    $cours->niveau_education = $coursData['niveau_education'] ?? $cours->niveau_education ?? null;
+                    $cours->niveau_classe = $coursData['niveau_classe'] ?? $cours->niveau_classe ?? null;
+                    $cours->heure_allouee = $coursData['heure_allouee'] ?? $cours->heure_allouee ?? null;
+                    $cours->etat = $coursData['etat'] ?? $cours->etat ?? null;
+                    $cours->credits = $coursData['credits'] ?? $cours->credits ?? null;
+                    $cours->coefficient = $coursData['coefficient'] ?? $cours->coefficient ?? null;
+                    $cours->semestre = $coursData['semestre'] ?? $cours->semestre ?? null;
+                    $cours->enseignant_id = $coursData['enseignant_id'] ?? $cours->enseignant_id ?? null;
+                    $cours->objectif_generaux = $coursData['objectif_generaux'] ?? $cours->objectif_generaux ?? null;
+                    $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? $cours->objectif_specifiques ?? null;
+                    $cours->programme_id = $programme->id;
+                    $cours->save();
+
+                    // Historique de la mise à jour du cours
                     Historique::create([
-                        'action' => 'update',  // Action 'update' pour la modification
-                        'message' => 'Categorie modifiée : ' . $categorie->nom,
-                        'user_id' => auth()->id(), // ID de l'utilisateur authentifié
-                        'categorie_id' => $categorie->id,  // ID de la salle modifiée
+                        'action' => 'update',
+                        'message' => 'Cours modifié : ' . $cours->nom,
+                        'user_id' => auth()->id(),
+                        'cours_id' => $cours->id,
                         'created_at' => Carbon::now(),
                     ]);
-                    // Mise à jour ou ajout des compétences spécifiques pour cette catégorie
-                    if (isset($categorieData['competences'])) {
-                        foreach ($categorieData['competences'] as $competenceData) {
-                            // Récupération ou création de la compétence
-                            $competence = isset($competenceData['id']) ? Competence::find($competenceData['id']) : new Competence();
-                            $competence->nom = $competenceData['nom'];
-                            $competence->description = $competenceData['description'] ?? null;
-                            $competence->categorie_cours_id = $categorie->id;
-                            $competence->save();
-                            Historique::create([
-                                'action' => 'update',  // Action 'update' pour la modification
-                                'message' => 'Competence modifiée : ' . $competence->nom,
-                                'user_id' => auth()->id(), // ID de l'utilisateur authentifié
-                                'competence_id' => $competence->id,  // ID de la salle modifiée
-                                'created_at' => Carbon::now(),
-                            ]);
+
+                    // Mise à jour des catégories (compétences)
+                    if (isset($coursData['categories'])) {
+                        foreach ($coursData['categories'] as $categorieData) {
+                            $categorie = isset($categorieData['id']) ? CategorieCours::find($categorieData['id']) : null;
+
+                            if ($categorie) { // Si la catégorie existe, on la met à jour
+                                $bareme = $categorieData['bareme'] ?? $categorie->bareme;
+                                $this->validateBareme($coursData['niveau_education'], $bareme);
+
+                                $categorie->nom = $categorieData['nom'] ?? $categorie->nom ?? null;
+                                $categorie->volume_horaire = $categorieData['volume_horaire'] ?? $categorie->volume_horaire ?? null;
+                                $categorie->type_exercices = $categorieData['type_exercices'] ?? $categorie->type_exercices ?? null;
+                                $categorie->leçons = $categorieData['leçons'] ?? $categorie->leçons ?? null;
+                                $categorie->duree_seance = $categorieData['duree_seance'] ?? $categorie->duree_seance ?? null;
+                                $categorie->mode_evaluation = $categorieData['mode_evaluation'] ?? $categorie->mode_evaluation ?? null;
+                                $categorie->heure_debut = $categorieData['heure_debut'] ?? $categorie->heure_debut ?? null;
+                                $categorie->heure_fin = $categorieData['heure_fin'] ?? $categorie->heure_fin ?? null;
+                                $categorie->frequence_evaluation = $categorieData['frequence_evaluation'] ?? $categorie->frequence_evaluation ?? null;
+                                $categorie->bareme = $bareme ?? null;
+                                $categorie->save();
+
+                                // Historique de la mise à jour de la catégorie
+                                Historique::create([
+                                    'action' => 'update',
+                                    'message' => 'Catégorie modifiée : ' . $categorie->nom,
+                                    'user_id' => auth()->id(),
+                                    'categorie_id' => $categorie->id,
+                                    'created_at' => Carbon::now(),
+                                ]);
+
+                                // Mise à jour des compétences spécifiques
+                                if (isset($categorieData['competences'])) {
+                                    foreach ($categorieData['competences'] as $competenceData) {
+                                        $competence = isset($competenceData['id']) ? Competence::find($competenceData['id']) : null;
+
+                                        if ($competence) { // Si la compétence existe, on la met à jour
+                                            $competence->nom = $competenceData['nom'] ?? $competence->nom ?? null;
+                                            $competence->description = $competenceData['description'] ?? $competence->description ?? null;
+                                            $competence->categorie_cours_id = $categorie->id;
+                                            $competence->save();
+
+                                            // Historique de la mise à jour de la compétence
+                                            Historique::create([
+                                                'action' => 'update',
+                                                'message' => 'Compétence modifiée : ' . $competence->nom,
+                                                'user_id' => auth()->id(),
+                                                'competence_id' => $competence->id,
+                                                'created_at' => Carbon::now(),
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+
+            // Validation de la transaction
+            DB::commit();
+
+            // Charger les relations pour la réponse
+            $programme = $programme->fresh()->load(['cours.categories.competences']);
+            return response()->json([
+                'status_code' => 200,
+                'status_message' => 'Programme, cours et compétences ont été mis à jour avec succès.',
+                'data' => [
+                    'programme' => $programme,
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status_code' => 500,
+                'status_message' => 'Une erreur s\'est produite lors de la mise à jour du programme, des cours et des compétences.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Validation de la transaction
-        DB::commit();
-
-        // Chargement des relations pour le retour de réponse
-        $programme = $programme->fresh()->load(['cours.categories.competences']);
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'Programme, cours et compétences ont été mis à jour avec succès',
-            'data' => [
-                'programme' => $programme,
-            ]
-        ], 200);
-
-    } catch (Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la mise à jour du programme, des cours et des compétences',
-            'error' => $e->getMessage(),
-        ], 500);
     }
-}
 
 public function show($id)
 {
@@ -374,6 +403,20 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
         ]);
         // Boucle pour ajouter chaque cours et ses compétences
         foreach ($request->cours as $coursData) {
+            // Vérification du niveau d'éducation et du niveau de classe
+            if ($coursData['niveau_education'] !== $programme->niveau_education) {
+                return response()->json([
+                    'status_code' => 400,
+                    'status_message' => 'Le niveau d\'éducation du cours ne correspond pas au niveau d\'éducation du programme.',
+                ], 400);
+            }
+
+            if ($coursData['niveau_classe'] !== $programme->niveau_classe) {
+                return response()->json([
+                    'status_code' => 400,
+                    'status_message' => 'Le niveau de classe du cours ne correspond pas au niveau de classe du programme.',
+                ], 400);
+            }
             // Création du cours et lien avec le programme
             $cours = new Cours();
             $cours->nom = $coursData['nom'];

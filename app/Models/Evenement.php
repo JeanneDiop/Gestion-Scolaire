@@ -31,12 +31,17 @@ class Evenement extends Model
     }
 
     public function participants()
-    {
-        return $this->belongsToMany(User::class, 'evenement_users', 'evenement_id', 'user_id')
-        ->withPivot('classe_id');
+{
+    return $this->belongsToMany(User::class, 'evenement_user')
+                ->withPivot('user_id', 'classe_id', 'evenement_id'); // Inclure les colonnes de la table pivot
+}
+//public function participants()
+    //{
+       // return $this->belongsToMany(User::class, 'evenement_users', 'evenement_id', 'user_id')
+        //->withPivot('classe_id');
 
 
-    }
+    //}
     public function classes()
     {
         return $this->belongsToMany(Classe::class, 'evenement_users', 'evenement_id', 'classe_id')
