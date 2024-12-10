@@ -18,6 +18,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('date_heure')->nullable();
             $table->enum('lieu', ['Salle', 'Exterieur', 'En ligne'])->nullable();
+            $table->foreignId('salle_id')->nullable()->constrained('salles')->onDelete('set null'); 
+            $table->string('lieu_exterieur')->nullable();
+            $table->string('lien_evenement')->nullable();
             $table->enum('recurrence', ['Quotidien', 'Hebdomadaire', 'Mensuel','Annuel'])->nullable();
             $table->string('ressource')->nullable();
             $table->foreignIdFor(User::class, 'responsable_id')->nullable()->constrained('users')->onDelete('cascade');

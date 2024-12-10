@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Classe;
+use App\Models\Salle;
 use App\Models\Historique;
 class Evenement extends Model
 {
@@ -21,10 +22,10 @@ class Evenement extends Model
         'type_evenement',
 
     ];
-    //public function user()
-    //{
-        //return $this->belongsTo(User::class);
-    //}
+    public function salle()
+    {
+        return $this->belongsTo(Salle::class);
+    }
     public function responsable()
     {
         return $this->belongsTo(User::class, 'responsable_id');
@@ -32,7 +33,7 @@ class Evenement extends Model
 
     public function participants()
 {
-    return $this->belongsToMany(User::class, 'evenement_user')
+    return $this->belongsToMany(User::class, 'evenement_users')
                 ->withPivot('user_id', 'classe_id', 'evenement_id'); // Inclure les colonnes de la table pivot
 }
 //public function participants()

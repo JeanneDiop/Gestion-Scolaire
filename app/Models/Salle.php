@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Classe;
 use App\Models\Historique;
+use App\Models\Evenement;
 class Salle extends Model
 {
     use HasFactory;
@@ -21,5 +22,9 @@ class Salle extends Model
 public function historiques()
 {
     return $this->hasMany(Historique::class,'salle_id');
+}
+public function evenements()
+{
+    return $this->hasMany(Evenement::class,'salle_id');
 }
 }
