@@ -30,4 +30,5 @@ class EvenementUser extends Model
     {
         return $this->belongsTo(Classe::class, 'classe_id');
     }
+  
 }

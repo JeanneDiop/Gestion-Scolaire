@@ -34,7 +34,7 @@ class Evenement extends Model
     public function participants()
 {
     return $this->belongsToMany(User::class, 'evenement_users')
-                ->withPivot('user_id', 'classe_id', 'evenement_id'); // Inclure les colonnes de la table pivot
+                ->withPivot('user_id', 'classe_id'); // Inclure les colonnes de la table pivot
 }
 //public function participants()
     //{

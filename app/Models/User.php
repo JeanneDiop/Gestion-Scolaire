@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Role;
 use App\Models\Tuteur;
+use App\Models\Classe;
 use App\Models\Apprenant;
 use App\Models\Directeur;
 use App\Models\Admin;
@@ -96,8 +97,14 @@ class User extends Authenticatable implements JWTSubject
 
 public function evenements()
     {
-        return $this->belongsToMany(Evenement::class, 'evenement_user')
+        return $this->belongsToMany(Evenement::class, 'evenement_users')
         ->withPivot('classe_id');
 
 }
+
+public function classes()
+{
+    return $this->belongsToMany(Classe::class, 'evenement_users', 'user_id', 'classe_id');
+}
+
 }

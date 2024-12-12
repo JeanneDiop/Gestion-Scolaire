@@ -67,11 +67,11 @@ class Classe extends Model
 //{
     //return $this->belongsToMany(Evenement::class, 'evenement_users', 'classe_id', 'evenement_id');
 //}
+
 public function evenements()
 {
-    return $this->belongsToMany(Evenement::class, 'evenement_user')
-    ->withPivot('user_id');
-
+    return $this->belongsToMany(Evenement::class, 'evenement_users', 'classe_id', 'evenement_id')
+                ->withPivot('user_id'); // Inclure le champ user_id dans la table pivot
 
 }
 public function historiques()
