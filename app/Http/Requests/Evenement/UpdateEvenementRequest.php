@@ -26,7 +26,7 @@ class UpdateEvenementRequest extends FormRequest
         return [
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'date_heure' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
+            'date_heure' => 'nullable|regex:/^\d{4}-\d{2}-\d{2} \d{2}h\d{2}min$/',
             'lieu' => 'nullable|in:Salle,Exterieur,En ligne',
             'recurrence' => 'nullable|in:Quotidien,Hebdomadaire,Mensuel,Annuel',
             'ressource' => 'nullable|string|max:255',
