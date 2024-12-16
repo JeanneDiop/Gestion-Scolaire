@@ -17,7 +17,7 @@ return new class extends Migration
         $table->id();
         $table->string('nom');
         $table->string('description')->nullable();
-        $table->enum('niveau_education', ['maternelle', 'primaire', 'secondaire','superieur']);
+        $table->enum('niveau_education', ['Maternelle', 'Primaire', 'Secondaire','Superieur']);
         $table->string('niveau_classe');
         $table->string('heure_allouee')->nullable();
         $table->enum('etat', ['encours', 'terminé', 'annulé'])->default('encours');

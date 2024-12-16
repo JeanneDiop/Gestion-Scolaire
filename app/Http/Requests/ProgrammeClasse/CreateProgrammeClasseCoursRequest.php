@@ -35,7 +35,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         // Cours validations
         'cours.*.nom' => 'nullable|string|max:255',
         'cours.*.description' => 'nullable|string',
-        'cours.*.niveau_education' => 'nullable|in:maternelle,primaire,secondaire,supérieur',
+        'cours.*.niveau_education' => 'nullable|in:Maternelle,Primaire,Secondaire,Supérieur',
         'cours.*.niveau_classe' => 'nullable|string|max:255',
         'cours.*.heure_allouee' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
         'cours.*.etat' => 'nullable|string|in:encours,complet',
@@ -45,7 +45,7 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
         'cours.*.objectif_specifiques' => 'nullable|string|max:255',
         'cours.*.semestre' => 'nullable|integer|min:1|max:2',
         'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
-        
+
 
         // CategorieCours validations
 
@@ -62,16 +62,16 @@ class CreateProgrammeClasseCoursRequest extends FormRequest
                 $niveauEducation = request()->input("cours.$index.niveau_education");
 
                 // Validation pour le niveau "maternelle"
-                if ($niveauEducation === 'maternelle' && !in_array($value, ['Acquis', 'En Progression'])) {
-                    $fail('Pour le niveau "maternelle", le barème doit être "Acquis" ou "En Progression".');
+                if ($niveauEducation === 'Maternelle' && !in_array($value, ['Acquis', 'En Progression'])) {
+                    $fail('Pour le niveau "Maternelle", le barème doit être "Acquis" ou "En Progression".');
                 }
                 // Validation pour le niveau "primaire"
-                if ($niveauEducation === 'primaire' && !preg_match('/^(10|[0-9])\/10$/', $value)) {
-                    $fail('Pour le niveau "primaire", le barème doit être au format "X/10".');
+                if ($niveauEducation === 'Primaire' && !preg_match('/^(10|[0-9])\/10$/', $value)) {
+                    $fail('Pour le niveau "Primaire", le barème doit être au format "X/10".');
                 }
                 // Validation pour le niveau "secondaire"
-                if ($niveauEducation === 'secondaire' && !preg_match('/^(20|[1-9]?[0-9])\/20$/', $value)) {
-                    $fail('Pour le niveau "secondaire", le barème doit être au format "X/20".');
+                if ($niveauEducation === 'Secondaire' && !preg_match('/^(20|[1-9]?[0-9])\/20$/', $value)) {
+                    $fail('Pour le niveau "Secondaire", le barème doit être au format "X/20".');
                 }
             }
         ],
