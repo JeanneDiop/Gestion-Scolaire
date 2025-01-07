@@ -19,16 +19,16 @@ class EvenementUser extends Model
 
     public function evenement()
     {
-        return $this->belongsTo(Evenement::class, 'apprenant_id');
+        return $this->belongsTo(Evenement::class, 'evenement_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'cours_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function classe()
     {
         return $this->belongsTo(Classe::class, 'classe_id');
     }
-  
+
 }

@@ -23,6 +23,8 @@ use App\Http\Controllers\API\NiveauEcoleController;
 use App\Http\Controllers\API\EvenementController;
 use App\Http\Controllers\API\HistoriqueController;
 use App\Http\Controllers\API\ExcelController;
+use App\Http\Controllers\API\VenteController;
+use App\Http\Controllers\API\CompteComptableController;
 use Illuminate\Support\Facades\Artisan;
 
 
@@ -413,6 +415,36 @@ Route::get('niveauecole/detail/{id}', [NiveauEcoleController::class, 'show']);
 Route::get('/historiques/aujourdhui', [HistoriqueController::class, 'getHistoriquesAujourdhui']);
 // gerer les modifications des programmes
 Route::get('modifier-fichier-excel/{fichierId}', [ExcelController::class, 'modifierFichierExcel']);
+//---------- gestion vente-----------------------
+//ajouter vente
+Route::post('vente/create', [VenteController::class, 'store']);
+//modifier  vente
+Route::put('vente/modifier/{id}', [VenteController::class, 'update']);
+//supprimer vente
+Route::delete('vente/supprimer/{id}', [VenteController::class, 'destroy']);
+//afficher une vente
+Route::get('vente/detail/{id}', [VenteController::class, 'show']);
+//afficher toutes les ventes
+Route::get('vente/lister', [VenteController::class, 'index']);
+//afficher une vente de type service
+Route::get('/ventes/service/{id}', [VenteController::class, 'showservice']);
+//afficher toutes les ventes de type service
+Route::get('/ventes/service', [VenteController::class, 'indexservice']);
+//afficher une vente de type produit
+Route::get('/ventes/produit/{id}', [VenteController::class, 'showproduit']);
+//afficher toutes les ventes de type produit
+Route::get('/ventes/produit', [VenteController::class, 'indexproduit']);
+//---------------------gestion comptecomptable--------------------
+//ajouter vente
+Route::post('compte/create', [CompteComptableController::class, 'store']);
+//modifier  compte
+Route::put('compte/modifier/{id}', [CompteComptableController::class, 'update']);
+//supprimer compte
+Route::delete('compte/supprimer/{id}', [CompteComptableController::class, 'destroy']);
+//afficher une compte
+Route::get('compte/detail/{id}', [CompteComptableController::class, 'show']);
+//afficher toutes les compte
+Route::get('compte/lister', [CompteComptableController::class, 'index']);
 
 
 

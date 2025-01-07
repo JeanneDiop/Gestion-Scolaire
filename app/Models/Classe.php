@@ -15,6 +15,7 @@ use App\Models\Evenement;
 use App\Models\Historique;
 use App\Models\Enseignant;
 use App\Models\Evaluation;
+use App\Models\User;
 
 
 class Classe extends Model
@@ -103,6 +104,11 @@ public function evaluations()
         'classe_id',
         'evaluation_id'
     );
+}
+public function users()
+{
+    return $this->belongsToMany(User::class, 'evenement_users', 'classe_id', 'user_id')
+                ->withTimestamps();
 }
 
 }

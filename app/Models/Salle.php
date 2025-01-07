@@ -16,7 +16,7 @@ class Salle extends Model
         'type'
     ];
 
-    public function classes(){
+public function classes(){
         return $this->hasMany(Classe::class);
 }
 public function historiques()

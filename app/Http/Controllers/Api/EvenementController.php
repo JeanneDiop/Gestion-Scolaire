@@ -164,10 +164,12 @@ class EvenementController extends Controller
         ]);
     }
 }
+
+
 public function update(UpdateEvenementRequest $request, $id)
 {
     try {
-        // Récupérer l'événement à mettre à jour
+        // Trouver l'événement à mettre à jour
         $evenement = Evenement::findOrFail($id);
 
         // Mettre à jour les informations de l'événement
@@ -176,60 +178,80 @@ public function update(UpdateEvenementRequest $request, $id)
         $evenement->date_heure = $request->date_heure ?? null;
         $evenement->lieu = $request->lieu ?? null;
 
-        // Gestion du lieu
+        // Mettre à jour le lieu spécifique si nécessaire
         if ($request->lieu == 'Salle') {
             $evenement->salle_id = $request->salle_id ?? null;
         }
+
         if ($request->lieu == 'Exterieur') {
             $evenement->lieu_exterieur = $request->lieu_exterieur ?? null;
         }
+
         if ($request->lieu == 'En ligne') {
             $evenement->lien_evenement = $request->lien_evenement ?? null;
         }
 
+        // Mettre à jour les autres champs
         $evenement->recurrence = $request->recurrence ?? null;
         $evenement->ressource = $request->ressource ?? null;
         $evenement->type_evenement = $request->type_evenement ?? null;
         $evenement->responsable_id = $request->responsable_id ?? null;
         $evenement->save();
 
-        // Vérifier s'il y a des participants à ajouter ou modifier
+        // Mise à jour des participants
         if ($request->has('participant')) {
+            // On commence par vider les participants existants
+            $evenement->participants()->detach();
+
             foreach ($request->participant as $participant) {
-                // Vérification si 'apprenant_id' et 'classe_id' sont présents dans la requête
-                if (isset($participant['apprenant_id']) && isset($participant['classe_id'])) {
-                    $apprenant_id = $participant['apprenant_id'];
-                    $classe_id = $participant['classe_id'];  // Valeur de classe_id passée dans la requête
-
-                    // Rechercher un participant existant pour cet apprenant_id
-                    $existingParticipant = $evenement->participants()->where('user_id', $apprenant_id)->first();
-
-                    if ($existingParticipant) {
-                        // Mettre à jour le pivot si le participant existe
-                        $evenement->participants()->updateExistingPivot($apprenant_id, [
-                            'classe_id' => $classe_id  // Met à jour classe_id dans le pivot
+                // Cas 1 : Si 'apprenant_id' est spécifié
+                if (isset($participant['apprenant_id'])) {
+                    $apprenant = Apprenant::find($participant['apprenant_id']);
+                    if ($apprenant) {
+                        $user_id = $apprenant->user_id;  // user_id de l'apprenant
+                        $evenement->participants()->attach($apprenant->id, [
+                            'user_id' => $user_id,
+                            'classe_id' => null,  // classe_id peut rester null
                         ]);
                     } else {
-                        // Aucun participant existant avec ce apprenant_id
-                        return response()->json([
-                            'status_code' => 400,
-                            'status_message' => 'Participant non trouvé.',
-                        ]);
+                        throw new Exception('L\'apprenant sélectionné n\'existe pas.');
                     }
+                }
+
+                // Cas 2 : Si 'enseignant_id' est spécifié
+                elseif (isset($participant['enseignant_id'])) {
+                    $enseignant = Enseignant::find($participant['enseignant_id']);
+                    if ($enseignant) {
+                        $user_id = $enseignant->user_id;  // user_id de l'enseignant
+                        $evenement->participants()->attach($enseignant->id, [
+                            'user_id' => $user_id,
+                            'classe_id' => null,  // classe_id peut rester null
+                        ]);
+                    } else {
+                        throw new Exception('L\'enseignant sélectionné n\'existe pas.');
+                    }
+                }
+
+                // Cas 3 : Si 'classe_id' est spécifié
+                elseif (isset($participant['classe_id'])) {
+                    $evenement->participants()->attach($participant['classe_id'], [
+                        'user_id' => null,  // Pas d'utilisateur pour cette entrée
+                        'classe_id' => $participant['classe_id'],  // Utilisation de la classe spécifiée
+                    ]);
                 }
             }
         }
 
-        // Charger les données nécessaires et structurer la réponse
+        // Charger les relations nécessaires
         $evenement->load([
             'responsable',
             'participants' => function ($query) {
-                $query->withPivot('classe_id');
+                $query->withPivot('classe_id');  // Inclure 'classe_id' dans le pivot
             },
-            'classes',
+            'classes'
         ]);
 
-        // Structurer la réponse pour l'API
+        // Structurer la réponse
         $response = [
             'id' => $evenement->id,
             'titre' => $evenement->titre,
@@ -246,14 +268,19 @@ public function update(UpdateEvenementRequest $request, $id)
 
         // Ajouter les participants à la réponse
         foreach ($evenement->participants as $participant) {
-            $response['participants'][] = [
-                'user_id' => $participant->pivot->user_id,
-                'classe_id' => $participant->pivot->classe_id,  // Inclure la classe_id
-                'id' => $participant->id,
-                'nom' => $participant->nom,
-                'prenom' => $participant->prenom,
-                'email' => $participant->email,
-            ];
+            if ($participant->pivot->user_id) {
+                $response['participants'][] = [
+                    'user_id' => $participant->pivot->user_id,
+                    'classe_id' => null,
+                    'id' => $participant->id,
+                    'nom' => $participant->nom,
+                    'prenom' => $participant->prenom,
+                    'adresse' => $participant->adresse,
+                    'email' => $participant->email,
+                    'etat' => $participant->etat,
+                    'role_nom' => $participant->role_nom,
+                ];
+            }
         }
 
         // Ajouter les classes à la réponse
@@ -262,6 +289,8 @@ public function update(UpdateEvenementRequest $request, $id)
                 'user_id' => null,
                 'classe_id' => $classe->id,
                 'nom' => $classe->nom,
+                'niveau_classe' => $classe->niveau_classe,
+                'niveau_education' => $classe->niveau_education,
             ];
         }
 
@@ -271,148 +300,17 @@ public function update(UpdateEvenementRequest $request, $id)
             'status_message' => 'L\'événement a été mis à jour avec succès.',
             'data' => $response,
         ], 200);
-
     } catch (ModelNotFoundException $e) {
         return response()->json([
             'status_code' => 404,
             'status_message' => 'Événement non trouvé.',
-        ]);
+        ], 404);
     } catch (Exception $e) {
         return response()->json([
             'status_code' => 500,
             'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'événement.',
             'error' => $e->getMessage(),
-        ]);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-public function updates(UpdateEvenementRequest $request, $id)
-{
-    try {
-        // Récupérer l'événement à mettre à jour
-        $evenement = Evenement::findOrFail($id);
-
-        // Mettre à jour les informations de l'événement
-        $evenement->titre = $request->titre;
-        $evenement->description = $request->description ?? null;
-        $evenement->date_heure = $request->date_heure ?? null;
-        $evenement->lieu = $request->lieu ?? null;
-
-        if ($request->lieu == 'Salle') {
-            $evenement->salle_id = $request->salle_id ?? null;
-        }
-
-        // Enregistrer le lieu_exterieur si le lieu est "Exterieur"
-        if ($request->lieu == 'Exterieur') {
-            $evenement->lieu_exterieur = $request->lieu_exterieur ?? null;
-        }
-
-        // Enregistrer le lien_evenement si le lieu est "En ligne"
-        if ($request->lieu == 'En ligne') {
-            $evenement->lien_evenement = $request->lien_evenement ?? null;
-        }
-
-        $evenement->recurrence = $request->recurrence ?? null;
-        $evenement->ressource = $request->ressource ?? null;
-        $evenement->type_evenement = $request->type_evenement ?? null;
-        $evenement->responsable_id = $request->responsable_id ?? null;
-        $evenement->save();
-
-        // Vérifier s'il y a des participants à ajouter ou modifier
-        if ($request->has('participant')) {
-            // On parcourt les participants envoyés dans la requête
-            foreach ($request->participant as $participant) {
-                // Cas 1 : Si 'classe_id' est spécifié
-                if (isset($participant['classe_id'])) {
-                    // Vérifier si cette classe est déjà liée à l'événement
-                    if (!$evenement->participants->contains('classe_id', $participant['classe_id'])) {
-                        $evenement->participants()->attach($participant['classe_id'], [
-                            'user_id' => null,  // Pas d'ID d'utilisateur car c'est une classe
-                            'classe_id' => $participant['classe_id'],
-                            'evenement_id' => $evenement->id,
-                        ]);
-                    }
-                }
-
-                // Cas 2 : Si 'enseignant_id' est spécifié
-                elseif (isset($participant['enseignant_id'])) {
-                    $enseignant = Enseignant::find($participant['enseignant_id']);
-                    if ($enseignant) {
-                        // On récupère l'ID de l'utilisateur associé à l'enseignant
-                        $user_id = $enseignant->user_id;
-
-                        // Vérifier si l'enseignant est déjà lié à l'événement
-                        if (!$evenement->participants->contains('user_id', $user_id)) {
-                            $evenement->participants()->attach($enseignant->id, [
-                                'user_id' => $user_id,
-                                'classe_id' => null,  // Pas de classe pour l'enseignant
-                                'evenement_id' => $evenement->id,
-                            ]);
-                        }
-                    }
-                }
-
-                // Cas 3 : Si 'apprenant_id' est spécifié
-                elseif (isset($participant['apprenant_id'])) {
-                    $apprenant = Apprenant::find($participant['apprenant_id']);
-                    if ($apprenant) {
-                        // On récupère l'ID de l'utilisateur associé à l'apprenant
-                        $user_id = $apprenant->user_id;
-
-                        // Vérifier si l'apprenant est déjà lié à l'événement
-                        if (!$evenement->participants->contains('user_id', $user_id)) {
-                            $evenement->participants()->attach($apprenant->id, [
-                                'user_id' => $user_id,
-                                'classe_id' => null,  // Pas de classe pour l'apprenant
-                                'evenement_id' => $evenement->id,
-                            ]);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Charger la relation responsable si nécessaire
-        $evenement->load('responsable');
-
-        // Réponse en cas de succès
-        return response()->json([
-            'status_code' => 200,
-            'status_message' => 'L\'événement a été mis à jour avec succès.',
-            'data' => $evenement,
-        ], 200);
-
-    } catch (ModelNotFoundException $e) {
-        // Réponse si l'événement n'est pas trouvé
-        return response()->json([
-            'status_code' => 404,
-            'status_message' => 'Événement non trouvé.',
-        ]);
-    } catch (Exception $e) {
-        // Réponse en cas d'erreur générale
-        return response()->json([
-            'status_code' => 500,
-            'status_message' => 'Une erreur s\'est produite lors de la mise à jour de l\'événement.',
-            'error' => $e->getMessage(),
-        ]);
+        ], 500);
     }
 }
 
