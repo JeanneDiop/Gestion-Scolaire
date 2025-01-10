@@ -25,6 +25,7 @@ class CreateApprenantTuteurRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tuteurId = $this->input('tuteur_id');
         return [
             // Règles communes pour Apprenant
             'nom' => 'required|string|max:255',
@@ -83,7 +84,19 @@ class CreateApprenantTuteurRequest extends FormRequest
                 }
             ],
             'programme_special' => ['nullable', 'string'],
-            'tuteur_id' => 'nullable|exists:tuteurs,id',
+            //'tuteur_id' => 'nullable|exists:tuteurs,id',
+            'tuteur_id' => [
+                'nullable',
+                'exists:tuteurs,id', // Vérifie que le tuteur existe dans la table tuteurs
+                function ($attribute, $value, $fail) {
+                    // Si vous voulez limiter le nombre d'apprenants associés à un tuteur, vous pouvez ajouter une règle supplémentaire
+                    // Par exemple, limiter un tuteur à 5 apprenants
+                    $apprenantsCount = \App\Models\Apprenant::where('tuteur_id', $value)->count();
+                    if ($apprenantsCount >= 5) {
+                        $fail('Le tuteur ne peut pas être associé à plus de 5 apprenants.');
+                    }
+                }
+            ],
             'classe_id' => 'nullable|exists:classes,id',
 
             // Règles spécifiques au tuteur
@@ -95,13 +108,13 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-                'unique:users,email',
+                Rule::unique('users', 'email')->ignore($tuteurId),
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
+                Rule::unique('users', 'telephone')->ignore($tuteurId),
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:Homme,Femme',
@@ -109,7 +122,7 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.profession' => 'required|string',
             'tuteur.nationalité' => 'required|string|max:255',
             'tuteur.nombre_enfants_inscrits'  => 'nullable|string|max:255',
-            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI'],
+            'tuteur.numero_CNI' => ['nullable', 'string',  Rule::unique('tuteurs', 'numero_CNI')->ignore($tuteurId),],
             'tuteur.image'=>  ['nullable', 'string'],
             'tuteur.lien_parenté'  => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
         ];
@@ -142,7 +155,12 @@ class CreateApprenantTuteurRequest extends FormRequest
         'acte_naissance.mimes' => 'L\'acte de naissance doit être un fichier de type jpg, jpeg, png ou pdf.',
         'acte_naissance.max' => 'La taille de l\'acte de naissance ne doit pas dépasser 2 Mo.',
         'classe_id.exists' => 'La classe sélectionnée n\'existe pas.',
-        'tuteur_id.exists' => 'Le tuteur sélectionné n\'existe pas.',
+        //'tuteur_id.exists' => 'Le tuteur sélectionné n\'existe pas.',
+        'tuteur_id.exists' => 'Le tuteur spécifié n\'existe pas dans notre base de données.',
+        'tuteur_id.nullable' => 'Le champ tuteur est optionnel.',
+
+        // Message personnalisé pour la règle conditionnelle
+        'tuteur_id.max_apprenants' => 'Le tuteur ne peut pas être associé à plus de 5 apprenants.',
         'numero_CNI.unique' => 'Ce numéro de CNI est déjà utilisé.',
         'numero_identification_eleve.required' => 'Le numéro d\'identification de l\'élève est obligatoire.',
         'numero_identification_eleve.unique' => 'Ce numéro d\'identification est déjà utilisé.',
@@ -180,6 +198,7 @@ class CreateApprenantTuteurRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
+
         // Si la validation échoue, vous pouvez accéder aux erreurs
         $errors = $validator->errors()->toArray();
 

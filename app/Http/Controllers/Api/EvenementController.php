@@ -333,9 +333,12 @@ public function show($id)
             'recurrence' => $evenement->recurrence,
             'ressource' => $evenement->ressource,
             'type_evenement' => $evenement->type_evenement,
+            'salle_id' => $evenement->salle_id,
+            'lieu_exterieur' => $evenement->lieu_exterieur,
+            'lien_evenement' => $evenement->lien_evenement,
             'responsable_id' => $evenement->responsable_id,
-            'responsable' => $evenement->responsable,  // Inclure les détails du responsable
-            'participants' => [],  // Initialiser un tableau pour les participants
+            'responsable' => $evenement->responsable,
+            'participants' => [],
         ];
 
         // Ajouter les utilisateurs à la réponse
@@ -405,6 +408,9 @@ public function index()
                 'recurrence' => $evenement->recurrence,
                 'ressource' => $evenement->ressource,
                 'type_evenement' => $evenement->type_evenement,
+                'salle_id' => $evenement->salle_id,
+                'lieu_exterieur' => $evenement->lieu_exterieur,
+                'lien_evenement' => $evenement->lien_evenement,
                 'responsable_id' => $evenement->responsable_id,
                 'responsable' => $evenement->responsable,  // Inclure les détails du responsable
                 'participants' => [],
