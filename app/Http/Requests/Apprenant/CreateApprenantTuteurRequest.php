@@ -25,7 +25,13 @@ class CreateApprenantTuteurRequest extends FormRequest
      */
     public function rules(): array
     {
-        $tuteurId = $this->input('tuteur_id');
+        $tuteurId = $this->input('tuteur_id');  // ID du tuteur existant, assure-toi que ce champ est présent dans ta requête
+
+    // Ajoute une vérification de l'ID pour s'assurer qu'il est bien défini
+    if ($tuteurId) {
+        $tuteurId = (int) $tuteurId;
+    }
+
         return [
             // Règles communes pour Apprenant
             'nom' => 'required|string|max:255',
@@ -36,18 +42,17 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-                'unique:users,email',
+                'unique:users,email', // Uniquement unique pour la table users
             ],
             'password' => 'nullable|min:8',
             'telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone',
+                'unique:users,telephone', // Unique pour la table users
             ],
             'adresse' => 'required|string',
             'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
             'genre' => 'required|string|in:Homme,Femme',
-            //'role_nom' => 'required|string',
 
             // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
@@ -73,7 +78,6 @@ class CreateApprenantTuteurRequest extends FormRequest
             'niveau_entrée' => ['nullable', 'string', 'max:255'],
             'statut_inscription' => ['nullable', 'in:Inscrit,En attente,Autre'],
             'transport_scolaire' => ['nullable', 'in:Oui,Non'],
-            // Validation conditionnelle pour le service de transport
             'service_transport' => [
                 'nullable',
                 'string',
@@ -84,20 +88,20 @@ class CreateApprenantTuteurRequest extends FormRequest
                 }
             ],
             'programme_special' => ['nullable', 'string'],
-            //'tuteur_id' => 'nullable|exists:tuteurs,id',
+            'classe_id' => 'nullable|exists:classes,id',
+
+            // Validation conditionnelle pour le tuteur_id
             'tuteur_id' => [
                 'nullable',
-                'exists:tuteurs,id', // Vérifie que le tuteur existe dans la table tuteurs
+                'exists:tuteurs,id',
                 function ($attribute, $value, $fail) {
-                    // Si vous voulez limiter le nombre d'apprenants associés à un tuteur, vous pouvez ajouter une règle supplémentaire
-                    // Par exemple, limiter un tuteur à 5 apprenants
+                    // Limiter le nombre d'apprenants à 5 pour un tuteur
                     $apprenantsCount = \App\Models\Apprenant::where('tuteur_id', $value)->count();
                     if ($apprenantsCount >= 5) {
                         $fail('Le tuteur ne peut pas être associé à plus de 5 apprenants.');
                     }
                 }
             ],
-            'classe_id' => 'nullable|exists:classes,id',
 
             // Règles spécifiques au tuteur
             'tuteur.nom' => 'required|string|max:255',
@@ -108,23 +112,22 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-                Rule::unique('users', 'email')->ignore($tuteurId),
+              'unique:users,email',
             ],
             'tuteur.password' => 'nullable|min:8',
             'tuteur.telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                Rule::unique('users', 'telephone')->ignore($tuteurId),
+                'unique:users,telephone',
             ],
             'tuteur.adresse' => 'required|string',
             'tuteur.genre' => 'required|string|in:Homme,Femme',
-            //'tuteur.role_nom' => 'required|string',
             'tuteur.profession' => 'required|string',
             'tuteur.nationalité' => 'required|string|max:255',
-            'tuteur.nombre_enfants_inscrits'  => 'nullable|string|max:255',
-            'tuteur.numero_CNI' => ['nullable', 'string',  Rule::unique('tuteurs', 'numero_CNI')->ignore($tuteurId),],
-            'tuteur.image'=>  ['nullable', 'string'],
-            'tuteur.lien_parenté'  => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
+            'tuteur.nombre_enfants_inscrits' => 'nullable|string|max:255',
+            'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI',],
+            'tuteur.image' => ['nullable', 'string'],
+            'tuteur.lien_parenté' => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
         ];
     }
 

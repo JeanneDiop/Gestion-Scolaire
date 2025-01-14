@@ -10,6 +10,8 @@ use App\Models\Evenement;
 use App\Models\Enseignant;
 use App\Models\Apprenant;
 use App\Models\Classe;
+use Carbon\Carbon;
+use App\Models\Historique;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 class EvenementController extends Controller
@@ -40,6 +42,13 @@ class EvenementController extends Controller
             $evenement ->type_evenement = $request->type_evenement ?? null;
             $evenement ->responsable_id = $request->responsable_id ?? null;
             $evenement ->save();
+            Historique::create([
+                'action' => 'create',
+                'message' => 'Événement ajouté : ' . $evenement->titre,
+                'user_id' => auth()->id(),
+                'evenement_id' => $evenement->id,
+                'created_at' => Carbon::now(),
+            ]);
             if ($request->has('participant')) {
                 foreach ($request->participant as $participant) {
                     // Cas 1 : Si 'apprenant_id' est spécifié
