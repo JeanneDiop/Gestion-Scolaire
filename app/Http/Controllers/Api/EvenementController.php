@@ -206,6 +206,13 @@ public function update(UpdateEvenementRequest $request, $id)
         $evenement->type_evenement = $request->type_evenement ?? null;
         $evenement->responsable_id = $request->responsable_id ?? null;
         $evenement->save();
+        Historique::create([
+            'action' => 'update',
+            'message' => 'Événement  mis à jour avec succés : ' . $evenement->titre,
+            'user_id' => auth()->id(),
+            'evenement_id' => $evenement->id,
+            'created_at' => Carbon::now(),
+        ]);
 
         // Mise à jour des participants
         if ($request->has('participant')) {

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\DemandeMaintenance;
 class PersonnelAdministratif extends Model
 {
     use HasFactory;
@@ -43,4 +44,9 @@ class PersonnelAdministratif extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function demandemaintenances()
+{
+    return $this->hasMany(DemandeMaintenance::class);
+}
 }

@@ -25,6 +25,7 @@ use App\Http\Controllers\API\HistoriqueController;
 use App\Http\Controllers\API\ExcelController;
 use App\Http\Controllers\API\VenteController;
 use App\Http\Controllers\API\CompteComptableController;
+use App\Http\Controllers\API\DemandeMaintenanceController;
 use Illuminate\Support\Facades\Artisan;
 
 
@@ -445,6 +446,18 @@ Route::delete('compte/supprimer/{id}', [CompteComptableController::class, 'destr
 Route::get('compte/detail/{id}', [CompteComptableController::class, 'show']);
 //afficher toutes les compte
 Route::get('compte/lister', [CompteComptableController::class, 'index']);
+/// ajouter maintenance
+Route::post('maintenance/create', [DemandeMaintenanceController::class, 'store']);
+//modifier  maintenance
+Route::put('maintenance/modifier/{id}', [DemandeMaintenanceController::class, 'update']);
+//supprimer maintenance
+Route::delete('maintenance/supprimer/{id}', [DemandeMaintenanceController::class, 'destroy']);
+//afficher une maintenance
+Route::get('maintenance/detail/{id}', [DemandeMaintenanceController::class, 'show']);
+//afficher toutes les maintenance
+Route::get('maintenance/lister', [DemandeMaintenanceController::class, 'index']);
+//faire le suivi de maintenance
+Route::put('maintenance/suivi/{id}', [DemandeMaintenanceController::class, 'suivi']);
 
 
 

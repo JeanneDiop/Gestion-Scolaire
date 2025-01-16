@@ -13,6 +13,7 @@ use App\Models\Evenement;
 use App\Models\Historique;
 use App\Models\Vente;
 use App\Models\PersonnelAdministratif;
+use App\Models\DemandeMaintenance;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -109,6 +110,11 @@ public function classes()
 public function ventes()
 {
     return $this->hasMany(Vente::class);
+}
+
+public function demandemaintenances()
+{
+    return $this->hasMany(DemandeMaintenance::class);
 }
 
 
