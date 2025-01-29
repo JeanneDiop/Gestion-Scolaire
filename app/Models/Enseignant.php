@@ -9,6 +9,7 @@ use App\Models\EnseignantClasse;
 use App\Models\ClasseAssociation;
 use App\Models\Presence;
 use App\Models\Cours;
+use App\Models\Rapport;
 
 class Enseignant extends Model
 {
@@ -66,6 +67,11 @@ class Enseignant extends Model
     {
         return $this->hasMany(ClasseAssociation::class, 'enseignant_id');
     }
+
+    public function rapports()
+{
+    return $this->hasMany(Rapport::class);
+}
 }
 
 

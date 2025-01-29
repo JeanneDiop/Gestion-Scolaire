@@ -10,6 +10,7 @@ use App\Models\Classe;
 use App\Models\Note;
 use App\Models\Cours;
 use App\Models\Enseignant;
+
 class EvaluationApprenant extends Model
 {
     use HasFactory;
@@ -48,5 +49,6 @@ public function note()
 {
     return $this->hasOne(Note::class, 'evaluation_apprenant_id');
 }
+
 
 }

@@ -26,7 +26,7 @@ class UpdateSuiviRequest extends FormRequest
     {
         return [
             'status' => 'nullable|in:en_attente,en_cours,termine',
-            'date_resolution' => 'nullable|date|after_or_equal:today', // La date de résolution doit être aujourd'hui ou dans le futur
+            'date_resolution' => 'nullable|date', // La date de résolution doit être aujourd'hui ou dans le futur
             'commentaire' => 'nullable|string|max:1000',
         ];
     }

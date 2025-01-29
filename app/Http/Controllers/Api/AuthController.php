@@ -216,38 +216,69 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
     DB::beginTransaction(); // Démarre la transaction
 
     try {
-        // Gestion de l'image du tuteur
-        $tuteurImageFileName = null;
-        if ($request->file('tuteur.image')) {
-            $tuteurImageFileName = $this->handleImageUpload($request->file('tuteur.image'));
+        $tuteur = null; // Initialisation du tuteur
+        $userTuteur = null;
+
+        if ($request->is_tuteur == 1) {
+    // Vérification email et téléphone
+    if (empty($request->tuteur['email']) || empty($request->tuteur['telephone'])) {
+        return response()->json([
+            'status' => 400,
+            'message' => 'L\'email et le téléphone du tuteur sont obligatoires.',
+        ], 400);
+    }
+
+    // Vérification de l'utilisateur existant
+    $userTuteur = User::where('email', trim($request->tuteur['email']))
+        ->where('telephone', trim($request->tuteur['telephone']))
+        ->first();
+
+    if (!$userTuteur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Aucun utilisateur trouvé avec cet email et ce téléphone.',
+        ], 404);
+    }
+
+    // Vérification du tuteur
+    if (!$userTuteur->tuteur) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Cet utilisateur n\'est pas enregistré en tant que tuteur.',
+        ], 404);
+    }
+
+    $tuteur = $userTuteur->tuteur;
+} else {
+    // Création d'un nouveau tuteur
+    $tuteurImageFileName = null;
+    if ($request->file('tuteur.image')) {
+        $tuteurImageFileName = $this->handleImageUpload($request->file('tuteur.image'));
+    }
+
+            $userTuteur = User::firstOrCreate(
+                ['email' => trim($request->tuteur['email']), 'telephone' => trim($request->tuteur['telephone'])],
+        [
+                    'nom' => $request->tuteur['nom'],
+                    'prenom' => $request->tuteur['prenom'],
+                    'password' => Hash::make($request->tuteur['password']),
+                    'telephone' => $request->tuteur['telephone'],
+                    'adresse' => $request->tuteur['adresse'],
+                    'genre' => $request->tuteur['genre'],
+                    'etat' => $request->tuteur['etat'] ?? 'actif',
+                    'role_nom' => 'tuteur',
+                ]
+            );
+
+            $tuteur = $userTuteur->tuteur()->create([
+                'profession' => $request->tuteur['profession'],
+                'nationalité' => $request->tuteur['nationalité'],
+                'nombre_enfants_inscrits' => $request->tuteur['nombre_enfants_inscrits'] ?? null,
+                'lien_parenté' => $request->tuteur['lien_parenté'],
+                'numero_CNI' => $request->tuteur['numero_CNI'] ?? null,
+                'image' => $tuteurImageFileName,
+            ]);
         }
-
-        // Création de l'utilisateur Tuteur
-        $userTuteur = User::firstOrCreate(
-            ['email' => $request->tuteur['email']],
-            [
-                'nom' => $request->tuteur['nom'],
-                'prenom' => $request->tuteur['prenom'],
-                'password' => Hash::make($request->tuteur['password']),
-                'telephone' => $request->tuteur['telephone'],
-                'adresse' => $request->tuteur['adresse'],
-                'genre' => $request->tuteur['genre'],
-                'etat' => data_get($request->tuteur, 'etat', 'actif'),
-                'role_nom' => 'tuteur',
-            ]
-        );
-
-        $userTuteur = User::where('email', $request->tuteur['email'])->first();
-
-        // Création ou récupération du tuteur
-        $tuteur = $userTuteur->tuteur()->create([
-            'profession' => $request->tuteur['profession'],
-            'nationalité' => $request->tuteur['nationalité'] ?? null,
-            'nombre_enfants_inscrits' => $request->tuteur['nombre_enfants_inscrits'] ?? null,
-            'lien_parenté' => $request->tuteur['lien_parenté'],
-            'numero_CNI' => $request->tuteur['numero_CNI'] ?? null,
-            'image' => $tuteurImageFileName,
-        ]);
 
         // Gestion de l'image de l'apprenant
         $apprenantImageFileName = null;
@@ -281,10 +312,10 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'numero_CNI' => $request->numero_CNI ?? null,
             'niveau_education' => $request->niveau_education,
             'image' => $apprenantImageFileName,
-            'nationalité' =>$request->nationalité ?? null,
+            'nationalité' => $request->nationalité ?? null,
             'acte_naissance' => $acteNaissanceFileName,
             'classe_id' => $request->classe_id ?? null,
-            'tuteur_id' => $tuteur->id,
+            'tuteur_id' => $tuteur->id ?? null,
             'numero_identification_eleve' => $request->numero_identification_eleve ?? null,
             'regime_paiement' => $request->regime_paiement ?? null,
             'reduction_bourse' => $request->reduction_bourse ?? null,
@@ -310,11 +341,11 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 
         return response()->json([
             'status' => 200,
-            'message' => 'Apprenant et Tuteur créés avec succès',
+            'message' => 'Apprenant et Tuteur créés ou associés avec succès',
             'user_apprenant' => $userApprenant,
             'apprenant' => $apprenant,
             'user_tuteur' => $userTuteur,
-            'tuteur' => $tuteur,
+           
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -326,6 +357,11 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
         ], 500);
     }
 }
+
+
+
+
+
 //modifier apprenanttuteur---------------------------------
 
 public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id)
@@ -1943,7 +1979,7 @@ public function ListeUtilisateur()
 //lister tous les apprenants dans sa table
 public function ListerApprenant()
 {
-    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe'])->get();
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe','rapports'])->get();
 
     if ($apprenants->isEmpty()) {
         return response()->json([
@@ -2003,6 +2039,18 @@ public function ListerApprenant()
             $apprenantData['tuteur'] = null;
         }
 
+        $apprenantData['rapports'] = $apprenant->rapports->map(function ($rapport) {
+            return [
+                'id' => $rapport->id,
+                'nom_rapport' => $rapport->nom_rapport,
+                'type_utilisateur' => $rapport->type_utilisateur,
+                'commentaire_apprenant' => $rapport->commentaire_apprenant,
+                'commentaire_enseignant' => $rapport->commentaire_enseignant,
+                'apprenant_id' => $rapport->apprenant_id,
+                'enseignant_id' => $rapport->enseignant_id,
+                'date_commentaire' => $rapport->date_commentaire,
+            ];
+        });
         // Vérification de la classe principale
         if ($apprenant->classe) {
             $apprenantData['classe'] = [
@@ -2108,49 +2156,24 @@ public function getApprenantDetailsWithPresence($id)
     ];
 }
 
-//afficher les details de lapprenant par à ses notes
+//afficher les details de lapprenant par rapport à ses notes
 public function getApprenantDetailsWithNotes($id)
 {
     try {
         // Charge l'apprenant avec ses évaluations et les notes associées
         $apprenant = Apprenant::with([
-            'classe.salle',
-            'evaluationApprenant.evaluation.cours.enseignant.user'  // Charger la relation correcte
-        ])->find($id);
+            'evaluationApprenant.evaluation', // Charger les évaluations associées
+            'evaluationApprenant.evaluation.cours', // Charger les cours associés aux évaluations
+            'evaluationApprenant.evaluation.cours.enseignant', // Charger les enseignants associés aux cours
+            'evaluationApprenant.note', // Charger les notes associées
+        ])
+        ->where('id', $id)
+        ->first();
 
         if (!$apprenant) {
             return response()->json([
                 'message' => "Aucun apprenant trouvé avec l'ID {$id}."
             ], 404);
-        }
-
-        $noteDetails = [];
-
-        // Boucler à travers les évaluations et leurs notes
-        foreach ($apprenant->evaluationApprenant as $evaluationApprenant) {  // Accéder à l'apprenant et ses évaluations
-            $evaluation = $evaluationApprenant->evaluation;  // Accéder à l'évaluation associée à la note
-
-            if ($evaluation) {
-                // Pour chaque évaluation, récupérer les notes associées
-                foreach ($evaluation->notes as $note) {
-                    $noteDetails[] = [
-                        'id' => $evaluation->id,
-                        'nom_evaluation' => $evaluation->nom_evaluation,
-                        'niveau_education' => $evaluation->niveau_education,
-                        'date_evaluation' => $evaluation->date_evaluation,
-                        'type_note' => $note->type_note,
-                        'note' => $note->note,
-                        'date_note' => $note->date_note,
-                        'cours_id' => $evaluation->cours->id ?? null,
-                        'cours_nom' => $evaluation->cours->nom ?? null,
-                        'enseignant_id' => $evaluation->cours->enseignant->user->id ?? null,
-                        'enseignant_nom' => $evaluation->cours->enseignant->user->nom ?? null,
-                        'enseignant_prenom' => $evaluation->cours->enseignant->user->prenom ?? null,
-                        'enseignant_email' => $evaluation->cours->enseignant->user->email ?? null,
-                        'enseignant_telephone' => $evaluation->cours->enseignant->user->telephone ?? null
-                    ];
-                }
-            }
         }
 
         return response()->json([
@@ -2177,13 +2200,34 @@ public function getApprenantDetailsWithNotes($id)
                         'id' => $apprenant->classe->salle->id,
                         'nom' => $apprenant->classe->salle->nom,
                         'capacity' => $apprenant->classe->salle->capacity,
-                        'type' => $apprenant->classe->salle->type
-                    ] : null
+                        'type' => $apprenant->classe->salle->type,
+                    ] : null,
                 ] : null,
             ],
-            'notes' => array_unique($noteDetails, SORT_REGULAR)
-        ], 200);
-
+            'notes' => $apprenant->evaluationApprenants->map(function ($evaluationApprenant) {
+                $note = $evaluationApprenant->note;
+                return [
+                    'note_value' => $note ? $note->note : null,
+                    'type_note' => $note ? $note->type_note : null,
+                    'date_note' => $note ? $note->date_note : null,
+                    'evaluation' => [
+                        'id' => $evaluationApprenant->evaluation->id ?? null,
+                        'nom_evaluation' => $evaluationApprenant->evaluation->nom_evaluation ?? null,
+                        'date_evaluation' => $evaluationApprenant->evaluation->date_evaluation ?? null,
+                        'type_evaluation' => $evaluationApprenant->evaluation->type_evaluation ?? null,
+                    ],
+                    'cours' => [
+                        'id' => $evaluationApprenant->evaluation->cours->id ?? null,
+                        'nom' => $evaluationApprenant->evaluation->cours->nom ?? null,
+                    ],
+                    'enseignant' => [
+                        'id' => $evaluationApprenant->evaluation->cours->enseignant->id ?? null,
+                        'nom' => $evaluationApprenant->evaluation->cours->enseignant->user->nom ?? null,
+                        'prenom' => $evaluationApprenant->evaluation->cours->enseignant->user->prenom ?? null,
+                    ],
+                ];
+            }),
+        ]);
     } catch (\Exception $e) {
         return response()->json([
             'message' => 'Une erreur est survenue lors de la récupération des détails de l\'apprenant.',
@@ -2193,11 +2237,12 @@ public function getApprenantDetailsWithNotes($id)
 }
 
 
+
  // Récupérer tous les enseignants depuis la table 'enseignants'
  public function ListerEnseignant()
 {
     // Charger les enseignants avec leurs informations utilisateur, classes et salles associées
-    $enseignants = Enseignant::with(['user', 'classeAssociations.classe.salle'])->get();
+    $enseignants = Enseignant::with(['user', 'classeAssociations.classe.salle','rapports'])->get();
 
     if ($enseignants->isEmpty()) {
         return response()->json([
@@ -2251,6 +2296,18 @@ public function getApprenantDetailsWithNotes($id)
             ] : null,
         ];
 
+        $enseignantData['rapports'] = $enseignant->rapports->map(function ($rapport) {
+            return [
+                'id' => $rapport->id,
+                'nom_rapport' => $rapport->nom_rapport,
+                'type_utilisateur' => $rapport->type_utilisateur,
+                'commentaire_apprenant' => $rapport->commentaire_apprenant,
+                'commentaire_enseignant' => $rapport->commentaire_enseignant,
+                'apprenant_id' => $rapport->apprenant_id,
+                'enseignant_id' => $rapport->enseignant_id,
+                'date_commentaire' => $rapport->date_commentaire,
+            ];
+        });
         // Ajout des classes associées
         $enseignantData['classes_associées'] = $enseignant->classeAssociations->map(function ($association) {
             return [
@@ -2749,7 +2806,7 @@ public function indexApprenants()
 public function showApprenant($id)
 {
     // Récupérer l'apprenant avec l'ID spécifié depuis la table 'apprenant'
-    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe']) // Inclure classeAssociations
+    $apprenant = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe','rapports']) // Inclure classeAssociations
         ->where('id', $id)
         ->first();
 
@@ -2802,6 +2859,7 @@ public function showApprenant($id)
         ] : null,
     ];
 
+
     // Vérification du tuteur
     if ($apprenant->tuteur) {
         $tuteur = $apprenant->tuteur;
@@ -2811,6 +2869,18 @@ public function showApprenant($id)
         $apprenantData['tuteur'] = null; // Si pas de tuteur, on définit à null
     }
 
+    $apprenantData['rapports'] = $apprenant->rapports->map(function ($rapport) {
+        return [
+            'id' => $rapport->id,
+            'nom_rapport' => $rapport->nom_rapport,
+            'type_utilisateur' => $rapport->type_utilisateur,
+            'commentaire_apprenant' => $rapport->commentaire_apprenant,
+            'commentaire_enseignant' => $rapport->commentaire_enseignant,
+            'apprenant_id' => $rapport->apprenant_id,
+            'enseignant_id' => $rapport->enseignant_id,
+            'date_commentaire' => $rapport->date_commentaire,
+        ];
+    });
     // Vérification de la classe principale
     if ($apprenant->classe) {
         $apprenantData['classe'] = [
@@ -2986,7 +3056,7 @@ public function showUserApprenant($id)
 public function showEnseignant($id)
 {
     // Récupérer l'enseignant avec l'ID spécifié
-    $enseignant = Enseignant::with(['user', 'classeAssociations.classe.salle']) // Inclure les classes et les salles associées
+    $enseignant = Enseignant::with(['user', 'classeAssociations.classe.salle','rapports']) // Inclure les classes et les salles associées
         ->where('id', $id)
         ->first();
 
@@ -2999,8 +3069,34 @@ public function showEnseignant($id)
 
     // Structurer les données de l'enseignant
     $enseignantData = [
-        'id' => $enseignant->id,
-        'matiere_enseignée' => $enseignant->matiere_enseignée,
+       'id' => $enseignant->id,
+            'date_naissance' => $enseignant->date_naissance,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'image' => $enseignant->image,
+            'cv_diplomes' => $enseignant->cv_diplomes,
+            'matiere_enseignée' => $enseignant->matiere_enseignée,
+            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
+            'niveau_enseignant' => $enseignant->niveau_enseignant,
+            'nationalité' => $enseignant->nationalité,
+            'statut_enseignant' => $enseignant->statut_enseignant,
+            'date_debut_service' => $enseignant->date_debut_service,
+            'type_contrat' => $enseignant->type_contrat,
+            'heure_travail_hebdomadaire' => $enseignant->heure_travail_hebdomadaire,
+            'salaire_base' => $enseignant->salaire_base,
+            'type_salaire' => $enseignant->type_salaire,
+            'prime_indemnités' => $enseignant->prime_indemnités,
+            'cotisation_sociales' => $enseignant->cotisation_sociales,
+            'part_employeur' => $enseignant->part_employeur,
+            'retenue_salaire' => $enseignant->retenue_salaire,
+            'mode_paiement' => $enseignant->mode_paiement,
+            'banque_domiciliation' => $enseignant->banque_domiciliation,
+            'numero_RIB' => $enseignant->numero_RIB,
+            'contrat_travail' => $enseignant->contrat_travail,
+            'ancienneté' => $enseignant->ancienneté,
+            'evaluation_performance' => $enseignant->evaluation_performance,
+            'commentaires_notes' => $enseignant->commentaires_notes,
+
         'user' => $enseignant->user ? [
             'id' => $enseignant->user->id,
             'nom' => $enseignant->user->nom,
@@ -3014,6 +3110,18 @@ public function showEnseignant($id)
         ] : null,
     ];
 
+    $enseignantData['rapports'] = $enseignant->rapports->map(function ($rapport) {
+        return [
+            'id' => $rapport->id,
+            'nom_rapport' => $rapport->nom_rapport,
+            'type_utilisateur' => $rapport->type_utilisateur,
+            'commentaire_apprenant' => $rapport->commentaire_apprenant,
+            'commentaire_enseignant' => $rapport->commentaire_enseignant,
+            'apprenant_id' => $rapport->apprenant_id,
+            'enseignant_id' => $rapport->enseignant_id,
+            'date_commentaire' => $rapport->date_commentaire,
+        ];
+    });
     // Ajout des classes associées
     $enseignantData['classes_associées'] = $enseignant->classeAssociations->map(function ($association) {
         return [

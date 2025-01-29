@@ -14,6 +14,7 @@ use App\Models\EvaluationApprenant;
 use App\Models\Parcours;
 use App\Models\ClasseAssociation;
 use App\Models\ApprenantClasse;
+use App\Models\Rapport;
 
 class Apprenant extends Model
 {
@@ -96,4 +97,9 @@ public function evaluationApprenants()
     return $this->hasMany(EvaluationApprenant::class, 'apprenant_id');
 }
 
+
+public function rapports()
+{
+    return $this->hasMany(Rapport::class);
+}
 }

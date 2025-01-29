@@ -199,7 +199,18 @@ public function suivi(UpdateSuiviRequest $request, $id)
 
         // Mise à jour des champs de suivi
         $maintenance->status = $request->status ?? $maintenance->status; // Si le status est passé, on le met à jour
-        $maintenance->date_resolution = $request->date_resolution ?? Carbon::today(); // Si une date de résolution est passée, on l'utilise, sinon on met la date d'aujourd'hui
+        $dateResolution = $request->date_resolution ? Carbon::parse($request->date_resolution) : Carbon::today();
+
+            // On applique la validation que la date soit aujourd'hui ou dans le futur
+            if ($dateResolution < Carbon::today()) {
+                return response()->json([
+                    'status_code' => 400,
+                    'status_message' => 'La date de resolution doit être aujourd\'hui ou dans le futur.',
+                ], 400);
+            }
+
+            // Affectation de la date de demande
+            $maintenance->date_resolution = $dateResolution; // Si une date de résolution est passée, on l'utilise, sinon on met la date d'aujourd'hui
         $maintenance->commentaire = $request->commentaire ?? null; // Si un commentaire est passé, on l'ajoute
 
         // Sauvegarde des modifications

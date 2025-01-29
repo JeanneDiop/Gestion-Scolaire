@@ -25,15 +25,8 @@ class CreateApprenantTuteurRequest extends FormRequest
      */
     public function rules(): array
     {
-        $tuteurId = $this->input('tuteur_id');  // ID du tuteur existant, assure-toi que ce champ est présent dans ta requête
-
-    // Ajoute une vérification de l'ID pour s'assurer qu'il est bien défini
-    if ($tuteurId) {
-        $tuteurId = (int) $tuteurId;
-    }
-
-        return [
-            // Règles communes pour Apprenant
+        // Règles communes pour Apprenant
+        $rules = [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => [
@@ -42,42 +35,26 @@ class CreateApprenantTuteurRequest extends FormRequest
                 'email',
                 'max:255',
                 'regex:/^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z][A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
-                'unique:users,email', // Uniquement unique pour la table users
+                'unique:users,email',
             ],
-            'password' => 'nullable|min:8',
+            'password' => 'nullable|string|min:8',
             'telephone' => [
                 'nullable',
                 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/',
-                'unique:users,telephone', // Unique pour la table users
+                'unique:users,telephone',
             ],
-            'adresse' => 'required|string',
-            'etat' => ['sometimes', 'string', Rule::in(['actif', 'inactif'])],
+            'adresse' => 'required|string|max:255',
             'genre' => 'required|string|in:Homme,Femme',
-
-            // Règles spécifiques à l'apprenant
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
-            'numero_CNI' => ['nullable', 'string', 'max:50', 'unique:apprenants,numero_CNI'],
+            'numero_CNI' => 'nullable|string|max:50|unique:apprenants,numero_CNI',
             'numero_identification_eleve' => 'required|string|max:50|unique:apprenants,numero_identification_eleve',
             'niveau_education' => 'required|string|max:255',
             'nationalité' => 'required|string|max:255',
             'regime_paiement' => 'nullable|string|in:trimestriel,semestriel,annuel',
-            'reduction_bourse' => 'nullable|string|max:50',
-            'statut_paiement_actuel' => ['nullable', 'string', Rule::in(['à jour', 'retard'])],
-            'references_factures' => 'nullable|string|max:255',
-            'conditions_medicales' => 'nullable|string|max:255',
-            'contact_urgence' => 'nullable|string|max:255',
-            'note_resultat_anterieur' => 'nullable|string|max:255',
-            'evaluations_specifiques' => 'nullable|string|max:255',
-            'langue_parlee_maison' => 'nullable|string|in:Français,Anglais,Wolof,Sérère,Diola',
-            'activités_extrascolaires' => 'nullable|string|max:255',
-            'remarque_eleve' => 'nullable|string|max:255',
-            'acte_naissance' => 'nullable|string|max:255',
-            'autorisation_parentale' => 'nullable|string|max:255',
-            'année_inscription' => ['nullable', 'date'],
-            'niveau_entrée' => ['nullable', 'string', 'max:255'],
-            'statut_inscription' => ['nullable', 'in:Inscrit,En attente,Autre'],
-            'transport_scolaire' => ['nullable', 'in:Oui,Non'],
+            'statut_paiement_actuel' => 'nullable|string|in:à jour,retard',
+            'classe_id' => 'nullable|exists:classes,id',
+            'transport_scolaire' => 'nullable|in:Oui,Non',
             'service_transport' => [
                 'nullable',
                 'string',
@@ -85,26 +62,14 @@ class CreateApprenantTuteurRequest extends FormRequest
                     if ($this->input('transport_scolaire') === 'Oui' && empty($value)) {
                         $fail('Le champ service de transport est requis si le transport scolaire est Oui.');
                     }
-                }
+                },
             ],
-            'programme_special' => ['nullable', 'string'],
-            'classe_id' => 'nullable|exists:classes,id',
+        ];
 
-            // Validation conditionnelle pour le tuteur_id
-            'tuteur_id' => [
-                'nullable',
-                'exists:tuteurs,id',
-                function ($attribute, $value, $fail) {
-                    // Limiter le nombre d'apprenants à 5 pour un tuteur
-                    $apprenantsCount = \App\Models\Apprenant::where('tuteur_id', $value)->count();
-                    if ($apprenantsCount >= 5) {
-                        $fail('Le tuteur ne peut pas être associé à plus de 5 apprenants.');
-                    }
-                }
-            ],
-
-            // Règles spécifiques au tuteur
-            'tuteur.nom' => 'required|string|max:255',
+        // Validation pour le tuteur
+        if ($this->input('is_tuteur') == 0) {
+            $rules = array_merge($rules, [
+                'tuteur.nom' => 'required|string|max:255',
             'tuteur.prenom' => 'required|string|max:255',
             'tuteur.email' => [
                 'nullable',
@@ -128,8 +93,13 @@ class CreateApprenantTuteurRequest extends FormRequest
             'tuteur.numero_CNI' => ['nullable', 'string', 'unique:tuteurs,numero_CNI',],
             'tuteur.image' => ['nullable', 'string'],
             'tuteur.lien_parenté' => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
-        ];
+            ]);
+        }
+
+        return $rules;
     }
+
+
 
 
     public function messages(): array

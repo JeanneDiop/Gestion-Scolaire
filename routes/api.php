@@ -26,6 +26,8 @@ use App\Http\Controllers\API\ExcelController;
 use App\Http\Controllers\API\VenteController;
 use App\Http\Controllers\API\CompteComptableController;
 use App\Http\Controllers\API\DemandeMaintenanceController;
+use App\Http\Controllers\API\BulletinNoteController;
+use App\Http\Controllers\API\RapportController;
 use Illuminate\Support\Facades\Artisan;
 
 
@@ -458,6 +460,28 @@ Route::get('maintenance/detail/{id}', [DemandeMaintenanceController::class, 'sho
 Route::get('maintenance/lister', [DemandeMaintenanceController::class, 'index']);
 //faire le suivi de maintenance
 Route::put('maintenance/suivi/{id}', [DemandeMaintenanceController::class, 'suivi']);
+/// ajouter bulletin
+Route::post('bulletin/create', [BulletinNoteController::class, 'store']);
+//modifier  bulletin
+Route::put('bulletin/modifier/{id}', [BulletinNoteController::class, 'update']);
+//supprimer bulletin
+Route::delete('bulletin/supprimer/{id}', [BulletinNoteController::class, 'destroy']);
+//afficher une bulletin
+Route::get('bulletin/detail/{id}', [BulletinNoteController::class, 'show']);
+//afficher toutes les bulletin
+Route::get('bulletin/lister', [BulletinNoteController::class, 'index']);
+Route::get('get/bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'getNotesForSemestreAndCreateBulletin']);
+//ajouter un rapport
+Route::post('rapport/create', [RapportController::class, 'storeRapport']);
+//modifier  rapport
+Route::put('rapport/modifier/{id}', [RapportController::class, 'updateRapport']);
+//afficher un rapport
+Route::get('rapport/detail/{id}', [RapportController::class, 'showRapport']);
+//afficher tous les rapports
+Route::get('rapport/lister', [RapportController::class, 'index']);
+
+//supprimer rapport
+Route::delete('rapport/supprimer/{id}', [RapportController::class, 'destroyRapport']);
 
 
 

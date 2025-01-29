@@ -23,6 +23,7 @@ class NoteController extends Controller
             $note->note = $request->note;
             $note->type_note = $request->type_note;
             $note->date_note = $request->date_note;
+            $note->semestre = $request->semestre;
             $note->evaluation_apprenant_id = $request->evaluation_apprenant_id;
             $note->save();
             Historique::create([
@@ -148,13 +149,15 @@ public function showNotesByApprenant($apprenantId)
     try {
         // Récupérer l'apprenant avec ses évaluations, cours, enseignants et notes
         $apprenant = Apprenant::with([
-            'evaluationApprenants.evaluation', // Charger les évaluations associées
-            'evaluationApprenants.evaluation.cours', // Charger les cours associés aux évaluations
-            'evaluationApprenants.evaluation.cours.enseignant', // Charger les enseignants associés aux cours
-            'evaluationApprenants.note', // Charger les notes associées
+            'evaluationApprenant.evaluation', // Charger les évaluations associées
+            'evaluationApprenant.evaluation.cours', // Charger les cours associés aux évaluations
+            'evaluationApprenant.evaluation.cours.enseignant', // Charger les enseignants associés aux cours
+            'evaluationApprenant.note', // Charger les notes associées
         ])
         ->where('id', $apprenantId)
         ->first();
+
+
 
         // Si l'apprenant n'est pas trouvé
         if (!$apprenant) {
@@ -163,6 +166,7 @@ public function showNotesByApprenant($apprenantId)
                 'status_message' => 'Apprenant non trouvé.',
             ], 404);
         }
+
 
         // Traiter les données de l'apprenant et ses notes
         $result = [
@@ -189,6 +193,10 @@ public function showNotesByApprenant($apprenantId)
             'notes' => $apprenant->evaluationApprenants->map(function ($evaluationApprenant) {
                 // Vérifier s'il existe une note associée à l'évaluation
                 $note = $evaluationApprenant->note;
+                $evaluation = $evaluationApprenant->evaluation;
+                $evaluation = $evaluationApprenant->apprenant;
+                $cours = $evaluation ? $evaluation->cours : null;
+                $enseignant = $cours ? $cours->enseignant : null;
                 return [
                     'note_value' => $note ? $note->note : null, // Afficher la note ou null si absente
                     'type_note' => $note ? $note->type_note : null, // Afficher le type de note ou null
@@ -231,10 +239,10 @@ public function showNotesByClasse($classeId)
     try {
         // Récupérer les apprenants de la classe avec leurs notes, évaluations, cours et enseignants
         $apprenants = Apprenant::with([
-            'evaluationApprenants.evaluation', // Chargement des évaluations associées à chaque apprenant
-            'evaluationApprenants.evaluation.cours',  // Charger les cours associés aux évaluations
+            'evaluationApprenant.evaluation', // Chargement des évaluations associées à chaque apprenant
+            'evaluationApprenant.evaluation.cours',  // Charger les cours associés aux évaluations
             'evaluationApprenant.evaluation.cours.enseignant.user',
-            'evaluationApprenants.note',
+            'evaluationApprenant.note',
             'classe.salle', // Charger la classe de l'apprenant
         ])
         ->where('classe_id', $classeId)
