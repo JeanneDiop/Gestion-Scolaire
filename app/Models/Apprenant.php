@@ -15,6 +15,7 @@ use App\Models\Parcours;
 use App\Models\ClasseAssociation;
 use App\Models\ApprenantClasse;
 use App\Models\Rapport;
+use App\Models\BulletinNote;
 
 class Apprenant extends Model
 {
@@ -101,5 +102,10 @@ public function evaluationApprenants()
 public function rapports()
 {
     return $this->hasMany(Rapport::class);
+}
+
+public function bulletin()
+{
+    return $this->hasOne(BulletinNote::class, 'evaluation_apprenant_id');
 }
 }

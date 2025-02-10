@@ -471,6 +471,10 @@ Route::get('bulletin/detail/{id}', [BulletinNoteController::class, 'show']);
 //afficher toutes les bulletin
 Route::get('bulletin/lister', [BulletinNoteController::class, 'index']);
 Route::get('get/bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'getNotesForSemestreAndCreateBulletin']);
+//modifier le bulletinnotes
+Route::put('bulletins/modifier/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'updateBulletinNotes']);
+
+Route::put('bulletins/modifier/{bulletinId}', [BulletinNoteController::class, 'updateBulletinNote']);
 //ajouter un rapport
 Route::post('rapport/create', [RapportController::class, 'storeRapport']);
 //modifier  rapport

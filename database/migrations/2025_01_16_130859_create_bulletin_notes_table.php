@@ -40,9 +40,9 @@ return new class extends Migration
                 'avertissement',
                 'blâme',
             ])->nullable();
+            $table->string('semestre')->nullable();
             $table->text('observation_conseil_professeur')->nullable(); // Observation du conseil des professeurs
             $table->string('chef_etablissement')->nullable();
-            $table->foreignId('note_id')->nullable()->constrained('notes')->onDelete('cascade');
              $table->foreignId('apprenant_id')->nullable()->constrained('apprenants')->onDelete('cascade');
             $table->timestamps();
         });

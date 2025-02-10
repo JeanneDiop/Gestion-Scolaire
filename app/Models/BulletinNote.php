@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Note;
+use App\Models\Apprenant;
 
 class BulletinNote extends Model
 {
@@ -16,6 +16,7 @@ class BulletinNote extends Model
     'moyenne_note',
     'coefficient',
     'moyenne_x',
+    'semestre',
     'th',
     'rang_note',
     'appreciation',
@@ -27,10 +28,15 @@ class BulletinNote extends Model
     'observations',
     'observation_conseil_professeur',
     'chef_etablissement',
-    'evaluation_apprenant_id'
+    'apprenant_id'
     ];
 
-    public function note(){
-        return $this->belongsTo(Note::class);
+    public function apprenant(){
+        return $this->belongsTo(Apprenant::class);
     }
+
+    protected $casts = [
+        'disciplines' => 'array',
+        'total' => 'array',
+    ];
 }

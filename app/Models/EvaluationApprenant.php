@@ -13,6 +13,7 @@ use App\Models\Enseignant;
 
 class EvaluationApprenant extends Model
 {
+    protected $table = 'evaluation_apprenants';
     use HasFactory;
     protected $fillable = [
         'apprenant_id',
