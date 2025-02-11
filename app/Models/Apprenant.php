@@ -108,4 +108,10 @@ public function bulletin()
 {
     return $this->hasOne(BulletinNote::class, 'evaluation_apprenant_id');
 }
+
+public function bulletins()
+{
+    return $this->hasMany(BulletinNote::class);
+}
+
 }

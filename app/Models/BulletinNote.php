@@ -39,4 +39,6 @@ class BulletinNote extends Model
         'disciplines' => 'array',
         'total' => 'array',
     ];
+
+
 }

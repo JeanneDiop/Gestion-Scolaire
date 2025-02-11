@@ -473,8 +473,12 @@ Route::get('bulletin/lister', [BulletinNoteController::class, 'index']);
 Route::get('get/bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'getNotesForSemestreAndCreateBulletin']);
 //modifier le bulletinnotes
 Route::put('bulletins/modifier/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'updateBulletinNotes']);
-
+//modifier un bulletinnote avec id_bulletin
 Route::put('bulletins/modifier/{bulletinId}', [BulletinNoteController::class, 'updateBulletinNote']);
+//afficher les infos d'un bulletin
+Route::get('bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'showBulletin']);
+//afficher les bulletins d'une classe
+Route::get('bulletins/{classeId}/{semestreId}', [BulletinNoteController::class,  'indexBulletins']);
 //ajouter un rapport
 Route::post('rapport/create', [RapportController::class, 'storeRapport']);
 //modifier  rapport
@@ -483,7 +487,6 @@ Route::put('rapport/modifier/{id}', [RapportController::class, 'updateRapport'])
 Route::get('rapport/detail/{id}', [RapportController::class, 'showRapport']);
 //afficher tous les rapports
 Route::get('rapport/lister', [RapportController::class, 'index']);
-
 //supprimer rapport
 Route::delete('rapport/supprimer/{id}', [RapportController::class, 'destroyRapport']);
 
