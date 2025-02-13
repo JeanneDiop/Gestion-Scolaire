@@ -207,10 +207,6 @@ public function registerTuteur(CreateTuteurRequest $request)
 
 
 
-
-
-
-
 public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 {
     DB::beginTransaction(); // Démarre la transaction
@@ -219,46 +215,51 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
         $tuteur = null; // Initialisation du tuteur
         $userTuteur = null;
 
+        // Vérification de l'email ou du téléphone
         if ($request->is_tuteur == 1) {
-    // Vérification email et téléphone
-    if (empty($request->tuteur['email']) || empty($request->tuteur['telephone'])) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'L\'email et le téléphone du tuteur sont obligatoires.',
-        ], 400);
-    }
+            // Vérification si l'email ou le téléphone est renseigné
+            if (empty($request->tuteur['email']) && empty($request->tuteur['telephone'])) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'L\'email ou le téléphone du tuteur est obligatoire.',
+                ], 400);
+            }
 
-    // Vérification de l'utilisateur existant
-    $userTuteur = User::where('email', trim($request->tuteur['email']))
-        ->where('telephone', trim($request->tuteur['telephone']))
-        ->first();
+            // Recherche du tuteur en fonction de l'email ou du téléphone
+            $userTuteur = null;
+            if (!empty($request->tuteur['email'])) {
+                $userTuteur = User::where('email', trim($request->tuteur['email']))->first();
+            }
+            if (!$userTuteur && !empty($request->tuteur['telephone'])) {
+                $userTuteur = User::where('telephone', trim($request->tuteur['telephone']))->first();
+            }
 
-    if (!$userTuteur) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'Aucun utilisateur trouvé avec cet email et ce téléphone.',
-        ], 404);
-    }
+            if (!$userTuteur) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Aucun utilisateur trouvé avec cet email ou ce téléphone.',
+                ], 404);
+            }
 
-    // Vérification du tuteur
-    if (!$userTuteur->tuteur) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'Cet utilisateur n\'est pas enregistré en tant que tuteur.',
-        ], 404);
-    }
+            // Vérification du tuteur
+            if (!$userTuteur->tuteur) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Cet utilisateur n\'est pas enregistré en tant que tuteur.',
+                ], 404);
+            }
 
-    $tuteur = $userTuteur->tuteur;
-} else {
-    // Création d'un nouveau tuteur
-    $tuteurImageFileName = null;
-    if ($request->file('tuteur.image')) {
-        $tuteurImageFileName = $this->handleImageUpload($request->file('tuteur.image'));
-    }
+            $tuteur = $userTuteur->tuteur;
+        } else {
+            // Création d'un nouveau tuteur
+            $tuteurImageFileName = null;
+            if ($request->file('tuteur.image')) {
+                $tuteurImageFileName = $this->handleImageUpload($request->file('tuteur.image'));
+            }
 
             $userTuteur = User::firstOrCreate(
                 ['email' => trim($request->tuteur['email']), 'telephone' => trim($request->tuteur['telephone'])],
-        [
+                [
                     'nom' => $request->tuteur['nom'],
                     'prenom' => $request->tuteur['prenom'],
                     'password' => Hash::make($request->tuteur['password']),
@@ -345,7 +346,6 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'user_apprenant' => $userApprenant,
             'apprenant' => $apprenant,
             'user_tuteur' => $userTuteur,
-           
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -357,7 +357,6 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
         ], 500);
     }
 }
-
 
 
 

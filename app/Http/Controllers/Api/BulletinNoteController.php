@@ -259,6 +259,105 @@ return $item['apprenant_id'] === $apprenant->id;
 }
 
 
+public function updateBulletinNote(Request $request, $bulletinId)
+{
+    // Valider les données entrantes
+    $validatedData = $request->validate([
+        'disciplines' => 'required|array',
+        'disciplines.*.discipline_nom' => 'required|string',
+        'disciplines.*.note_devoir' => 'required|numeric|min:0|max:20',
+        'disciplines.*.note_composition' => 'required|numeric|min:0|max:20',
+        'total_retards' => 'nullable|integer|min:0',
+        'total_absences' => 'nullable|integer|min:0',
+        'observations' => 'nullable|string',
+    ]);
+
+    // Vérifier si le bulletin existe avec l'identifiant donné
+    $bulletin = BulletinNote::find($bulletinId);
+    if (!$bulletin) {
+        return response()->json(['error' => 'Le bulletin n\'existe pas'], 404);
+    }
+
+    $apprenant = Apprenant::find($bulletin->apprenant_id);
+    if (!$apprenant) {
+        return response()->json(['error' => 'Apprenant non trouvé'], 404);
+    }
+
+    $elevesDeLaClasse = Apprenant::where('classe_id', $apprenant->classe_id)->get();
+    $elevesAvecMoyenne = $elevesDeLaClasse->sortByDesc('moyenne');
+    $rangEleve = $elevesAvecMoyenne->search(fn($eleve) => $eleve->id == $apprenant->id) + 1;
+
+    $totalMoyenneX = 0;
+    $totalCoefficient = 0;
+    $disciplinesData = [];
+
+    foreach ($validatedData['disciplines'] as $discipline) {
+        $disciplineNom = $discipline['discipline_nom'];
+        $coefficient = Cours::where('nom', $disciplineNom)->value('coefficient') ?? 1;
+        $moyenneNote = ($discipline['note_devoir'] + $discipline['note_composition']) / 2;
+        $moyenneX = $moyenneNote * $coefficient;
+
+        $moyennesDesApprenants = DB::table('notes')
+            ->join('evaluation_apprenants', 'evaluation_apprenants.id', '=', 'notes.evaluation_apprenant_id')
+            ->join('evaluations', 'evaluations.id', '=', 'evaluation_apprenants.evaluation_id')
+            ->join('cours', 'cours.id', '=', 'evaluations.cours_id')
+            ->where('cours.nom', $disciplineNom)
+            ->select('evaluation_apprenants.apprenant_id', DB::raw('AVG(notes.note) as moyenne'))
+            ->groupBy('evaluation_apprenants.apprenant_id')
+            ->orderByDesc('moyenne')
+            ->get();
+
+        $rangNote = $moyennesDesApprenants->pluck('apprenant_id')->search($apprenant->id) + 1;
+
+        $totalMoyenneX += $moyenneX;
+        $totalCoefficient += $coefficient;
+
+        $disciplinesData[] = [
+            'discipline_nom' => $disciplineNom,
+            'note_devoir' => $discipline['note_devoir'],
+            'note_composition' => $discipline['note_composition'],
+            'moyenne_note' => $moyenneNote,
+            'coefficient' => $coefficient,
+            'moyenne_x' => $moyenneX,
+            'rang_note' => $rangNote,
+            'appreciation' => $this->getAppreciation($moyenneNote),
+        ];
+    }
+
+    $moyenneEleve = $totalCoefficient > 0 ? $totalMoyenneX / $totalCoefficient : 0;
+    $observations = $this->getObservations($moyenneEleve);
+
+    $updated = $bulletin->update([
+    'moyenne_eleve' => $moyenneEleve,
+    'total_retards' => $validatedData['total_retards'] ?? 0,
+    'total_absences' => $validatedData['total_absences'] ?? 0,
+    'appreciation' => $this->getObservations($moyenneEleve),
+    'rang_eleve' => $rangEleve,
+    'disciplines' => json_encode($disciplinesData),
+    'total' => json_encode([
+        'total_coefficient' => $totalCoefficient,
+        'total_moyenne_x' => $totalMoyenneX,
+    ]),
+]);
+
+if (!$updated) {
+    return response()->json(['error' => 'La mise à jour a échoué'], 500);
+}
+
+    return response()->json([
+        'message' => 'Bulletin mis à jour avec succès',
+        'disciplines' => $disciplinesData,
+        'moyenne_eleve' => $moyenneEleve,
+        'rang_eleve' => $rangEleve,
+        'total_retards' => $validatedData['total_retards'] ?? 0,
+        'total_absences' => $validatedData['total_absences'] ?? 0,
+        'total' => [
+            'total_coefficient' => $totalCoefficient,
+            'total_moyenne_x' => $totalMoyenneX,
+        ],
+        'observations' => $observations,
+    ]);
+}
 
 
 
@@ -275,339 +374,258 @@ public function updateBulletinNotes(Request $request, $apprenantId, $semestreId)
         'observations' => 'nullable|string',
     ]);
 
-    // Vérifier si le bulletin existe
-    $bulletin = BulletinNote::where('apprenant_id', $apprenantId)
-                             ->where('semestre', $semestreId)
-                             ->first();
-
-    if (!$bulletin) {
-        return response()->json(['error' => ' Ce Bulletin n\'existe pas dans la base de donné'], 404);
-    }
-
+    // Vérifier si l'apprenant existe
     $apprenant = Apprenant::find($apprenantId);
-    $elevesDeLaClasse = Apprenant::where('classe_id', $apprenant->classe_id)->get();
-
-    $elevesAvecMoyenne = $elevesDeLaClasse->sortByDesc('moyenne');
-
-    // Trouver le rang de l'élève
-    $rangEleve = $elevesAvecMoyenne->search(function ($eleve) use ($apprenant) {
-        return $eleve['apprenant_id'] == $apprenant->id;
-    }) + 1;
-
-    $totalMoyenneX = 0;
-    $totalCoefficient = 0;
-    $disciplinesData = [];
-
-    foreach ($validatedData['disciplines'] as $discipline) {
-        $coefficient = Cours::where('nom', $discipline['discipline_nom'])->value('coefficient') ?? 1;
-        $moyenneNote = ($discipline['note_devoir'] + $discipline['note_composition']) / 2;
-        $moyenneX = $moyenneNote * $coefficient;
-
-        $totalMoyenneX += $moyenneX;
-        $totalCoefficient += $coefficient;
-
-        $disciplinesData[] = [
-            'discipline_nom' => $discipline['discipline_nom'],
-            'note_devoir' => $discipline['note_devoir'],
-            'note_composition' => $discipline['note_composition'],
-            'moyenne_note' => $moyenneNote,
-            'coefficient' => $coefficient,
-            'moyenne_x' => $moyenneX,
-            'rang_eleve' => $rangEleve,
-            'th'=>'th',
-            'appreciation' => $this->getAppreciation($moyenneNote),
-        ];
-    }
-
-    $moyenneEleve = $totalCoefficient > 0 ? $totalMoyenneX / $totalCoefficient : 0;
-    $observations = $this->getObservations($moyenneEleve);
-
-    $elevesAvecMoyenne = $elevesDeLaClasse->map(function($eleve) use ($semestreId) {
-        $notes = Note::whereHas('evaluationApprenant', function($query) use ($eleve, $semestreId) {
-            $query->where('apprenant_id', $eleve->id)
-                  ->where('semestre', $semestreId);
-        })->get();
-
-        $totalMoyenneX = 0;
-        $totalCoefficient = 0;
-
-        foreach ($notes as $note) {
-            $coefficient = Cours::find($note->evaluationApprenant->evaluation->cours_id)->coefficient ?? 1;
-            $moyenneNote = (($note->note_devoir1 ?? 0) + ($note->note_devoir2 ?? 0) + ($note->note_composition ?? 0)) / 3;
-            $moyenneX = $moyenneNote * $coefficient;
-
-            $totalMoyenneX += $moyenneX;
-            $totalCoefficient += $coefficient;
-        }
-
-        $moyenneEleve = $totalCoefficient > 0 ? $totalMoyenneX / $totalCoefficient : 0;
-
-        return [
-            'apprenant_id' => $eleve->id,
-            'moyenne' => $moyenneEleve,
-        ];
-    });
-
-    $apprenantInfos = [
-        'apprenant_id' => $apprenant->id,
-        'apprenant_nom' => $apprenant->user->nom ?? 'Nom non trouvé',
-        'apprenant_prenom' => $apprenant->user->prenom ?? 'Prénom non trouvé',
-        'date_naissance' => $apprenant->date_naissance ?? 'Date de naissance non trouvée',
-        'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu de naissance non trouvé',
-        'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro d\'identification non trouvé',
-        'classe' => $apprenant->classe->nom ?? 'N/A',
-        'semestre' => $semestreId,
-    ];
-
-    $elevesAvecMoyenne = $elevesAvecMoyenne->sortByDesc('moyenne');
-
-    $rangEleve = $elevesAvecMoyenne->search(function ($eleve) use ($apprenant) {
-        return $eleve['apprenant_id'] == $apprenant->id;
-    }) + 1;
-
-    $bulletin->update([
-        'disciplines' => $disciplinesData,
-        'moyenne_eleve' => $moyenneEleve,
-        'coefficient' => $totalCoefficient,
-        'moyenne_x' => $totalMoyenneX,
-        'rang_eleve' => $rangEleve,
-        'total_retards' => $validatedData['total_retards'] ?? 0,
-        'total_absences' => $validatedData['total_absences'] ?? 0,
-        'total' => [
-            'total_coefficient' => $totalCoefficient,
-            'total_moyenne_x' => $totalMoyenneX,
-        ],
-        'observations' => $observations,
-    ]);
-
-    return response()->json([
-        'message' => 'Bulletin mis à jour avec succès',
-        'apprenant_infos' => $apprenantInfos,
-        'disciplines' => $disciplinesData,
-        'moyenne_eleve' => $moyenneEleve,
-        'coefficient' => $totalCoefficient,
-        'moyenne_x' => $totalMoyenneX,
-        'rang_eleve' => $rangEleve,
-        'total_retards' => $validatedData['total_retards'] ?? 0,
-        'total_absences' => $validatedData['total_absences'] ?? 0,
-        'total' => [
-            'total_coefficient' => $totalCoefficient,
-            'total_moyenne_x' => $totalMoyenneX,
-        ],
-        'observations' => $observations,
-        'obervation_conseil_professeur' => '',
-        'chef_etablissement' => '',
-    ]);
-}
-
-public function updateBulletinNote(Request $request, $bulletinId)
-{
-    // Valider les données entrantes
-    $validatedData = $request->validate([
-        'disciplines' => 'required|array',
-        'disciplines.*.discipline_nom' => 'required|string',
-        'disciplines.*.note_devoir' => 'required|numeric|min:0|max:20',
-        'disciplines.*.note_composition' => 'required|numeric|min:0|max:20',
-        'total_retards' => 'nullable|integer|min:0',
-        'total_absences' => 'nullable|integer|min:0',
-        'observations' => 'nullable|string',
-    ]);
-
-    // Vérifier si le bulletin existe en utilisant bulletinId
-    $bulletin = BulletinNote::find($bulletinId);
-
-    if (!$bulletin) {
-        return response()->json(['error' => 'Bulletin introuvable'], 404);
-    }
-
-    $apprenant = Apprenant::find($bulletin->apprenant_id);
-    $elevesDeLaClasse = Apprenant::where('classe_id', $apprenant->classe_id)->get();
-
-    $elevesAvecMoyenne = $elevesDeLaClasse->sortByDesc('moyenne');
-
-    // Trouver le rang de l'élève
-    $rangEleve = $elevesAvecMoyenne->search(function ($eleve) use ($apprenant) {
-        return $eleve['apprenant_id'] == $apprenant->id;
-    }) + 1;
-
-    // Traitement des disciplines et calcul des moyennes
-    $disciplinesData = [];
-    $totalMoyenneX = 0;
-    $totalCoefficient = 0;
-
-    foreach ($validatedData['disciplines'] as $discipline) {
-        $coefficient = Cours::where('nom', $discipline['discipline_nom'])->value('coefficient') ?? 1;
-        $moyenneNote = ($discipline['note_devoir'] + $discipline['note_composition']) / 2;
-        $moyenneX = $moyenneNote * $coefficient;
-
-        $totalMoyenneX += $moyenneX;
-        $totalCoefficient += $coefficient;
-
-        $disciplinesData[] = [
-            'discipline_nom' => $discipline['discipline_nom'],
-            'note_devoir' => $discipline['note_devoir'],
-            'note_composition' => $discipline['note_composition'],
-            'moyenne_note' => $moyenneNote,
-            'coefficient' => $coefficient,
-            'moyenne_x' => $moyenneX,
-            'rang_eleve' => $rangEleve,
-            'th' => 'th',
-            'appreciation' => $this->getAppreciation($moyenneNote),
-        ];
-    }
-
-    $moyenneEleve = $totalCoefficient > 0 ? $totalMoyenneX / $totalCoefficient : 0;
-    $observations = $this->getObservations($moyenneEleve);
-
-    // Mise à jour du bulletin
-    $bulletin->update([
-        'disciplines' => $disciplinesData,
-        'moyenne_eleve' => $moyenneEleve,
-        'coefficient' => $totalCoefficient,
-        'moyenne_x' => $totalMoyenneX,
-        'rang_eleve' => $rangEleve,
-        'total_retards' => $validatedData['total_retards'] ?? 0,
-        'total_absences' => $validatedData['total_absences'] ?? 0,
-        'total' => [
-            'total_coefficient' => $totalCoefficient,
-            'total_moyenne_x' => $totalMoyenneX,
-        ],
-        'observations' => $observations,
-    ]);
-
-    return response()->json([
-        'message' => 'Bulletin mis à jour avec succès',
-        'apprenant_infos' => [
-            'apprenant_id' => $apprenant->id,
-            'apprenant_nom' => $apprenant->user->nom ?? 'Nom non trouvé',
-            'apprenant_prenom' => $apprenant->user->prenom ?? 'Prénom non trouvé',
-            'date_naissance' => $apprenant->date_naissance ?? 'Date de naissance non trouvée',
-            'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu de naissance non trouvé',
-            'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro d’identification non trouvé',
-            'classe' => $apprenant->classe->nom ?? 'N/A',
-            'semestre' => $bulletin->semestre,
-        ],
-        'disciplines' => $disciplinesData,
-        'moyenne_eleve' => $moyenneEleve,
-        'coefficient' => $totalCoefficient,
-        'moyenne_x' => $totalMoyenneX,
-        'rang_eleve' => $rangEleve,
-        'total_retards' => $validatedData['total_retards'] ?? 0,
-        'total_absences' => $validatedData['total_absences'] ?? 0,
-        'total' => [
-            'total_coefficient' => $totalCoefficient,
-            'total_moyenne_x' => $totalMoyenneX,
-        ],
-        'observations' => $observations,
-        'obervation_conseil_professeur' => '',
-        'chef_etablissement' => '',
-    ]);
-}
-
-
-
-public function showBulletin($apprenantId, $semestreId)
-{
-    // Récupérer l'apprenant
-    $apprenant = Apprenant::with('user', 'classe')->find($apprenantId);
     if (!$apprenant) {
-        return response()->json(['error' => 'Apprenant introuvable'], 404);
+        return response()->json(['error' => 'Apprenant non trouvé'], 404);
     }
 
-    // Récupérer le bulletin de l'apprenant pour le semestre spécifié
+    // Vérifier si le bulletin existe pour cet apprenant et ce semestre
     $bulletin = BulletinNote::where('apprenant_id', $apprenantId)
                             ->where('semestre', $semestreId)
                             ->first();
 
     if (!$bulletin) {
-        return response()->json(['error' => 'Bulletin non trouvé pour cet apprenant au semestre spécifié'], 404);
+        return response()->json(['error' => 'Bulletin non trouvé pour cet apprenant et ce semestre'], 404);
     }
 
-    // Récupérer les informations liées au bulletin
-    $disciplinesData = json_decode($bulletin->disciplines, true);
-    $observations = $bulletin->observations ?? 'Aucune observation disponible';
-    $totalCoefficient = $bulletin->total['total_coefficient'] ?? 0;
-    $totalMoyenneX = $bulletin->total['total_moyenne_x'] ?? 0;
-    $moyenneEleve = $bulletin->moyenne_eleve ?? 0;
-    $rangEleve = $bulletin->rang_eleve ?? 0;
-    $totalRetards = $bulletin->total_retards ?? 0;
-    $totalAbsences = $bulletin->total_absences ?? 0;
+    // Calcul des nouvelles moyennes et rangs
+    $totalMoyenneX = 0;
+    $totalCoefficient = 0;
+    $disciplinesData = [];
 
+    foreach ($validatedData['disciplines'] as $discipline) {
+        $disciplineNom = $discipline['discipline_nom'];
+        $coefficient = Cours::where('nom', $disciplineNom)->value('coefficient') ?? 1;
+        $moyenneNote = ($discipline['note_devoir'] + $discipline['note_composition']) / 2;
+        $moyenneX = $moyenneNote * $coefficient;
+
+        // Calcul du rang de l'élève dans la matière
+        $moyennesDesApprenants = DB::table('notes')
+            ->join('evaluation_apprenants', 'evaluation_apprenants.id', '=', 'notes.evaluation_apprenant_id')
+            ->join('evaluations', 'evaluations.id', '=', 'evaluation_apprenants.evaluation_id')
+            ->join('cours', 'cours.id', '=', 'evaluations.cours_id')
+            ->where('cours.nom', $disciplineNom)
+            ->select('evaluation_apprenants.apprenant_id', DB::raw('AVG(notes.note) as moyenne'))
+            ->groupBy('evaluation_apprenants.apprenant_id')
+            ->orderByDesc('moyenne')
+            ->get();
+
+        $rangNote = $moyennesDesApprenants->pluck('apprenant_id')->search($apprenant->id) + 1;
+
+        $totalMoyenneX += $moyenneX;
+        $totalCoefficient += $coefficient;
+
+        $disciplinesData[] = [
+            'discipline_nom' => $disciplineNom,
+            'note_devoir' => $discipline['note_devoir'],
+            'note_composition' => $discipline['note_composition'],
+            'moyenne_note' => $moyenneNote,
+            'coefficient' => $coefficient,
+            'moyenne_x' => $moyenneX,
+            'rang_note' => $rangNote,
+            'appreciation' => $this->getAppreciation($moyenneNote),
+        ];
+    }
+
+    // Calcul de la moyenne de l'élève
+    $moyenneEleve = $totalCoefficient > 0 ? $totalMoyenneX / $totalCoefficient : 0;
+
+    // Calcul du rang de l'élève dans la classe
+    $elevesDeLaClasse = Apprenant::where('classe_id', $apprenant->classe_id)->get();
+    $elevesAvecMoyenne = $elevesDeLaClasse->sortByDesc('moyenne');
+    $rangEleve = $elevesAvecMoyenne->search(fn($eleve) => $eleve->id == $apprenant->id) + 1;
+
+    // Mise à jour du bulletin
+    $bulletin->update([
+        'moyenne_eleve' => $moyenneEleve,
+        'total_retards' => $validatedData['total_retards'] ?? 0,
+        'total_absences' => $validatedData['total_absences'] ?? 0,
+        'observations' => $validatedData['observations'] ?? '',
+        'rang_eleve' => $rangEleve,
+        'disciplines' => json_encode($disciplinesData),
+        'total' => json_encode([
+            'total_coefficient' => $totalCoefficient,
+            'total_moyenne_x' => $totalMoyenneX,
+        ]),
+    ]);
+
+    return response()->json([
+        'message' => 'Bulletin mis à jour avec succès',
+        'apprenant_id' => $apprenantId,
+        'semestre' => $semestreId,
+        'disciplines' => $disciplinesData,
+        'moyenne_eleve' => $moyenneEleve,
+        'rang_eleve' => $rangEleve,
+        'total_retards' => $validatedData['total_retards'] ?? 0,
+        'total_absences' => $validatedData['total_absences'] ?? 0,
+        'total' => [
+            'total_coefficient' => $totalCoefficient,
+            'total_moyenne_x' => $totalMoyenneX,
+        ],
+        'observations' => $validatedData['observations'] ?? '',
+    ]);
+}
+
+
+public function showBulletin($apprenantId, $semestreId)
+{
+    // Vérifier si l'apprenant existe
+    $apprenant = Apprenant::with('user', 'classe')->find($apprenantId);
+    if (!$apprenant) {
+        return response()->json(['error' => 'Apprenant introuvable'], 404);
+    }
+
+    // Vérifier si le bulletin existe
+    $bulletin = BulletinNote::where('apprenant_id', $apprenantId)
+        ->where('semestre', $semestreId)
+        ->first();
+
+    if (!$bulletin) {
+        return response()->json(['error' => 'Bulletin non trouvé pour cet apprenant et ce semestre'], 404);
+    }
+
+    // Récupérer les données nécessaires
     return response()->json([
         'apprenant_infos' => [
             'apprenant_id' => $apprenant->id,
             'apprenant_nom' => $apprenant->user->nom ?? 'Nom non trouvé',
             'apprenant_prenom' => $apprenant->user->prenom ?? 'Prénom non trouvé',
-            'date_naissance' => $apprenant->date_naissance ?? 'Date de naissance non trouvée',
-            'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu de naissance non trouvé',
-            'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro d\'identification non trouvé',
+            'date_naissance' => $apprenant->date_naissance ?? 'Date non trouvée',
+            'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non trouvé',
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non trouvé',
             'classe' => $apprenant->classe->nom ?? 'N/A',
             'semestre' => $semestreId,
         ],
-        'disciplines' => $disciplinesData,
-        'moyenne_eleve' => $moyenneEleve,
-        'coefficient' => $totalCoefficient,
-        'moyenne_x' => $totalMoyenneX,
-        'rang_eleve' => $rangEleve,
-        'total_retards' => $totalRetards,
-        'total_absences' => $totalAbsences,
-        'observations' => $observations,
+        'disciplines' => json_decode($bulletin->disciplines, true), // Décodage JSON des disciplines
+        'moyenne_eleve' => $bulletin->moyenne_eleve,
+        'rang_eleve' => $bulletin->rang_eleve,
+        'total_retards' => $bulletin->total_retards,
+        'total_absences' => $bulletin->total_absences,
+        'observations' => $bulletin->observations,
         'total' => [
-            'total_coefficient' => $totalCoefficient,
-            'total_moyenne_x' => $totalMoyenneX
+            'total_coefficient' => $bulletin->total['total_coefficient'] ?? 0,
+            'total_moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0,
         ],
-        'obervation_conseil_professeur' => '',
-        'chef_etablissement' => '',
+        'obervation_conseil_professeur' => $bulletin->obervation_conseil_professeur ?? '',
+        'chef_etablissement' => $bulletin->chef_etablissement ?? '',
+    ]);
+}
+
+
+public function showBulletinByBulletin($bulletinId)
+{
+    // Vérifier si le bulletin existe
+    $bulletin = BulletinNote::with('apprenant.user', 'apprenant.classe')->find($bulletinId);
+
+    if (!$bulletin) {
+        return response()->json(['error' => 'Bulletin non trouvé'], 404);
+    }
+
+    // Récupérer les informations de l'apprenant
+    $apprenant = $bulletin->apprenant;
+    $user = $apprenant->user;
+    $classe = $apprenant->classe;
+
+    // Décoder les disciplines du bulletin
+    $disciplines = json_decode($bulletin->disciplines, true);
+    if ($disciplines === null) {
+        $disciplines = []; // Ou vous pouvez envoyer une erreur si le format JSON est incorrect
+    }
+
+    return response()->json([
+        'apprenant_infos' => [
+            'apprenant_id' => $apprenant->id,
+            'apprenant_nom' => $user->nom ?? 'Nom non renseigné',
+            'apprenant_prenom' => $user->prenom ?? 'Prénom non renseigné',
+            'date_naissance' => $apprenant->date_naissance ?? 'Date non renseignée',
+            'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non renseigné',
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non renseigné',
+            'classe' => $classe->nom ?? 'Classe non renseignée',
+            'semestre' => $bulletin->semestre,
+        ],
+        'disciplines' => $disciplines,
+        'moyenne_eleve' => $bulletin->moyenne_eleve,
+        'rang_eleve' => $bulletin->rang_eleve,
+        'total_retards' => $bulletin->total_retards,
+        'total_absences' => $bulletin->total_absences,
+        'observations' => $bulletin->observations,
+        'total' => [
+            'total_coefficient' => $bulletin->total['total_coefficient'] ?? 0,
+            'total_moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0,
+        ],
+        'obervation_conseil_professeur' => $bulletin->obervation_conseil_professeur ?? '',
+        'chef_etablissement' => $bulletin->chef_etablissement ?? '',
     ]);
 }
 
 
 
-public function indexBulletins()
-{
-    // Récupérer tous les bulletins avec les relations nécessaires
-    $bulletins = BulletinNote::with(['apprenant.user', 'apprenant.classe'])->get();
 
-    // Vérifier s'il y a des bulletins disponibles
+public function indexBulletins($classeId, $semestreId)
+{
+    // Récupérer les bulletins en filtrant par classe et semestre avec les relations 'apprenant.user' et 'apprenant.classe'
+    $bulletins = BulletinNote::with('apprenant.user', 'apprenant.classe')
+        ->whereHas('apprenant.classe', function ($query) use ($classeId) {
+            $query->where('id', $classeId); 
+           
+        })
+        ->where('semestre', $semestreId)
+        ->paginate(50);  // On garde uniquement la pagination sans le get()
+         
     if ($bulletins->isEmpty()) {
         return response()->json(['error' => 'Aucun bulletin trouvé'], 404);
     }
 
-    // Transformer les données pour la réponse
-    $result = $bulletins->map(function ($bulletin) {
+    // Accéder aux éléments paginés
+    $bulletinsData = $bulletins->items(); // Récupère les éléments actuels de la page
+
+    // Formatage des résultats pour chaque bulletin
+    $formattedBulletins = array_map(function ($bulletin) {
         $apprenant = $bulletin->apprenant;
-        $disciplinesData = json_decode($bulletin->disciplines, true);
+        $user = $apprenant->user;
+        $classe = $apprenant->classe;
+
+        // Décoder les disciplines du bulletin
+        $disciplines = json_decode($bulletin->disciplines, true);
+        if ($disciplines === null) {
+            $disciplines = []; // Ou vous pouvez envoyer une erreur si le format JSON est incorrect
+        }
 
         return [
+            'bulletin_note_id' => $bulletin->id,  // Assurez-vous que le bulletin a bien un ID
             'apprenant_infos' => [
                 'apprenant_id' => $apprenant->id,
-                'apprenant_nom' => $apprenant->user->nom ?? 'Nom non trouvé',
-                'apprenant_prenom' => $apprenant->user->prenom ?? 'Prénom non trouvé',
-                'date_naissance' => $apprenant->date_naissance ?? 'Date de naissance non trouvée',
-                'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu de naissance non trouvé',
-                'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro d\'identification non trouvé',
-                'classe' => $apprenant->classe->nom ?? 'N/A',
+                'apprenant_nom' => $user->nom ?? 'Nom non renseigné',
+                'apprenant_prenom' => $user->prenom ?? 'Prénom non renseigné',
+                'date_naissance' => $apprenant->date_naissance ?? 'Date non renseignée',
+                'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non renseigné',
+                'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non renseigné',
+                'classe' => $classe->nom ?? 'Classe non renseignée',
                 'semestre' => $bulletin->semestre,
             ],
-            'disciplines' => $disciplinesData,
-            'moyenne_eleve' => $bulletin->moyenne_eleve ?? 0,
-            'coefficient' => $bulletin->total['total_coefficient'] ?? 0,
-            'moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0,
-            'rang_eleve' => $bulletin->rang_eleve ?? 0,
-            'total_retards' => $bulletin->total_retards ?? 0,
-            'total_absences' => $bulletin->total_absences ?? 0,
-            'observations' => $bulletin->observations ?? 'Aucune observation disponible',
+            'disciplines' => $disciplines,
+            'moyenne_eleve' => $bulletin->moyenne_eleve,
+            'rang_eleve' => $bulletin->rang_eleve,
+            'total_retards' => $bulletin->total_retards,
+            'total_absences' => $bulletin->total_absences,
+            'observations' => $bulletin->observations,
             'total' => [
                 'total_coefficient' => $bulletin->total['total_coefficient'] ?? 0,
-                'total_moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0
+                'total_moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0,
             ],
-            'observation_conseil_professeur' => '',
-            'chef_etablissement' => '',
+            'obervation_conseil_professeur' => $bulletin->obervation_conseil_professeur ?? '',
+            'chef_etablissement' => $bulletin->chef_etablissement ?? '',
         ];
-    });
+    }, $bulletinsData);
 
-    return response()->json($result);
+    return response()->json($formattedBulletins);
 }
+
+
+
+
+
 
 
 
