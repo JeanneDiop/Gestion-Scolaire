@@ -751,6 +751,10 @@ public function isEligibleForNextClass($apprenantId, $classeId)
         return response()->json(['erreur' => "La classe spécifiée est introuvable."], 404);
     }
 
+    if ($apprenant->classe_id != $classeId) {
+        return response()->json(['erreur' => "Cette classe specifiée n'appartient pas à cet apprenant."], 400);
+    }
+
     // Récupérer la classe actuelle de l'apprenant
     $classeActuelle = Classe::find($apprenant->classe_id);
     if (!$classeActuelle) {
@@ -782,56 +786,59 @@ public function isEligibleForNextClass($apprenantId, $classeId)
         ], 200);
     }
 
-    // Tableau de classement des niveaux
-    $niveauClasseRanking = [
-        'ci' => 1,
-        'cp' => 2,
-        'ce1' => 3,
-        'ce2' => 4,
-        'cm1' => 5,
-        'cm2' => 6,
-        '6e' => 7,
-        '5e' => 8,
-        '4e' => 9,
-        '3e' => 10,
-        '2nde' => 11,
-        '1ere' => 12,
-        'terminale' => 13
-    ];
+    // Si la moyenne est supérieure ou égale à 10, l'élève passe en classe supérieure
+    if ($moyenneGenerale >= 10) {
+        // Tableau de classement des niveaux
+        $niveauClasseRanking = [
+            'ci' => 1,
+            'cp' => 2,
+            'ce1' => 3,
+            'ce2' => 4,
+            'cm1' => 5,
+            'cm2' => 6,
+            '6e' => 7,
+            '5e' => 8,
+            '4e' => 9,
+            '3e' => 10,
+            '2nde' => 11,
+            '1ere' => 12,
+            'terminale' => 13
+        ];
 
-    // Récupérer le niveau de la classe actuelle
-    $niveauActuel = $classeActuelle->niveau_classe;
+        // Récupérer le niveau de la classe actuelle
+        $niveauActuel = $classeActuelle->niveau_classe;
 
-    // Vérifier si le niveau actuel existe dans le tableau
-    if (isset($niveauClasseRanking[$niveauActuel])) {
-        // Trouver le niveau suivant en fonction du classement des niveaux
-        $niveauSuivant = $niveauClasseRanking[$niveauActuel] + 1;
+        // Vérifier si le niveau actuel existe dans le tableau
+        if (isset($niveauClasseRanking[$niveauActuel])) {
+            // Trouver le niveau suivant en fonction du classement des niveaux
+            $niveauSuivant = $niveauClasseRanking[$niveauActuel] + 1;
 
-        // Trouver la classe suivante avec le niveau correspondant
-        $classeSuivante = Classe::where('niveau_classe', array_search($niveauSuivant, $niveauClasseRanking))
-            ->first();
-    } else {
-        return response()->json(['erreur' => "Niveau de classe inconnu."], 400);
-    }
+            // Trouver la classe suivante avec le niveau correspondant
+            $classeSuivante = Classe::where('niveau_classe', array_search($niveauSuivant, $niveauClasseRanking))
+                ->first();
+        } else {
+            return response()->json(['erreur' => "Niveau de classe inconnu."], 400);
+        }
 
-    // Vérifier si une classe suivante a été trouvée
-    if (!$classeSuivante) {
+        // Vérifier si une classe suivante a été trouvée
+        if (!$classeSuivante) {
+            return response()->json([
+                'message' => "L'élève passe en classe supérieure.",
+                'moyenne_generale' => $moyenneGenerale
+            ], 200);
+        }
+
+        // Mettre à jour la classe de l'apprenant vers la classe suivante
+        $apprenant->classe_id = $classeSuivante->id;
+        $apprenant->save();
+
         return response()->json([
             'message' => "L'élève passe en classe supérieure.",
+            'classe_superieure' => $classeSuivante->nom,
+            'niveau_classe' => $classeSuivante->niveau_classe,
             'moyenne_generale' => $moyenneGenerale
         ], 200);
     }
-
-    // Mettre à jour la classe de l'apprenant vers la classe suivante
-    $apprenant->classe_id = $classeSuivante->id;
-    $apprenant->save();
-
-    return response()->json([
-        'message' => "L'élève passe en classe supérieure.",
-        'nouvelle_classe' => $classeSuivante->nom, // Nom de la classe
-        'niveau_classe' => $classeSuivante->niveau_classe, // Ajout du niveau de la classe
-        'moyenne_generale' => $moyenneGenerale
-    ], 200);
 }
 
 public function verifierPassage($apprenantId, $classeId)
