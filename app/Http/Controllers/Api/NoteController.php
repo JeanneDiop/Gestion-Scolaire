@@ -152,7 +152,8 @@ public function showNotesByApprenant($apprenantId)
             'evaluationApprenant.evaluation', // Charger les évaluations associées
             'evaluationApprenant.evaluation.cours', // Charger les cours associés aux évaluations
             'evaluationApprenant.evaluation.cours.enseignant', // Charger les enseignants associés aux cours
-            'evaluationApprenant.note', // Charger les notes associées
+            'evaluationApprenant.notes',
+            'evaluationApprenant.note'// Charger les notes associées
         ])
         ->where('id', $apprenantId)
         ->first();
@@ -242,6 +243,7 @@ public function showNotesByClasse($classeId)
             'evaluationApprenant.evaluation', // Chargement des évaluations associées à chaque apprenant
             'evaluationApprenant.evaluation.cours',  // Charger les cours associés aux évaluations
             'evaluationApprenant.evaluation.cours.enseignant.user',
+            'evaluationApprenant.notes',
             'evaluationApprenant.note',
             'classe.salle', // Charger la classe de l'apprenant
         ])
