@@ -481,6 +481,8 @@ Route::get('bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::clas
 Route::get('bulletins/{bulletinId}',[BulletinNoteController::class, 'showBulletinByBulletin']);
 //afficher les bulletins d'une classe
 Route::get('bulletins/{classeId}/{semestreId}', [BulletinNoteController::class,  'indexBulletins']);
+//gerer le passage en classe superieur
+Route::post('classesupperieure/{apprenantId}/{classeId}', [BulletinNoteController::class, 'isEligibleForNextClass']);
 //ajouter un rapport
 Route::post('rapport/create', [RapportController::class, 'storeRapport']);
 //modifier  rapport

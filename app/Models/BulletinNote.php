@@ -32,7 +32,7 @@ class BulletinNote extends Model
     ];
 
     public function apprenant(){
-        return $this->belongsTo(Apprenant::class);
+        return $this->belongsTo(Apprenant::class, 'apprenant_id');
     }
 
     protected $casts = [

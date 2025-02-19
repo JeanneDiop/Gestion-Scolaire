@@ -56,11 +56,11 @@ class Apprenant extends Model
     }
 
     public function classe(){
-        return $this->belongsTo(Classe::class);
+        return $this->belongsTo(Classe::class ,'classe_id');
     }
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'user_id' );
     }
     public function presences()
     {
@@ -90,14 +90,13 @@ class Apprenant extends Model
         return $this->hasMany(Note::class, 'evaluation_apprenant_id');
     }
     public function notes()
-{
-    return $this->hasMany(Note::class);
-}
+    {
+        return $this->hasManyThrough(Note::class, EvaluationApprenant::class, 'apprenant_id', 'evaluation_apprenant_id', 'id', 'id');
+    }
 public function evaluationApprenants()
 {
     return $this->hasMany(EvaluationApprenant::class, 'apprenant_id');
 }
-
 
 public function rapports()
 {
