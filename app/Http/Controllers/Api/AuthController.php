@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\User\LogUserRequest;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Classe;
 use App\Models\Role;
 use App\Models\Tuteur;
@@ -3982,15 +3983,26 @@ public function archiverDirecteur(Directeur $directeur) {
     }
 }
 //modifier password tuteur
-public function updatePasswordTuteur(Request $request)
+public function updatePasswordTuteur(Request $request, $tuteurId)
 {
     // Valider les données de la requête
-    $validatedData = $request->validate([
-        'password' => 'required|min:8', ],
-         ['password.required' => 'Le champ mot de passe est requis.',]);
+    $validator = Validator::make($request->all(), [
+        'password' => 'required|min:8',
+    ], [
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status_code' => 422,
+            'status_message' => 'Erreur de validation.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
 
     // Vérifier si l'utilisateur existe
-    $tuteur = Tuteur::where('user_id')->first(); // Assurez-vous que le champ user_id est correct
+    $tuteur = Tuteur::find($tuteurId);
 
     if (!$tuteur) {
         return response()->json([
@@ -4011,5 +4023,166 @@ public function updatePasswordTuteur(Request $request)
     ]);
 }
 
+
+
+public function updatePasswordApprenant(Request $request, $apprenantId)
+{
+    // Valider les données de la requête
+    $validator = Validator::make($request->all(), [
+        'password' => 'required|min:8',
+    ], [
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status_code' => 422,
+            'status_message' => 'Erreur de validation.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Vérifier si l'apprenant existe
+    $apprenant = Apprenant::find($apprenantId);
+
+    if (!$apprenant) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Apprenant non trouvé.'
+        ], 404);
+    }
+
+    // Mettre à jour le mot de passe de l'utilisateur associé
+    $user = $apprenant->user; // Récupérer l'utilisateur associé
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    return response()->json([
+        'status_code' => 200,
+        'status_message' => 'Mot de passe mis à jour avec succès.',
+        'data' => $user,
+    ]);
+}
+
+
+public function updatePasswordEnseignant(Request $request, $enseignantId)
+{
+    // Valider les données de la requête
+    $validator = Validator::make($request->all(), [
+        'password' => 'required|min:8',
+    ], [
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status_code' => 422,
+            'status_message' => 'Erreur de validation.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Vérifier si l'apprenant existe
+    $enseignant = Enseignant::find($enseignantId);
+
+    if (!$enseignant) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Enseignant non trouvé.'
+        ], 404);
+    }
+
+    // Mettre à jour le mot de passe de l'utilisateur associé
+    $user = $enseignant->user; // Récupérer l'utilisateur associé
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    return response()->json([
+        'status_code' => 200,
+        'status_message' => 'Mot de passe mis à jour avec succès.',
+        'data' => $user,
+    ]);
+}
+
+public function updatePasswordDirecteur(Request $request, $directeurId)
+{
+    // Valider les données de la requête
+    $validator = Validator::make($request->all(), [
+        'password' => 'required|min:8',
+    ], [
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status_code' => 422,
+            'status_message' => 'Erreur de validation.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Vérifier si l'apprenant existe
+    $directeur = Directeur::find($directeurId);
+
+    if (!$directeur) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'Directeur non trouvé.'
+        ], 404);
+    }
+
+    // Mettre à jour le mot de passe de l'utilisateur associé
+    $user = $directeur->user; // Récupérer l'utilisateur associé
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    return response()->json([
+        'status_code' => 200,
+        'status_message' => 'Mot de passe mis à jour avec succès.',
+        'data' => $user,
+    ]);
+}
+public function updatePasswordPersonnelAdministratif(Request $request, $personnelId)
+{
+    // Valider les données de la requête
+    $validator = Validator::make($request->all(), [
+        'password' => 'required|min:8',
+    ], [
+        'password.required' => 'Le champ mot de passe est requis.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status_code' => 422,
+            'status_message' => 'Erreur de validation.',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Vérifier si l'apprenant existe
+    $personnel = PersonnelAdministratif::find($personnelId);
+
+    if (!$personnel) {
+        return response()->json([
+            'status_code' => 404,
+            'status_message' => 'personneladministratif non trouvé.'
+        ], 404);
+    }
+
+    // Mettre à jour le mot de passe de l'utilisateur associé
+    $user = $personnel->user; // Récupérer l'utilisateur associé
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    return response()->json([
+        'status_code' => 200,
+        'status_message' => 'Mot de passe mis à jour avec succès.',
+        'data' => $user,
+    ]);
+}
 }
 

@@ -92,7 +92,15 @@ Route::delete('/supprimerusertuteur/{user}', [AuthController::class, 'supprimerU
 //archiver ou desactiver un tuteur via sa table
 Route::post('archivertuteur/{tuteur}',[AuthController::class,'archiverTuteur']);
 //modifier password tuteur
-Route::post('modifierpasswordtuteur',[AuthController::class,'updatePasswordTuteur']);
+Route::put('modifierpassword/{tuteurId}',[AuthController::class,'updatePasswordTuteur']);
+//modifier password apprenant
+Route::put('modifierPassword/{apprenantId}',[AuthController::class,'updatePasswordApprenant']);
+//modifier password enseignant
+Route::put('modifierPassword/{enseignantId}',[AuthController::class,'updatePasswordEnseignant']);
+//modifier password directeur
+Route::put('modifierPassword/{directeurId}',[AuthController::class,'updatePasswordDirecteur']);
+//modifier password directeur
+Route::put('modifierPassword/{personnelId}',[AuthController::class,'updatePasswordPersonnelAdministratif']);
 
 //-----------gestion user enseignant-------------
 Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);

@@ -210,7 +210,7 @@ return $item['apprenant_id'] === $apprenant->id;
     BulletinNote::updateOrCreate(
         ['apprenant_id' => $apprenantId, 'semestre' => $semestreId],
         [
-           'note_devoir' => $moyenne_devoirs,
+        'note_devoir' => $moyenne_devoirs,
         'note_composition' => $note_composition,
         'moyenne_note' => $moyenne_note,
         'coefficient' => $coefficient,

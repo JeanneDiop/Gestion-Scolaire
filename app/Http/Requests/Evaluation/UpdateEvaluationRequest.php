@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Models\Cours;
 class UpdateEvaluationRequest extends FormRequest
 {
     /**
@@ -36,6 +37,19 @@ class UpdateEvaluationRequest extends FormRequest
         ];
     }
 
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->filled('cours_id')) {
+                $nomCours = Cours::where('id', $this->cours_id)->value('nom');
+
+                if ($nomCours && $this->nom_evaluation !== $nomCours) {
+                    $validator->errors()->add('nom_evaluation', 'Le nom de l\'évaluation doit être identique au nom du cours.');
+                }
+            }
+        });
+    }
     /**
      * Définit les messages d'erreur personnalisés pour les règles de validation.
      *
@@ -56,7 +70,7 @@ class UpdateEvaluationRequest extends FormRequest
             'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
             'categorie.max' => 'La catégorie ne peut pas dépasser 255 caractères.',
 
-           
+
             'type_evaluation.string' => 'Le type d\'évaluation doit être une chaîne de caractères.',
             'type_evaluation.max' => 'Le type d\'évaluation ne peut pas dépasser 255 caractères.',
 
