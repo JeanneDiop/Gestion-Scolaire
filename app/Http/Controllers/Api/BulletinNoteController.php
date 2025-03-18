@@ -599,7 +599,7 @@ public function updateBulletinNotes(Request $request, $apprenantId, $semestreId)
 }
 
 
-public function showBulletin($apprenantId, $semestreId)
+public function showBulletins($apprenantId, $semestreId)
 {
     // Vérifier si l'apprenant existe
     $apprenant = Apprenant::with('user', 'classe')->find($apprenantId);
@@ -626,6 +626,7 @@ public function showBulletin($apprenantId, $semestreId)
             'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non trouvé',
             'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non trouvé',
             'classe' => $apprenant->classe->nom ?? 'N/A',
+
             'semestre' => $semestreId,
         ],
         'disciplines' => json_decode($bulletin->disciplines, true), // Décodage JSON des disciplines
@@ -642,12 +643,65 @@ public function showBulletin($apprenantId, $semestreId)
         'chef_etablissement' => $bulletin->chef_etablissement ?? '',
     ]);
 }
+//afficher la bulletin dun apprenant à une semestre donnée
+public function showBulletin($apprenantId, $semestreId)
+{
+    // Vérifier si l'apprenant existe
+    $apprenant = Apprenant::with('user', 'classe', 'classeAssociations.classe')->find($apprenantId);
+    if (!$apprenant) {
+        return response()->json(['error' => 'Apprenant introuvable'], 404);
+    }
 
+    // Vérifier si le bulletin existe
+    $bulletin = BulletinNote::where('apprenant_id', $apprenantId)
+        ->where('semestre', $semestreId)
+        ->first();
 
+    if (!$bulletin) {
+        return response()->json(['error' => 'Bulletin non trouvé pour cet apprenant et ce semestre'], 404);
+    }
+
+    // Récupérer les données nécessaires
+    $apprenantData = [
+        'apprenant_id' => $apprenant->id,
+        'apprenant_nom' => $apprenant->user->nom ?? 'Nom non trouvé',
+        'apprenant_prenom' => $apprenant->user->prenom ?? 'Prénom non trouvé',
+        'date_naissance' => $apprenant->date_naissance ?? 'Date non trouvée',
+        'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non trouvé',
+        'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non trouvé',
+        'classe' => $apprenant->classe->nom ?? 'N/A',
+        'semestre' => $semestreId,
+        // Ajouter les classes associées
+        'classes_associées' => $apprenant->classeAssociations->map(function ($association) {
+            return [
+                'classe_id' => $association->classe_id,
+                'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+            ];
+        }),
+    ];
+
+    return response()->json([
+        'apprenant_infos' => $apprenantData,
+        'disciplines' => json_decode($bulletin->disciplines, true), // Décodage JSON des disciplines
+        'moyenne_eleve' => $bulletin->moyenne_eleve,
+        'rang_eleve' => $bulletin->rang_eleve,
+        'total_retards' => $bulletin->total_retards,
+        'total_absences' => $bulletin->total_absences,
+        'observations' => $bulletin->observations,
+        'total' => [
+            'total_coefficient' => $bulletin->total['total_coefficient'] ?? 0,
+            'total_moyenne_x' => $bulletin->total['total_moyenne_x'] ?? 0,
+        ],
+        'obervation_conseil_professeur' => $bulletin->obervation_conseil_professeur ?? '',
+        'chef_etablissement' => $bulletin->chef_etablissement ?? '',
+    ]);
+}
+
+//afficher un bulletin
 public function showBulletinByBulletin($bulletinId)
 {
     // Vérifier si le bulletin existe
-    $bulletin = BulletinNote::with('apprenant.user', 'apprenant.classe')->find($bulletinId);
+    $bulletin = BulletinNote::with('apprenant.user', 'apprenant.classe','classeAssociations.classe')->find($bulletinId);
 
     if (!$bulletin) {
         return response()->json(['error' => 'Bulletin non trouvé'], 404);
@@ -673,6 +727,12 @@ public function showBulletinByBulletin($bulletinId)
             'lieu_naissance' => $apprenant->lieu_naissance ?? 'Lieu non renseigné',
             'numero_identification_eleve' => $apprenant->numero_identification_eleve ?? 'Numéro non renseigné',
             'classe' => $classe->nom ?? 'Classe non renseignée',
+            'classes_associées' => $apprenant->classeAssociations->map(function ($association) {
+                return [
+                    'classe_id' => $association->classe_id,
+                    'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+                ];
+            }),
             'semestre' => $bulletin->semestre,
         ],
         'disciplines' => $disciplines,

@@ -25,24 +25,24 @@ class Note extends Model
     {
         return $this->hasMany(Historique::class);
     }
-    //public function apprenant()
-    //{
-        //return $this->belongsTo(Apprenant::class, 'evaluation_apprenant_id');  // Adaptez le nom de la clé étrangère
-    //}
-
     public function apprenant()
-{
-    return $this->hasOneThrough(Apprenant::class, EvaluationApprenant::class, 'id', 'id', 'evaluation_apprenant_id', 'apprenant_id');
-}
-//public function evaluation()
-//{
-    //return $this->belongsTo(Evaluation::class, 'evaluation_apprenant_id');  // Remplacez 'evaluation_apprenant_id' par la clé étrangère appropriée
-//}
+    {
+        return $this->belongsTo(Apprenant::class, 'evaluation_apprenant_id');  // Adaptez le nom de la clé étrangère
+    }
 
+    //public function apprenant()
+//{
+    //return $this->hasOneThrough(Apprenant::class, EvaluationApprenant::class, 'id', 'id', 'evaluation_apprenant_id', 'apprenant_id');
+//}
 public function evaluation()
 {
-    return $this->hasOneThrough(Evaluation::class, EvaluationApprenant::class, 'id', 'id', 'evaluation_apprenant_id', 'evaluation_id');
+    return $this->belongsTo(Evaluation::class, 'evaluation_apprenant_id');  // Remplacez 'evaluation_apprenant_id' par la clé étrangère appropriée
 }
+
+//public function evaluation()
+//{
+    //return $this->hasOneThrough(Evaluation::class, EvaluationApprenant::class, 'id', 'id', 'evaluation_apprenant_id', 'evaluation_id');
+//}
 public function bulletin()
 {
     return $this->hasOne(BulletinNote::class, 'evaluation_apprenant_id');
