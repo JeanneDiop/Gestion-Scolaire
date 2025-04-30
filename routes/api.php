@@ -103,7 +103,7 @@ Route::put('modifierPassword/{directeurId}',[AuthController::class,'updatePasswo
 Route::put('modifierPassword/{personnelId}',[AuthController::class,'updatePasswordPersonnelAdministratif']);
 
 //-----------gestion user enseignant-------------
-Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
+
 //lister Enseignant user
 Route::get('enseignants', [AuthController::class, 'indexEnseignants']);
 //afficher un enseignant dans sa table
@@ -114,10 +114,7 @@ Route::get('/enseignant/user/{id}',[AuthController::class,'showUserEnseignant'])
 Route::get('/liste/enseignant',[AuthController::class,'ListerEnseignant']);
 //lister enseignant par niveauecole
 Route::get('/enseignant/niveauecole/{niveauEcole}', [AuthController::class, 'ListerEnseignantNiveauEcole']);
-//modifier enseignant via user
-Route::put('/modifieruserenseignant/{user}',[AuthController::class,'updateUserEnseignant']);
-//modifier enseignant via sa table
-Route::put('/modifierenseignant/{id}',[AuthController::class,'updateEnseignant']);
+
 //supprimer enseignant dans sa table
 Route::delete('/supprimerenseignant/{enseignant}', [AuthController::class, 'supprimerEnseignant']);
 //supprimer enseignant dans la table user
@@ -127,10 +124,7 @@ Route::post('archiverenseignant/{enseignant}',[AuthController::class,'archiverEn
 //afficher les details de presence d'un enseignant
 Route::get('/enseignants/presences/{enseignantId}',[AuthController::class,'getEnseignantDetailsWithPresence']);
 
-//--------------gestion apprenant-------------
-Route::post('/registerapprenanttuteur', [AuthController::class, 'registerApprenantTuteur']);
-// modifier apprenanttuteur
-Route::put('/updateapprenanttuteur/{id}', [AuthController::class, 'updateApprenantTuteur']);
+//--------------gestion apprenant-------------------------------------------
 //ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
 //lister les apprenants user
@@ -163,16 +157,12 @@ Route::get('/apprenants/notes/{id}', [AuthController::class, 'getApprenantDetail
 Route::get('/directeur/{id}',[AuthController::class,'showDirecteur']);
 //afficher info dun directeur dans user
 Route::get('/directeur/user/{id}',[AuthController::class,'showUserDirecteur']);
-//ajouter directeur
-Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
+
 //lister tous les directeurs dans sa table
 Route::get('/liste/directeur', [AuthController::class,'ListerDirecteur']);
 //lister tous les directeurs dans users
 Route::get('directeurs', [AuthController::class, 'indexDirecteurs']);
-//modifier directeur via user
-Route::put('/modifieruserdirecteur/{user}',[AuthController::class,'updateUserDirecteur']);
-//modifier directeur via sa table
-Route::put('/modifierdirecteur/{id}',[AuthController::class,'updateDirecteur']);
+
 //supprimer directeur dans sa table
 Route::delete('/supprimerdirecteur/{directeur}', [AuthController::class, 'supprimerDirecteur']);
 //supprimer directeur dans la table user
@@ -185,16 +175,10 @@ Route::post('archiverdirecteur/{directeur}',[AuthController::class,'archiverDire
 Route::get('/personneladministratif/{id}',[AuthController::class,'showPersonnelAdministratif']);
 //afficher info dun personnel dans user
 Route::get('/personnel/user/{id}',[AuthController::class,'showUserPersonnelAdministratif']);
-//ajouter personnel
-Route::post('ajouter/personnel', [AuthController::class, 'registerPersonnelAdministratif']);
 //lister tous les personnels dans sa table
 Route::get('/liste/personnel',[AuthController::class,'ListerPersonnelAdministratif']);
 //lister tous les personnels dans users
 Route::get('personnels', [AuthController::class, 'indexPersonnelAdministaratifs']);
-//modifier personnel via user
-Route::put('/modifieruserpersonnel/{user}',[AuthController::class,'updateUserPersonnelAdministratif']);
-//modifier personnel via sa table
-Route::put('/modifierpersonnel/{id}',[AuthController::class,'updatePersonnelAdministratif']);
 //supprimer personnel dans sa table
 Route::delete('/supprimerpersonnel/{personneladministratif}', [AuthController::class, 'supprimerPersonnelAdministratif']);
 //supprimer personnel dans la table user
@@ -502,10 +486,42 @@ Route::get('rapport/lister', [RapportController::class, 'index']);
 //supprimer rapport
 Route::delete('rapport/supprimer/{id}', [RapportController::class, 'destroyRapport']);
 
+//les fonctions que ladmin ont accés
+Route::middleware(['auth:api','role_admin'])->group(function() {
+//ajouter enseignant
+Route::post('ajouter/enseignant', [AuthController::class, 'registerEnseignant']);
+//modifier enseignant via user
+Route::put('/modifieruserenseignant/{user}',[AuthController::class,'updateUserEnseignant']);
+//modifier enseignant via sa table
+Route::put('/modifierenseignant/{id}',[AuthController::class,'updateEnseignant']);
+//ajouter apprenanttuteur
+Route::post('/registerapprenanttuteur', [AuthController::class, 'registerApprenantTuteur']);
+//modifier apprenanttuteur
+Route::put('/updateapprenanttuteur/{id}', [AuthController::class, 'updateApprenantTuteur']);
+//ajouter directeur
+Route::post('ajouter/directeur', [AuthController::class, 'registerDirecteur']);
+//modifier directeur via user
+Route::put('/modifieruserdirecteur/{user}',[AuthController::class,'updateUserDirecteur']);
+//modifier directeur via sa table
+Route::put('/modifierdirecteur/{id}',[AuthController::class,'updateDirecteur']);
+//ajouter personnel
+Route::post('ajouter/personnel', [AuthController::class, 'registerPersonnelAdministratif']);
+//modifier personnel via user
+Route::put('/modifieruserpersonnel/{user}',[AuthController::class,'updateUserPersonnelAdministratif']);
+//modifier personnel via sa table
+Route::put('/modifierpersonnel/{id}',[AuthController::class,'updatePersonnelAdministratif']);
+});
 
 
+Route::middleware(['auth:api','role_employe'])->group(function() {
 
+});
 
+Route::middleware(['auth:api','role_directeur'])->group(function() {});
+Route::middleware(['auth:api','role_tuteur'])->group(function() {});
+Route::middleware(['auth:api','role_enseignant'])->group(function() {});
+Route::middleware(['auth:api','role_personneladministratif'])->group(function() {});
+Route::middleware(['auth:api','role_apprenant'])->group(function() {});
 
 
 

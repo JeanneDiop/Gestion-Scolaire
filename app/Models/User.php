@@ -12,6 +12,7 @@ use App\Models\Enseignant;
 use App\Models\Evenement;
 use App\Models\Historique;
 use App\Models\Vente;
+use App\Models\Permission;
 use App\Models\PersonnelAdministratif;
 use App\Models\DemandeMaintenance;
 use Laravel\Sanctum\HasApiTokens;
@@ -24,7 +25,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use  HasApiTokens, HasFactory, Notifiable;
 
-
+    protected $hidden = ['permission'];
     protected $fillable = [
         'nom',
         'prenom',
@@ -118,6 +119,8 @@ public function demandemaintenances()
 }
 
 
-
-
+public function permission()
+{
+    return $this->hasOne(Permission::class);
+}
 }

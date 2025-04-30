@@ -62,6 +62,16 @@ class CreateEnseignantRequest extends FormRequest
             'evaluation_performance' => 'nullable|numeric',
             'commentaires_notes' => 'nullable|string|max:1000',
         ];
+        if (auth()->check() && auth()->user()->role_nom === 'admin') {
+            $rules = array_merge($rules, [
+                'type_visibilite' => 'required|in:globale,limite',
+                'academies' => 'required|boolean',
+                'ressources' => 'required|boolean',
+                'rapports' => 'required|boolean',
+            ]);
+        }
+
+        return $rules;
     }
 
     /**
@@ -179,6 +189,20 @@ class CreateEnseignantRequest extends FormRequest
 
             'commentaires_notes.string' => 'Les commentaires et notes doivent être une chaîne de caractères.',
             'commentaires_notes.max' => 'Les commentaires et notes ne doivent pas dépasser 1000 caractères.',
+
+
+
+            'type_visibilite.required' => 'Le type de visibilité est requis.',
+            'type_visibilite.in' => 'Le type de visibilité doit être soit "globale", soit "limite".',
+
+            'academies.required' => 'Le champ "académies" est requis.',
+            'academies.boolean' => 'Le champ "académies" doit être vrai ou faux.',
+
+            'ressources.required' => 'Le champ "ressources" est requis.',
+            'ressources.boolean' => 'Le champ "ressources" doit être vrai ou faux.',
+
+            'rapports.required' => 'Le champ "rapports" est requis.',
+            'rapports.boolean' => 'Le champ "rapports" doit être vrai ou faux.',
         ];
     }
     /**

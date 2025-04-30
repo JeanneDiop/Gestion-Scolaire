@@ -64,6 +64,15 @@ class CreatePersonnelAdministratifRequest extends FormRequest
 
 
         ];
+        if (auth()->check() && auth()->user()->role_nom === 'admin') {
+            $rules = array_merge($rules, [
+                'type_visibilite' => 'required|in:globale,limite',
+                'academies' => 'required|boolean',
+                'ressources' => 'required|boolean',
+                'rapports' => 'required|boolean',
+            ]);
+        }
+        return $rules;
     }
     public function messages(): array
     {
@@ -165,6 +174,18 @@ class CreatePersonnelAdministratifRequest extends FormRequest
 
             'numero_CNI.string' => 'Le numéro CNI doit être une chaîne de caractères.',
             'numero_CNI.unique' => 'Ce numéro de CNI est déjà utilisé.',
+
+            'type_visibilite.required' => 'Le type de visibilité est requis.',
+            'type_visibilite.in' => 'Le type de visibilité doit être soit "globale", soit "limite".',
+
+            'academies.required' => 'Le champ "académies" est requis.',
+            'academies.boolean' => 'Le champ "académies" doit être vrai ou faux.',
+
+            'ressources.required' => 'Le champ "ressources" est requis.',
+            'ressources.boolean' => 'Le champ "ressources" doit être vrai ou faux.',
+
+            'rapports.required' => 'Le champ "rapports" est requis.',
+            'rapports.boolean' => 'Le champ "rapports" doit être vrai ou faux.',
         ];
     }
 /**

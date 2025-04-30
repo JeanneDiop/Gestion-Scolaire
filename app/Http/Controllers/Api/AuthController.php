@@ -40,7 +40,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api', ['except' => ['login','registerTuteur','getApprenantDetailsWithNotes', 'getApprenantDetailsWithPresence', 'getEnseignantDetailsWithPresence','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerEnseignant','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
+       $this->middleware('auth:api', ['except' => ['login','registerTuteur','getApprenantDetailsWithNotes', 'getApprenantDetailsWithPresence', 'getEnseignantDetailsWithPresence','ListerPersonnelAdministratif','supprimerPersonnelAdministratif','showApprenant','ListerEnseignantNiveauEcole','showDirecteur','showEnseignant','showUserEnseignant','showUserApprenant','showUserTuteur','showUserDirecteur','showTuteur','ListerPersonnelAdministratifPoste','registerApprenant','ListeUtilisateur','showUserPersonnelAdministratif','registerPersonnelAdministratif','updateUserPersonnelAdministratif','ListerApprenant','updateApprenantTuteur','ListerTuteur','supprimerUserPersonnelAdministratif','showPersonnelAdministratif', 'ListerDirecteur', 'ListerEnseignant','registerDirecteur','supprimerEnseignant','updatePersonnelAdministratif','supprimerTuteur','supprimerApprenant','supprimerUserApprenant','registerApprenantTuteur','archiverPersonnelAdministratif','supprimerUserDirecteur','supprimerUserEnseignant','indexPersonnelAdministaratifs','supprimerUserTuteur','supprimerDirecteur','indexApprenants','indexDirecteurs','showUserPersonnelAdministratif','indexEnseignants','indexTuteurs','updateUserApprenant','updateApprenant','updateTuteur','updateUserTuteur','updateUserEnseignant','ListerApprenantParNiveau','updateEnseignant','updateUserDirecteur','updateDirecteur','updateUserEnseignant','updateUserEnseignant','archiverUser','archiverApprenant','archiverDirecteur','archiverEnseignant','archiverTuteur','refresh']]);
     }
 
 public function login(LogUserRequest $request)
@@ -123,17 +123,17 @@ public function login(LogUserRequest $request)
                     'type' => 'bearer',
                 ]
             ]);
-        }else{
-            return response()->json([
-                'status'=>200,
-                'message' => 'Salut Admin',
-                'user' => $user,
-                'authorization' => [
-                    'token' => $token,
-                    'type' => 'bearer',
-                ]
-            ]);
-        }
+        }elseif ($user->role_nom === 'admin' && $user->etat === 'actif') {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Salut Admin',
+                    'user' => $user,
+                    'authorization' => [
+                        'token' => $token,
+                        'type' => 'bearer',
+                    ]
+                ]);
+            }
     }
 
 }
@@ -210,6 +210,19 @@ public function registerTuteur(CreateTuteurRequest $request)
 
 public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent créer un enseignant.',
+        ], 403);
+    }
     DB::beginTransaction(); // Démarre la transaction
 
     try {
@@ -271,6 +284,12 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
                     'role_nom' => 'tuteur',
                 ]
             );
+            $userTuteur->permission()->create([
+                'type_visibilite' => $request->tuteur['type_visibilite'] ?? 'limite',
+                'academies' => filter_var($request->tuteur['academies'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'ressources' => filter_var($request->tuteur['ressources'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'rapports' => filter_var($request->tuteur['rapports'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ]);
 
             $tuteur = $userTuteur->tuteur()->create([
                 'profession' => $request->tuteur['profession'],
@@ -307,6 +326,12 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'role_nom' => 'apprenant',
         ]);
 
+        $userApprenant->permission()->create([
+            'type_visibilite' => $request->type_visibilite ?? 'limite',
+                'academies' => $request->boolean('academies'),
+                'ressources' => $request->boolean('ressources'),
+                'rapports' => $request->boolean('rapports'),
+        ]);
         // Création de l'apprenant avec l'association du tuteur et tous les champs supplémentaires
         $apprenant = $userApprenant->apprenant()->create([
             'date_naissance' => $request->date_naissance,
@@ -346,7 +371,9 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
             'message' => 'Apprenant et Tuteur créés ou associés avec succès',
             'user_apprenant' => $userApprenant,
             'apprenant' => $apprenant,
+            'permission_apprenant' => $userApprenant->permission,
             'user_tuteur' => $userTuteur,
+            'permission_tuteur' => $userTuteur->permission,
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -360,12 +387,23 @@ public function registerApprenantTuteur(CreateApprenantTuteurRequest $request)
 }
 
 
-
-
 //modifier apprenanttuteur---------------------------------
 
 public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent créer un enseignant.',
+        ], 403);
+    }
     DB::beginTransaction(); // Démarre la transaction
 
     try {
@@ -386,9 +424,29 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'role_nom' => 'apprenant',
         ]);
 
+        $permissionDataApprenant = [
+            'type_visibilite' => $request->type_visibilite ?? 'limite',
+            'academies' => $request->academies === true ? 1 : 0,
+            'ressources' => $request->ressources === true ? 1 : 0,
+            'rapports' => $request->rapports === true ? 1 : 0,
+        ];
+        $userApprenant->permission()->updateOrCreate(
+            ['user_id' => $userApprenant->id],
+            $permissionDataApprenant
+        );
+
         // Recherche du tuteur associé
         $tuteur = $apprenant->tuteur;
+
+        if (!$tuteur) {
+            throw new \Exception("Le tuteur associé à cet apprenant est introuvable.");
+        }
+
         $userTuteur = $tuteur->user;
+
+        if (!$userTuteur) {
+            throw new \Exception("L'utilisateur associé au tuteur est introuvable.");
+        }
 
         // Mise à jour de l'utilisateur Tuteur
         $userTuteur->update([
@@ -402,6 +460,19 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'etat' => data_get($request->tuteur, 'etat', $userTuteur->etat), // Utilise l'état actuel s'il n'est pas fourni
             'role_nom' => 'tuteur',
         ]);
+
+
+        $permissionDataTuteur = [
+            'type_visibilite' => $request->tuteur['type_visibilite'] ?? 'limite',
+            'academies' => isset($request->tuteur['academies']) && $request->tuteur['academies'] === true ? 1 : 0,
+            'ressources' => isset($request->tuteur['ressources']) && $request->tuteur['ressources'] === true ? 1 : 0,
+            'rapports' => isset($request->tuteur['rapports']) && $request->tuteur['rapports'] === true ? 1 : 0,
+        ];
+
+        $userTuteur->permission()->updateOrCreate(
+            ['user_id' => $userTuteur->id],
+            $permissionDataTuteur
+        );
 
         // Gestion de l'image du tuteur (si un fichier est fourni)
         $tuteurImageFileName = $tuteur->image; // Conserve l'image actuelle si aucun fichier n'est fourni
@@ -479,9 +550,13 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
             'message' => 'Apprenant et Tuteur mis à jour avec succès',
             'user_apprenant' => $userApprenant,
             'apprenant' => $apprenant,
+            'permission_apprenant' => $permissionDataApprenant,
             'user_tuteur' => $userTuteur,
             'tuteur' => $tuteur,
+            'permission_tuteur' => $permissionDataTuteur,
             'classe' => $classe,
+             // Ajout des permissions de l'apprenant
+
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -493,8 +568,6 @@ public function updateApprenantTuteur(UpdateApprenantTuteurRequest $request, $id
         ], 500);
     }
 }
-
-
 
 //supprimer un tuteur via sa table
 public function supprimerTuteur(Tuteur $tuteur)
@@ -941,8 +1014,22 @@ public function supprimerUserApprenant(User $user)
 
 
 //-----------------Enseignant-------------------------------
+
 public function registerEnseignant(CreateEnseignantRequest $request)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent créer un enseignant.',
+        ], 403);
+    }
     DB::beginTransaction(); // Démarre la transaction
 
     try {
@@ -958,7 +1045,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             $cvFileName = $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes');
         }
 
-        // Gestion de l'acte de naissance de l'enseignant (si applicable)
+        // Gestion de l'acte de naissance de l'enseignant
         $acteNaissanceFileName = null;
         if ($request->file('acte_naissance')) {
             $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
@@ -977,6 +1064,14 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'role_nom' => 'enseignant',
         ]);
 
+        // Création des permissions si l'utilisateur connecté est un admin
+        $user->permission()->create([
+            'type_visibilite' => $request->type_visibilite ?? 'limite',
+            'academies' => $request->boolean('academies'),
+            'ressources' => $request->boolean('ressources'),
+            'rapports' => $request->boolean('rapports'),
+        ]);
+
         // Création de l'enseignant avec les informations spécifiques
         $enseignant = $user->enseignant()->create([
             'date_naissance' => $request->date_naissance,
@@ -984,7 +1079,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'numero_CNI' => $request->numero_CNI,
             'image' => $enseignantImageFileName,
             'cv_diplomes' => $cvFileName,
-            'acte_naissance' => $acteNaissanceFileName, // Ajout de l'acte de naissance
+            'acte_naissance' => $acteNaissanceFileName,
             'matiere_enseignée' => $request->matiere_enseignée,
             'numero_identification_enseignant' => $request->numero_identification_enseignant,
             'niveau_enseignant' => $request->niveau_enseignant,
@@ -1015,6 +1110,7 @@ public function registerEnseignant(CreateEnseignantRequest $request)
             'message' => 'Enseignant créé avec succès',
             'user' => $user,
             'enseignant' => $enseignant,
+            'permissions' => $user->permission,
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -1029,12 +1125,24 @@ public function registerEnseignant(CreateEnseignantRequest $request)
 
 public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
 
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
     DB::beginTransaction();
 
     try {
 
-        $user = User::with('enseignant')->find($userId);
+        $user = User::with(['enseignant', 'permission'])->find($userId);
 
         if (!$user || !$user->enseignant) {
             DB::rollBack();
@@ -1104,6 +1212,18 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'commentaires_notes' => $request->commentaires_notes ?? null,
         ]);
 
+
+        $permissionData = [
+    'type_visibilite' => $request->input('type_visibilite', 'limite'),
+    'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+    'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+    'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+];
+
+$user->enseignant->user->permission()->updateOrCreate(
+    ['user_id' => $user->id],
+    $permissionData
+);
         // Valider la transaction
         DB::commit();
 
@@ -1111,6 +1231,7 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
             'status' => 200,
             'message' => 'Enseignant mis à jour avec succès.',
             'enseignant' => $user,
+            'permissions' => $user->permission,
         ]);
 
     } catch (\Exception $e) {
@@ -1130,16 +1251,37 @@ public function updateUserEnseignant(UpdateEnseignantRequest $request, $userId)
 //modifier enseignant dans sa table
 public function updateEnseignant(UpdateEnseignantRequest $request, $id)
 {
+    // Vérification de l'authentification
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    // Vérification du rôle de l'utilisateur connecté
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
+
     DB::beginTransaction();
 
     try {
+        // Récupération de l'enseignant avec ses informations utilisateur
         $enseignant = Enseignant::with('user')->find($id);
 
         if (!$enseignant) {
             DB::rollBack();
-            return response()->json(['status' => 404, 'message' => 'Enseignant non trouvé.'], 404);
+            return response()->json([
+                'status' => 404,
+                'message' => 'Enseignant non trouvé.',
+            ], 404);
         }
 
+        // Mise à jour des informations utilisateur
         $enseignant->user->update([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -1147,26 +1289,13 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'telephone' => $request->telephone,
             'adresse' => $request->adresse,
             'genre' => $request->genre,
-            'etat' => $request->etat ?: $enseignant->user->etat,
+            'etat' => $request->etat ?? $enseignant->user->etat,
         ]);
 
-        // Gestion de l'image
-        $enseignantImageFileName = null;
-        if ($request->file('image')) {
-            $enseignantImageFileName = $this->handleImageUpload($request->file('image'));
-        }
-
-        // Gestion du CV de l'enseignant
-        $cvFileName = null;
-        if ($request->file('cv_diplomes')) {
-            $cvFileName = $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes');
-        }
-
-        // Gestion de l'acte de naissance de l'enseignant (si applicable)
-        $acteNaissanceFileName = null;
-        if ($request->file('acte_naissance')) {
-            $acteNaissanceFileName = $this->handleImageUpload($request->file('acte_naissance'));
-        }
+        // Gestion des fichiers facultatifs
+        $enseignantImageFileName = $request->hasFile('image') ? $this->handleImageUpload($request->file('image')) : $enseignant->image;
+        $cvFileName = $request->hasFile('cv_diplomes') ? $this->handleImageUpload($request->file('cv_diplomes'), 'cv_diplomes') : $enseignant->cv_diplomes;
+        $acteNaissanceFileName = $request->hasFile('acte_naissance') ? $this->handleImageUpload($request->file('acte_naissance')) : $enseignant->acte_naissance;
 
         // Mise à jour des informations spécifiques de l'enseignant
         $enseignant->update([
@@ -1179,32 +1308,46 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
             'matiere_enseignée' => $request->matiere_enseignée,
             'numero_identification_enseignant' => $request->numero_identification_enseignant,
             'niveau_enseignant' => $request->niveau_enseignant,
-            'nationalité' => $request->nationalité ?? null,
+            'nationalité' => $request->nationalité,
             'statut_enseignant' => $request->statut_enseignant,
             'date_debut_service' => $request->date_debut_service,
-            'type_contrat' => $request->type_contrat ?? null,
+            'type_contrat' => $request->type_contrat,
             'heure_travail_hebdomadaire' => $request->heure_travail_hebdomadaire,
             'salaire_base' => $request->salaire_base,
             'type_salaire' => $request->type_salaire,
-            'prime_indemnités' => $request->prime_indemnités ?? null,
-            'cotisation_sociales' => $request->cotisation_sociales ?? null,
-            'part_employeur' => $request->part_employeur ?? null,
-            'retenue_salaire' => $request->retenue_salaire ?? null,
+            'prime_indemnités' => $request->prime_indemnités,
+            'cotisation_sociales' => $request->cotisation_sociales,
+            'part_employeur' => $request->part_employeur,
+            'retenue_salaire' => $request->retenue_salaire,
             'mode_paiement' => $request->mode_paiement,
-            'banque_domiciliation' => $request->banque_domiciliation ?? null,
-            'numero_RIB' => $request->numero_RIB ?? null,
-            'contrat_travail' => $request->contrat_travail ?? null,
-            'ancienneté' => $request->ancienneté ?? null,
-            'evaluation_performance' => $request->evaluation_performance ?? null,
-            'commentaires_notes' => $request->commentaires_notes ?? null,
+            'banque_domiciliation' => $request->banque_domiciliation,
+            'numero_RIB' => $request->numero_RIB,
+            'contrat_travail' => $request->contrat_travail,
+            'ancienneté' => $request->ancienneté,
+            'evaluation_performance' => $request->evaluation_performance,
+            'commentaires_notes' => $request->commentaires_notes,
         ]);
 
+        // Mise à jour ou création des permissions
+      $permissionData = [
+    'type_visibilite' => $request->input('type_visibilite', 'limite'),
+    'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+    'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+    'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+];
+
+$enseignant->user->permission()->updateOrCreate(
+    ['user_id' => $enseignant->user->id],
+    $permissionData
+);
         DB::commit();
+
 
         return response()->json([
             'status' => 200,
             'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
-            'user' => $enseignant->user,
+          'user' => $enseignant->user->makeHidden(['permission']),
+    'permissions' => $enseignant->user->permission,
             'enseignant' => $enseignant->only([
                 'id', 'matiere_enseignée', 'numero_identification_enseignant', 'date_naissance',
                 'lieu_naissance', 'nationalité', 'image', 'numero_CNI', 'niveau_enseignant',
@@ -1226,6 +1369,7 @@ public function updateEnseignant(UpdateEnseignantRequest $request, $id)
         ], 500);
     }
 }
+
 
 
 //Supprimer enseignant via la table user
@@ -1256,8 +1400,6 @@ public function supprimerUserEnseignant(User $user)
         ], 500);
     }
 }
-
-
 
 //supprimer enseignant dans sa table
 public function supprimerEnseignant(Enseignant $enseignant)
@@ -1296,10 +1438,23 @@ public function supprimerEnseignant(Enseignant $enseignant)
     }
 }
 
-
 //------------------- directeur-------------
 public function registerDirecteur(CreateDirecteurRequest $request)
 {
+
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent créer un enseignant.',
+        ], 403);
+    }
     DB::beginTransaction(); // Démarre la transaction
 
     try {
@@ -1315,7 +1470,12 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'etat' => $request->etat ?: 'actif', // Utilisez 'actif' par défaut si etat n'est pas fourni
             'role_nom' => 'directeur',
         ]);
-
+        $user->permission()->create([
+            'type_visibilite' => $request->type_visibilite ?? 'limite',
+            'academies' => $request->boolean('academies'),
+            'ressources' => $request->boolean('ressources'),
+            'rapports' => $request->boolean('rapports'),
+        ]);
         // Gestion de l'image
         $fileName = null; // Initialisation de la variable pour le nom du fichier
         if ($request->file('image')) {
@@ -1362,7 +1522,8 @@ public function registerDirecteur(CreateDirecteurRequest $request)
             'status' => 200,
             'message' => 'Utilisateur créé avec succès',
             'user' => $user,
-            'directeur' => $directeur
+            'directeur' => $directeur,
+            'permissions' => $user->permission
         ]);
     } catch (\Exception $e) {
         DB::rollBack(); // Annule la transaction en cas d'erreur
@@ -1378,6 +1539,19 @@ public function registerDirecteur(CreateDirecteurRequest $request)
 //register personnel_administratif
 public function registerPersonnelAdministratif(CreatePersonnelAdministratifRequest $request)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent créer un enseignant.',
+        ], 403);
+    }
     // Démarrer une transaction
     DB::beginTransaction();
 
@@ -1395,6 +1569,12 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
             'role_nom' => 'personneladministratif',
         ]);
 
+        $user->permission()->create([
+            'type_visibilite' => $request->type_visibilite ?? 'limite',
+            'academies' => $request->boolean('academies'),
+            'ressources' => $request->boolean('ressources'),
+            'rapports' => $request->boolean('rapports'),
+        ]);
         // Gestion de l'image
         $fileName = null; // Initialisation de la variable pour le nom du fichier
         if ($request->file('image')) {
@@ -1445,6 +1625,7 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
             'status' => 200,
             'message' => 'Utilisateur créé avec succès',
             'personneladministratif' => $personneladministratif,
+            'permissions' => $user->permission
         ]);
     } catch (\Exception $e) {
         // Annuler la transaction en cas d'erreur
@@ -1461,6 +1642,19 @@ public function registerPersonnelAdministratif(CreatePersonnelAdministratifReque
 //modifier un personnel_administratif dans sa table
 public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest $request, $id)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
     // Démarrer une transaction
     DB::beginTransaction();
 
@@ -1530,6 +1724,17 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
+        $permissionData = [
+            'type_visibilite' => $request->input('type_visibilite', 'limite'),
+            'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+            'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+            'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+        ];
+
+        $personneladministratif->user->permission()->updateOrCreate(
+            ['user_id' => $personneladministratif->user->id],
+            $permissionData
+        );
         // Valider la transaction
         DB::commit();
 
@@ -1537,6 +1742,7 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
             'status' => 200,
             'message' => 'Enseignant et informations utilisateur mis à jour avec succès.',
             'personnel_administratif' => $personneladministratif,
+            'permissions' => $personneladministratif->user->permission,
 
         ]);
 
@@ -1555,6 +1761,19 @@ public function updatePersonnelAdministratif(UpdatePersonnelAdministratifRequest
 //modifier personnel_administratif dans la table user
 public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifRequest $request, $userId)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
     // Démarrer une transaction
     DB::beginTransaction();
 
@@ -1623,6 +1842,17 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
             'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
+        $permissionData = [
+            'type_visibilite' => $request->input('type_visibilite', 'limite'),
+            'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+            'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+            'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+        ];
+
+        $user->personneladministratif->user->permission()->updateOrCreate(
+            ['user_id' => $user->id],
+            $permissionData
+        );
         DB::commit();
 
         return response()->json([
@@ -1630,6 +1860,7 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
             'message' => 'PersonnelAdministratif mis à jour avec succès.',
             'user'=>$user,
             'personneladministratif' => $user->personneladministratif,
+            'permissions' => $user->permission,
         ]);
 
     } catch (\Exception $e) {
@@ -1647,6 +1878,20 @@ public function updateUserPersonnelAdministratif(UpdatePersonnelAdministratifReq
 //modifier directeur via la table user
 public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
 {
+
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
     // Démarrer une transaction
     DB::beginTransaction();
 
@@ -1713,6 +1958,17 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
+        $permissionData = [
+            'type_visibilite' => $request->input('type_visibilite', 'limite'),
+            'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+            'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+            'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+        ];
+
+        $user->directeur->user->permission()->updateOrCreate(
+            ['user_id' => $user->id],
+            $permissionData
+        );
         // Valider la transaction
         DB::commit();
 
@@ -1721,6 +1977,7 @@ public function updateUserDirecteur(UpdateDirecteurRequest $request, $userId)
             'message' => 'Directeur mis à jour avec succès.',
             'user' => $user,
             'directeur' => $user->directeur,
+            'permissions' => $user->permission,
         ], 200);
 
     } catch (\Exception $e) {
@@ -1870,6 +2127,19 @@ public function supprimerPersonnelAdministratif(PersonnelAdministratif $personne
 //fonction modifier la table directeur
 public function updateDirecteur(UpdateDirecteurRequest $request, $id)
 {
+    if (!auth()->check()) {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Vous devez être connecté pour effectuer cette action.',
+        ], 401);
+    }
+
+    if (auth()->user()->role_nom !== 'admin') {
+        return response()->json([
+            'status' => 403,
+            'message' => 'Accès refusé. Seuls les administrateurs peuvent modifier un enseignant.',
+        ], 403);
+    }
     // Démarrer une transaction
     DB::beginTransaction();
 
@@ -1935,6 +2205,17 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'commentaires_notes' =>$request->commentaires_notes ?? null
         ]);
 
+        $permissionData = [
+            'type_visibilite' => $request->input('type_visibilite', 'limite'),
+            'academies' => filter_var($request->input('academies', false), FILTER_VALIDATE_BOOLEAN),
+            'ressources' => filter_var($request->input('ressources', false), FILTER_VALIDATE_BOOLEAN),
+            'rapports' => filter_var($request->input('rapports', false), FILTER_VALIDATE_BOOLEAN),
+        ];
+
+        $directeur->user->permission()->updateOrCreate(
+            ['user_id' => $directeur->user->id],
+            $permissionData
+        );
         // Valider la transaction
         DB::commit();
 
@@ -1943,6 +2224,7 @@ public function updateDirecteur(UpdateDirecteurRequest $request, $id)
             'message' => 'Directeur et informations utilisateur mis à jour avec succès.',
             'directeur' => $directeur,
             'user' => $directeur->user,
+            'permissions' => $directeur->user->permission,
         ], 200);
 
     } catch (\Exception $e) {
@@ -1977,7 +2259,7 @@ public function ListeUtilisateur()
     ]);
 }
 //lister tous les apprenants dans sa table
-public function ListerApprenant()
+public function ListerApprenants()
 {
     $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe','rapports'])->get();
 
@@ -2084,6 +2366,223 @@ public function ListerApprenant()
         'status' => 200,
         'apprenants' => $apprenantsData,
     ], 200);
+}
+
+public function ListerApprenant()
+{
+    $user = Auth::user();
+
+    if ($user->role_nom === 'admin') {
+        $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'])
+            ->get();
+    } elseif ($user->role_nom === 'tuteur') {
+        $apprenants = Apprenant::with([
+                'user','tuteur.user','classe.salle',
+                'classeAssociations.classe','rapports'
+            ])
+            ->whereHas('tuteur', function ($q) use ($user) {
+                // on filtre sur la colonne tuteurs.user_id = user.id
+                $q->where('user_id', $user->id);
+            })
+            ->get();
+
+    } elseif ($user->role_nom === 'enseignant') {
+    $enseignant = Enseignant::where('user_id', $user->id)->first();
+
+    if (!$enseignant) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Aucun enseignant trouvé pour cet utilisateur.'
+        ], 404);
+    }
+
+    $enseignantId = $enseignant->id;
+
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'])
+        ->whereHas('classeAssociations', function ($query) use ($enseignantId) {
+            $query->where('enseignant_id', $enseignantId);
+        })
+        ->get();
+
+        $enseignantData = [
+            'id' => $enseignant->id,
+            'date_naissance' => $enseignant->date_naissance,
+            'lieu_naissance' => $enseignant->lieu_naissance,
+            'numero_CNI' => $enseignant->numero_CNI,
+            'image' => $enseignant->image,
+            'cv_diplomes' => $enseignant->cv_diplomes,
+            'matiere_enseignée' => $enseignant->matiere_enseignée,
+            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant,
+            'niveau_enseignant' => $enseignant->niveau_enseignant,
+            'nationalité' => $enseignant->nationalité,
+            'statut_enseignant' => $enseignant->statut_enseignant,
+            'date_debut_service' => $enseignant->date_debut_service,
+            'type_contrat' => $enseignant->type_contrat,
+            'heure_travail_hebdomadaire' => $enseignant->heure_travail_hebdomadaire,
+            'salaire_base' => $enseignant->salaire_base,
+            'type_salaire' => $enseignant->type_salaire,
+            'prime_indemnités' => $enseignant->prime_indemnités,
+            'cotisation_sociales' => $enseignant->cotisation_sociales,
+            'part_employeur' => $enseignant->part_employeur,
+            'retenue_salaire' => $enseignant->retenue_salaire,
+            'mode_paiement' => $enseignant->mode_paiement,
+            'banque_domiciliation' => $enseignant->banque_domiciliation,
+            'numero_RIB' => $enseignant->numero_RIB,
+            'contrat_travail' => $enseignant->contrat_travail,
+            'ancienneté' => $enseignant->ancienneté,
+            'evaluation_performance' => $enseignant->evaluation_performance,
+            'commentaires_notes' => $enseignant->commentaires_notes,
+            'user' => $enseignant->user ? [
+                'id' => $enseignant->user->id,
+                'nom' => $enseignant->user->nom,
+                'prenom' => $enseignant->user->prenom,
+                'telephone' => $enseignant->user->telephone,
+                'email' => $enseignant->user->email,
+                'genre' => $enseignant->user->genre,
+                'etat' => $enseignant->user->etat,
+                'adresse' => $enseignant->user->adresse,
+                'role_nom' => $enseignant->user->role_nom,
+            ] : null,
+        ];
+
+    } else {
+        return response()->json([
+            'status'  => 403,
+            'message' => 'Accès non autorisé.'
+        ], 403);
+    }
+
+    // Si aucun apprenant trouvé
+    if ($apprenants->isEmpty()) {
+        return response()->json([
+            'status'  => 404,
+            'message' => 'Aucun apprenant trouvé.'
+        ], 404);
+    }
+
+    // Structurer les données pour chaque apprenant
+    $apprenantsData = $apprenants->map(function ($apprenant) {
+        $apprenantData = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' =>$apprenant->numero_CNI,
+            'niveau_education' => $apprenant->niveau_education,
+            'image' => $apprenant->image,
+            'nationalité' =>$apprenant->nationalité,
+            'acte_naissance' => $apprenant->acte_naissance,
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve,
+            'regime_paiement' => $apprenant->regime_paiement ,
+            'reduction_bourse' =>$apprenant->reduction_bourse,
+            'statut_paiement_actuel' => $apprenant->statut_paiement_actuel,
+            'references_factures' => $apprenant->references_factures,
+            'conditions_medicales' =>$apprenant->conditions_medicales,
+            'contact_urgence' => $apprenant->contact_urgence,
+            'note_resultat_anterieur' => $apprenant->note_resultat_anterieur,
+            'evaluations_specifiques' => $apprenant->evaluations_specifiques,
+            'langue_parlee_maison' => $apprenant->langue_parlee_maison,
+            'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
+            'remarque_eleve' =>$apprenant->remarque_eleve,
+            'autorisation_parentale' => $apprenant->autorisation_parentale,
+            'année_inscription' => $apprenant->année_inscription,
+            'niveau_entrée' => $apprenant->niveau_entrée,
+            'statut_inscription'  => $apprenant->statut_inscription,
+            'transport_scolaire'  => $apprenant->transport_scolaire,
+            'service_transport' => $apprenant->service_transport,
+            'programme_special' => $apprenant->programme_special,
+            'user' => $apprenant->user ? [
+                'id' => $apprenant->user->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'adresse' => $apprenant->user->adresse,
+                'role_nom' => $apprenant->user->role_nom,
+            ] : null,
+        ];
+
+        // Vérification du tuteur
+        if ($apprenant->tuteur) {
+    $tuteur = $apprenant->tuteur;
+    $apprenantData['tuteur'] = [
+        'tuteur_id' => $tuteur->id,
+        'user_id' => $tuteur->user_id,
+        'profession' => $tuteur->profession,
+        'nationalité' => $tuteur->nationalité,
+        'image' => $tuteur->image,
+        'nombre_enfants_inscrits' => $tuteur->nombre_enfants_inscrits,
+        'numero_CNI' => $tuteur->numero_CNI,
+        'lien_parenté' => $tuteur->lien_parenté,
+        'user' => $tuteur->user ? [
+            'id' => $tuteur->user->id,
+            'nom' => $tuteur->user->nom,
+            'prenom' => $tuteur->user->prenom,
+            'telephone' => $tuteur->user->telephone,
+            'email' => $tuteur->user->email,
+            'genre' => $tuteur->user->genre,
+            'etat' => $tuteur->user->etat,
+            'adresse' => $tuteur->user->adresse,
+            'role_nom' => $tuteur->user->role_nom,
+        ] : null,
+    ];
+} else {
+    $apprenantData['tuteur'] = null;
+}
+
+        $apprenantData['rapports'] = $apprenant->rapports->map(function ($rapport) {
+            return [
+                'id' => $rapport->id,
+                'nom_rapport' => $rapport->nom_rapport,
+                'type_utilisateur' => $rapport->type_utilisateur,
+                'commentaire_apprenant' => $rapport->commentaire_apprenant,
+                'commentaire_enseignant' => $rapport->commentaire_enseignant,
+                'apprenant_id' => $rapport->apprenant_id,
+                'enseignant_id' => $rapport->enseignant_id,
+                'date_commentaire' => $rapport->date_commentaire,
+            ];
+        });
+        // Vérification de la classe principale
+        if ($apprenant->classe) {
+            $apprenantData['classe'] = [
+                'id' => $apprenant->classe->id,
+                'nom' => $apprenant->classe->nom,
+                'niveau_classe' => $apprenant->classe->niveau_classe,
+                'niveau_education' => $apprenant->classe->niveau_education,
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity,
+                    'type' => $apprenant->classe->salle->type,
+                ] : null,
+            ];
+        } else {
+            $apprenantData['classe'] = null;
+        }
+
+        // Ajouter les classes associées
+        $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
+            return [
+                'classe_id' => $association->classe_id,
+                'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+                'enseignant_id' => $association->enseignant_id,
+            ];
+        });
+
+        return $apprenantData;
+    });
+
+    $response = [
+        'status' => 200,
+        'apprenants' => $apprenantsData,
+    ];
+
+    if ($user->role_nom === 'enseignant') {
+        $response['enseignant'] = $enseignantData;
+    }
+
+    return response()->json($response, 200);
 }
 
 public function getApprenantDetailsWithPresence($id)
@@ -2707,6 +3206,137 @@ public function ListerDirecteur()
 ///-----lister tous les apprenants qui se trouve dans la table user
 public function indexApprenants()
 {
+    $user = Auth::user();
+
+    if ($user->role_nom === 'admin') {
+        $apprenants = Apprenant::with([
+            'user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'
+        ])->get();
+    } elseif ($user->role_nom === 'tuteur') {
+        $apprenants = Apprenant::with([
+            'user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'
+        ])
+            ->whereHas('tuteur', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->get();
+    } elseif ($user->role_nom === 'enseignant') {
+        $enseignant = Enseignant::where('user_id', $user->id)->first();
+
+        if (!$enseignant) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Aucun enseignant trouvé pour cet utilisateur.'
+            ], 404);
+        }
+
+        $enseignantId = $enseignant->id;
+
+        $apprenants = Apprenant::with([
+            'user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'
+        ])
+            ->whereHas('classeAssociations', function ($query) use ($enseignantId) {
+                $query->where('enseignant_id', $enseignantId);
+            })
+            ->get();
+    } else {
+        return response()->json([
+            'status'  => 403,
+            'message' => 'Accès non autorisé.'
+        ], 403);
+    }
+
+    if ($apprenants->isEmpty()) {
+        return response()->json([
+            'status'  => 404,
+            'message' => 'Aucun apprenant trouvé.'
+        ], 404);
+    }
+
+    // Créer une nouvelle structure de données similaire à showUser
+   $apprenantsData = $apprenants->map(function ($apprenant) {
+        $user = $apprenant->user;
+
+        // Structurer les données de l'apprenant
+        $apprenantData = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' =>$apprenant->numero_CNI,
+            'niveau_education' => $apprenant->niveau_education,
+            'image' => $apprenant->image,
+            'nationalité' =>$apprenant->nationalité,
+            'acte_naissance' => $apprenant->acte_naissance,
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve,
+            'regime_paiement' => $apprenant->regime_paiement ,
+            'reduction_bourse' =>$apprenant->reduction_bourse,
+            'statut_paiement_actuel' => $apprenant->statut_paiement_actuel,
+            'references_factures' => $apprenant->references_factures,
+            'conditions_medicales' =>$apprenant->conditions_medicales,
+            'contact_urgence' => $apprenant->contact_urgence,
+            'note_resultat_anterieur' => $apprenant->note_resultat_anterieur,
+            'evaluations_specifiques' => $apprenant->evaluations_specifiques,
+            'langue_parlee_maison' => $apprenant->langue_parlee_maison,
+            'activites_extraordinaires' =>$apprenant->activites_extraordinaires,
+            'remarque_eleve' =>$apprenant->remarque_eleve,
+            'autorisation_parentale' => $apprenant->autorisation_parentale,
+            'année_inscription' => $apprenant->année_inscription,
+            'niveau_entrée' => $apprenant->niveau_entrée,
+            'statut_inscription'  => $apprenant->statut_inscription,
+            'transport_scolaire'  => $apprenant->transport_scolaire,
+            'service_transport' => $apprenant->service_transport,
+            'programme_special' => $apprenant->programme_special,
+            'user' => [
+                'id' => $user->id,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'telephone' => $user->telephone,
+                'email' => $user->email,
+                'genre' => $user->genre,
+                'etat' => $user->etat,
+                'adresse' => $user->adresse,
+                'role_nom' => $user->role_nom,
+                // Ajouter d'autres champs nécessaires
+            ]
+        ];
+
+        // Vérification du tuteur
+        if ($apprenant->tuteur) {
+            $tuteur = $apprenant->tuteur;
+            // Fusionner les données du tuteur et de l'utilisateur associé
+            $apprenantData['tuteur'] = $tuteur->user ? array_merge($tuteur->toArray(), $tuteur->user->toArray()) : $tuteur->toArray();
+        } else {
+            $apprenantData['tuteur'] = null; // Si pas de tuteur, on définit à null
+        }
+
+        // Vérification de la classe, de la salle et de l'enseignant
+        if ($apprenant->classe) {
+            $apprenantData['classe'] = [
+                'id' => $apprenant->classe->id,
+                'nom' => $apprenant->classe->nom, // Nom de la classe
+                'niveau_classe' => $apprenant->classe->niveau_classe,
+                'niveau_education' => $apprenant->classe->niveau_education, // Niveau de la classe
+                'salle' => $apprenant->classe->salle ? [
+                    'id' => $apprenant->classe->salle->id,
+                    'nom' => $apprenant->classe->salle->nom,
+                    'capacity' => $apprenant->classe->salle->capacity, // Capacité de la salle
+                    'type' => $apprenant->classe->salle->type, // Type de la salle
+                ] : null, // Si la salle n'existe pas, on met null
+            ];
+        } else {
+            $apprenantData['classe'] = null; // Si pas de classe, on met null
+        }
+
+        return $apprenantData;
+    });
+
+    return response()->json([
+        'status' => 200,
+        'apprenants' => $apprenantsData,
+    ]);
+}
+
+public function indexApprenantss()
+{
     // Charger les utilisateurs avec les rôles 'apprenant' et les informations associées
     $apprenants = User::with([
         'apprenant.tuteur.user', // Charger le tuteur et son utilisateur associé
@@ -2796,7 +3426,6 @@ public function indexApprenants()
         'apprenants' => $apprenantsData,
     ]);
 }
-
 
 
 

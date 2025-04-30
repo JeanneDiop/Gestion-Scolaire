@@ -25,8 +25,8 @@ class UpdateDirecteurRequest extends FormRequest
     return [
         'nom' => ['required', 'string', 'max:255'],
             'prenom' => ['required', 'string', 'max:255'],
-           'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/', 'unique:users,telephone',],
-            'email' => ['required', 'string', 'email','nullable', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/', 'unique:users,email',],
+           'telephone' => ['nullable','required', 'regex:/^\+221(77|78|76|70|75|33)\d{7}$/'],
+            'email' => ['required', 'string', 'email','nullable', 'max:255', 'regex:/^[A-Za-z]+[A-Za-z0-9._%+-]+@+[A-Za-z][A-Za-z0-9.-]+.[A-Za-z]{2,}$/'],
             //'password' => 'required|min:8',
             'adresse' => ['required', 'string'],
             'genre' => ['required', 'in:Femme,Homme'],
@@ -36,7 +36,7 @@ class UpdateDirecteurRequest extends FormRequest
             'image' => ['nullable' ,'string'],
             'date_debut_service' => ['required', 'date'],
             'statut_employé' => ['required', 'in:Permanent,Temporaire,Vacataire'],
-            'numero_identification_directeur' => 'required|string|max:255|unique:directeurs,numero_identification_directeur',
+            'numero_identification_directeur' => 'required|string|max:255',
             'type_contrat' => ['required', 'in:CDI,CDD,Contrat,Vacataire'],
             'salaire_base' => ['required', 'string'],
             'horaires_travail' => ['nullable', 'string'],
@@ -48,15 +48,25 @@ class UpdateDirecteurRequest extends FormRequest
             'retenue_salaire' => ['nullable', 'string'],
             'mode_paiement' => ['required', 'in:Virement,Bancaire,Espèce,Chèque'],
             'banque_domiciliation' => ['nullable', 'string'],
-            'numero_compte_bancaire' => ['nullable', 'string','unique:directeurs,numero_compte_bancaire'],
+            'numero_compte_bancaire' => ['nullable', 'string'],
             'cv_diplomes' => ['nullable', 'string'],
             'certification_formations' => ['nullable', 'string'],
             'contrat_travail' => ['nullable', 'string'],
             'ancienneté' => ['nullable', 'string'],
             'evaluation_performance' => ['nullable', 'numeric'],
             'commentaires_notes' => ['nullable', 'string'],
-            'numero_CNI' => ['string', 'unique:directeurs,numero_CNI'],
+            'numero_CNI' => ['string'],
     ];
+
+    if (auth()->check() && auth()->user()->role_nom === 'admin') {
+        $rules = array_merge($rules, [
+            'type_visibilite' => 'required|in:globale,limite',
+            'academies' => 'required|boolean',
+            'ressources' => 'required|boolean',
+            'rapports' => 'required|boolean',
+        ]);
+    }
+    return $rules;
 }
 
 
@@ -109,7 +119,7 @@ class UpdateDirecteurRequest extends FormRequest
             'numero_identification_directeur.required' => 'Le numéro d\'identification de l\'enseignant est requis.',
             'numero_identification_directeur.string' => 'Le numéro d\'identification doit être une chaîne de caractères.',
             'numero_identification_directeur.max' => 'Le numéro d\'identification ne doit pas dépasser 255 caractères.',
-            'numero_identification_directeur.unique' => 'Ce numéro d\'identification est déjà utilisé.',
+
 
             'date_debut_service.required' => 'La date de début de service est obligatoire.',
             'date_debut_service.date' => 'La date de début de service doit être une date valide.',
@@ -145,7 +155,7 @@ class UpdateDirecteurRequest extends FormRequest
             'banque_domiciliation.string' => 'La banque de domiciliation doit être une chaîne de caractères.',
 
             'numero_compte_bancaire.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
-            'numero_compte_bancaire.unique' => 'Ce numéro de compte bancaire est déjà utilisé.',
+
 
             'cv_diplomes.string' => 'Les diplômes/CV doivent être une chaîne de caractères.',
             'certification_formation.string' => 'Les certification/formations doivent être une chaîne de caractères.',
@@ -160,7 +170,19 @@ class UpdateDirecteurRequest extends FormRequest
             'commentaires_notes.string' => 'Les commentaires/notes doivent être une chaîne de caractères.',
 
             'numero_CNI.string' => 'Le numéro CNI doit être une chaîne de caractères.',
-            'numero_CNI.unique' => 'Ce numéro de CNI est déjà utilisé.',
+
+
+            'type_visibilite.required' => 'Le type de visibilité est requis.',
+        'type_visibilite.in' => 'Le type de visibilité doit être soit "globale", soit "limite".',
+
+        'academies.required' => 'Le champ "académies" est requis.',
+        'academies.boolean' => 'Le champ "académies" doit être vrai ou faux.',
+
+        'ressources.required' => 'Le champ "ressources" est requis.',
+        'ressources.boolean' => 'Le champ "ressources" doit être vrai ou faux.',
+
+        'rapports.required' => 'Le champ "rapports" est requis.',
+        'rapports.boolean' => 'Le champ "rapports" doit être vrai ou faux.',
         ];
     }
     protected function failedValidation(Validator $validator)

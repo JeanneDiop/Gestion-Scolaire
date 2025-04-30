@@ -85,8 +85,18 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'programme_special' => ['nullable', 'string'],
             'tuteur_id' => 'nullable|exists:tuteurs,id',
             'classe_id' => 'nullable|exists:classes,id',
+        ];
+            if (auth()->check() && auth()->user()->role_nom === 'admin') {
+                $rules = array_merge($rules, [
+                    'type_visibilite' => 'required|in:globale,limite',
+                    'academies' => 'required|boolean',
+                    'ressources' => 'required|boolean',
+                    'rapports' => 'required|boolean',
+                ]);
+            }
 
             // Règles spécifiques au tuteur
+            $tuteurRules= [
             'tuteur.nom' => 'required|string|max:255',
             'tuteur.prenom' => 'required|string|max:255',
             'tuteur.email' => [
@@ -113,8 +123,20 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'tuteur.image'=>  ['nullable', 'string'],
             'tuteur.lien_parenté'  => ['required', 'string', Rule::in(['père', 'mère', 'tuteur', 'autre'])],
         ];
-    }
 
+        if (auth()->check() && auth()->user()->role_nom === 'admin') {
+            $tuteurRules = array_merge($tuteurRules, [
+                'tuteur.type_visibilite' => 'required|in:globale,limite',
+                'tuteur.academies' => 'required|boolean',
+                'tuteur.ressources' => 'required|boolean',
+                'tuteur.rapports' => 'required|boolean',
+            ]);
+        }
+
+        return array_merge($rules, $tuteurRules);
+
+
+    }
     public function messages(): array
     {
         return [
@@ -155,6 +177,17 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'service_transport.string' => 'Le champ service de transport doit être une chaîne de caractères.',
             // Pas besoin de message spécifique pour service_transport car c'est géré par la logique conditionnelle
             'programme_special.string' => 'Le champ programme spécial doit être une chaîne de caractères.',
+            'type_visibilite.required' => 'Le type de visibilité est requis.',
+            'type_visibilite.in' => 'Le type de visibilité doit être soit "globale", soit "limite".',
+
+             'academies.required' => 'Le champ "académies" est requis.',
+             'academies.boolean' => 'Le champ "académies" doit être vrai ou faux.',
+
+             'ressources.required' => 'Le champ "ressources" est requis.',
+             'ressources.boolean' => 'Le champ "ressources" doit être vrai ou faux.',
+
+             'rapports.required' => 'Le champ "rapports" est requis.',
+              'rapports.boolean' => 'Le champ "rapports" doit être vrai ou faux.',
 
             // Messages pour le tuteur
             'tuteur.nom.required' => 'Le nom du tuteur est obligatoire.',
@@ -172,6 +205,18 @@ class UpdateApprenantTuteurRequest extends FormRequest
             'tuteur.numero_CNI.unique' => 'Le numéro de CNI du tuteur est déjà utilisé.',
             'tuteur.lien_parenté.required' => 'Le lien de parenté est obligatoire.',
             'tuteur.lien_parenté.in' => 'Le lien de parenté doit être père, mère, tuteur ou autre.',
+
+            'tuteur.type_visibilite.required' => 'Le type de visibilité du tuteur est requis.',
+         'tuteur.type_visibilite.in' => 'Le type de visibilité du tuteur doit être soit "globale", soit "limite".',
+
+        'tuteur.academies.required' => 'Le champ "académies" du tuteur est requis.',
+        'tuteur.academies.boolean' => 'Le champ "académies" du tuteur doit être vrai ou faux.',
+
+        'tuteur.ressources.required' => 'Le champ "ressources" du tuteur est requis.',
+        'tuteur.ressources.boolean' => 'Le champ "ressources" du tuteur doit être vrai ou faux.',
+
+         'tuteur.rapports.required' => 'Le champ "rapports" du tuteur est requis.',
+         'tuteur.rapports.boolean' => 'Le champ "rapports" du tuteur doit être vrai ou faux.',
         ];
     }
     protected function failedValidation(Validator $validator)
