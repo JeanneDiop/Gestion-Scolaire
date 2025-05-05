@@ -21,6 +21,7 @@ use App\Http\Requests\User\LogUserRequest;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Classe;
 use App\Models\Role;
+use App\Models\Presence;
 use App\Models\Tuteur;
 use App\Models\Apprenant;
 use App\Models\PersonnelAdministratif;
@@ -2655,6 +2656,75 @@ public function getApprenantDetailsWithPresence($id)
     ];
 }
 
+public function getEnseignantDetailsWithPresence($id)
+{
+    // Récupérer l'enseignant avec ses enregistrements de présence et absence
+    $enseignant = Enseignant::with(['presences.cours'])->find($id);
+
+    // Vérifier si l'enseignant existe
+    if (!$enseignant) {
+        return response()->json([
+            'message' => "Aucun enseignant trouvé avec l'ID {$id}."
+        ], 404);
+    }
+
+    // Initialiser un tableau pour stocker les détails de présence/absence
+    $presenceDetails = [];
+
+    // Boucler à travers les enregistrements de présence/absence/retard seulement si la relation existe
+    if ($enseignant->presences) {
+        foreach ($enseignant->presences as $presence) {
+            $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
+
+            // Ajouter les informations selon le statut
+            if ($statut === 'Absent') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_absent' => $presence->date_absent,
+                    'raison_absence' => $presence->raison_absence,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Present') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'date_present' => $presence->date_present,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            } elseif ($statut === 'Retard') {
+                $presenceDetails[] = [
+                    'statut' => $statut,
+                    'heure_arrivee' => $presence->heure_arrivee,
+                    'duree_retard' => $presence->duree_retard,
+                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
+                ];
+            }
+        }
+    }
+
+    // Utiliser array_unique pour éviter les doublons (basé sur la date et le statut)
+    $presenceDetails = array_map("unserialize", array_unique(array_map("serialize", $presenceDetails)));
+
+    // Retourner les détails de l'enseignant avec ses informations de présence et absence
+    return [
+        'enseignant' => [
+            'id' => $enseignant->id ?? null,
+            'nom' => $enseignant->user->nom  ?? null,
+            'prenom' => $enseignant->user->prenom  ?? null,
+            'telephone' => $enseignant->user->telephone  ?? null,
+            'email' => $enseignant->user->email  ?? null,
+            'adresse' => $enseignant->user->adresse  ?? null,
+            'genre' => $enseignant->user->genre  ?? null,
+            'etat' => $enseignant->user->etat  ?? null,
+            'lieu_naissance' => $enseignant->lieu_naissance  ?? null,
+            'date_naissance' => $enseignant->date_naissance  ?? null,
+            'numero_CNI' => $enseignant->numero_CNI  ?? null,
+            'matiere_enseignée' => $enseignant->matiere_enseignée  ?? null,
+            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant  ?? null,
+            'niveau_enseignant' => $enseignant->niveau_enseignant  ?? null,
+        ],
+        'details' => $presenceDetails
+    ];
+}
 //afficher les details de lapprenant par rapport à ses notes
 public function getApprenantDetailsWithNotes($id)
 {
@@ -2734,7 +2804,6 @@ public function getApprenantDetailsWithNotes($id)
         ], 500);
     }
 }
-
 
 
  // Récupérer tous les enseignants depuis la table 'enseignants'
@@ -2831,75 +2900,8 @@ public function getApprenantDetailsWithNotes($id)
 }
 
 
-public function getEnseignantDetailsWithPresence($id)
-{
-    // Récupérer l'enseignant avec ses enregistrements de présence et absence
-    $enseignant = Enseignant::with(['presences.cours'])->find($id);
 
-    // Vérifier si l'enseignant existe
-    if (!$enseignant) {
-        return response()->json([
-            'message' => "Aucun enseignant trouvé avec l'ID {$id}."
-        ], 404);
-    }
 
-    // Initialiser un tableau pour stocker les détails de présence/absence
-    $presenceDetails = [];
-
-    // Boucler à travers les enregistrements de présence/absence/retard seulement si la relation existe
-    if ($enseignant->presences) {
-        foreach ($enseignant->presences as $presence) {
-            $statut = ucfirst(strtolower($presence->statut)); // Capitaliser le statut
-
-            // Ajouter les informations selon le statut
-            if ($statut === 'Absent') {
-                $presenceDetails[] = [
-                    'statut' => $statut,
-                    'date_absent' => $presence->date_absent,
-                    'raison_absence' => $presence->raison_absence,
-                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                ];
-            } elseif ($statut === 'Present') {
-                $presenceDetails[] = [
-                    'statut' => $statut,
-                    'date_present' => $presence->date_present,
-                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                ];
-            } elseif ($statut === 'Retard') {
-                $presenceDetails[] = [
-                    'statut' => $statut,
-                    'heure_arrivee' => $presence->heure_arrivee,
-                    'duree_retard' => $presence->duree_retard,
-                    'cours' => $presence->cours ? $presence->cours->nom : 'N/A',
-                ];
-            }
-        }
-    }
-
-    // Utiliser array_unique pour éviter les doublons (basé sur la date et le statut)
-    $presenceDetails = array_map("unserialize", array_unique(array_map("serialize", $presenceDetails)));
-
-    // Retourner les détails de l'enseignant avec ses informations de présence et absence
-    return [
-        'enseignant' => [
-            'id' => $enseignant->id ?? null,
-            'nom' => $enseignant->user->nom  ?? null,
-            'prenom' => $enseignant->user->prenom  ?? null,
-            'telephone' => $enseignant->user->telephone  ?? null,
-            'email' => $enseignant->user->email  ?? null,
-            'adresse' => $enseignant->user->adresse  ?? null,
-            'genre' => $enseignant->user->genre  ?? null,
-            'etat' => $enseignant->user->etat  ?? null,
-            'lieu_naissance' => $enseignant->lieu_naissance  ?? null,
-            'date_naissance' => $enseignant->date_naissance  ?? null,
-            'numero_CNI' => $enseignant->numero_CNI  ?? null,
-            'matiere_enseignée' => $enseignant->matiere_enseignée  ?? null,
-            'numero_identification_enseignant' => $enseignant->numero_identification_enseignant  ?? null,
-            'niveau_enseignant' => $enseignant->niveau_enseignant  ?? null,
-        ],
-        'details' => $presenceDetails
-    ];
-}
 //lister personnel administratif dans sa table
 
 public function ListerPersonnelAdministratif()
@@ -3025,10 +3027,25 @@ public function ListerPersonnelAdministratifPoste(Request $request, $poste)
 public function ListerEnseignantNiveauEcole($niveauEcole)
 {
     // Charger les enseignants filtrés par niveau d'école avec leurs informations de User, Classes et Salle
-    $enseignants = Enseignant::with(['user'])
+  $user = auth()->user();
+
+// Vérification du rôle de l'utilisateur connecté
+if ($user->role_nom === 'admin') {
+    // Admin : voir tous les enseignants du niveau d'école
+    $enseignants = Enseignant::with('user')
         ->where('niveau_ecole', $niveauEcole)
         ->get();
-
+} elseif ($user->role_nom === 'enseignant') {
+    // Enseignant : voir seulement lui-même
+    $enseignants = Enseignant::with('user')
+        ->where('user_id', $user->id)
+        ->get();
+} else {
+    return response()->json([
+        'status' => 403,
+        'message' => 'Accès refusé',
+    ], 403);
+}
     // Créer une nouvelle structure de données
     $enseignantsData = $enseignants->map(function ($enseignant) {
         return [

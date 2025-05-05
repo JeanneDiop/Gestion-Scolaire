@@ -127,13 +127,13 @@ Route::get('/enseignants/presences/{enseignantId}',[AuthController::class,'getEn
 //--------------gestion apprenant-------------------------------------------
 //ajouter un apprenant
 Route::post('ajouter/apprenant', [AuthController::class, 'registerApprenant']);
-//lister les apprenants user
+//lister les apprenants user//est accessible au tuteur admin et enseignant
 Route::get('apprenants', [AuthController::class, 'indexApprenants']);
 //lister les infos d'un apprenant
 Route::get('/apprenant/{id}',[AuthController::class,'showApprenant']);
 //lister les infos d'un apprenant dans user
 Route::get('/apprenant/user/{id}',[AuthController::class,'showUserApprenant']);
-//lister tous les apprenants dans sa table
+//lister tous les apprenants dans sa table//est accessible au tuteur admin et enseignant
 Route::get('/liste/apprenant',[AuthController::class,'ListerApprenant']);
 //lister apprenant par niveau_education
 Route::get('/apprenants/niveau/{niveauEducation}', [AuthController::class, 'ListerApprenantParNiveau']);
