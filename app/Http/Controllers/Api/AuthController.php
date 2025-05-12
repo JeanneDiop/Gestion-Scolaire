@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Apprenant\UpdateApprenantRequest;
 use App\Http\Requests\Tuteur\UpdateTuteurRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\Directeur\UpdateDirecteurRequest;
 use App\Http\Requests\Enseignant\UpdateEnseignantRequest;
 use App\Http\Requests\Apprenant\CreateApprenantRequest;
@@ -151,6 +152,25 @@ public function login(LogUserRequest $request)
             "message" => "Utilisateur deconnecté avec succés"
         ], 200);
     }
+
+
+    public function refresh()
+    {
+        if (auth('api')->check()) {
+            return response()->json([
+                'access_token' => auth('api')->refresh(),
+                'token_type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Aucun utilisateur authentifié'
+        ], 401);
+    }
+
+
     //----------------------Tuteur-------------------------
 
 public function registerTuteur(CreateTuteurRequest $request)
@@ -2353,6 +2373,110 @@ public function ListerApprenants()
         }
 
         // Ajouter les classes associées
+        $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
+            return [
+                'classe_id' => $association->classe_id,
+                'niveau_classe' => $association->classe ? $association->classe->niveau_classe : null,
+            ];
+        });
+
+        return $apprenantData;
+    });
+
+    return response()->json([
+        'status' => 200,
+        'apprenants' => $apprenantsData,
+    ], 200);
+}
+
+
+public function ListerApprenantParNiveau($niveauEducation)
+{
+    $apprenants = Apprenant::with(['user', 'tuteur.user', 'classe.salle', 'classeAssociations.classe', 'rapports'])
+        ->where('niveau_education', $niveauEducation)
+        ->get();
+
+    if ($apprenants->isEmpty()) {
+        return response()->json([
+            'status' => 404,
+            'message' => "Aucun apprenant trouvé pour le niveau d'éducation : $niveauEducation."
+        ], 404);
+    }
+
+    $apprenantsData = $apprenants->map(function ($apprenant) {
+        $apprenantData = [
+            'id' => $apprenant->id,
+            'date_naissance' => $apprenant->date_naissance,
+            'lieu_naissance' => $apprenant->lieu_naissance,
+            'numero_CNI' => $apprenant->numero_CNI,
+            'niveau_education' => $apprenant->niveau_education,
+            'image' => $apprenant->image,
+            'nationalité' => $apprenant->nationalité,
+            'acte_naissance' => $apprenant->acte_naissance,
+            'numero_identification_eleve' => $apprenant->numero_identification_eleve,
+            'regime_paiement' => $apprenant->regime_paiement,
+            'reduction_bourse' => $apprenant->reduction_bourse,
+            'statut_paiement_actuel' => $apprenant->statut_paiement_actuel,
+            'references_factures' => $apprenant->references_factures,
+            'conditions_medicales' => $apprenant->conditions_medicales,
+            'contact_urgence' => $apprenant->contact_urgence,
+            'note_resultat_anterieur' => $apprenant->note_resultat_anterieur,
+            'evaluations_specifiques' => $apprenant->evaluations_specifiques,
+            'langue_parlee_maison' => $apprenant->langue_parlee_maison,
+            'activites_extraordinaires' => $apprenant->activites_extraordinaires,
+            'remarque_eleve' => $apprenant->remarque_eleve,
+            'autorisation_parentale' => $apprenant->autorisation_parentale,
+            'année_inscription' => $apprenant->année_inscription,
+            'niveau_entrée' => $apprenant->niveau_entrée,
+            'statut_inscription' => $apprenant->statut_inscription,
+            'transport_scolaire' => $apprenant->transport_scolaire,
+            'service_transport' => $apprenant->service_transport,
+            'programme_special' => $apprenant->programme_special,
+            'user' => $apprenant->user ? [
+                'id' => $apprenant->user->id,
+                'nom' => $apprenant->user->nom,
+                'prenom' => $apprenant->user->prenom,
+                'telephone' => $apprenant->user->telephone,
+                'email' => $apprenant->user->email,
+                'genre' => $apprenant->user->genre,
+                'etat' => $apprenant->user->etat,
+                'adresse' => $apprenant->user->adresse,
+                'role_nom' => $apprenant->user->role_nom,
+            ] : null,
+        ];
+
+        $apprenantData['tuteur'] = $apprenant->tuteur ? (
+            $apprenant->tuteur->user
+                ? array_merge($apprenant->tuteur->toArray(), $apprenant->tuteur->user->toArray())
+                : $apprenant->tuteur->toArray()
+        ) : null;
+
+        $apprenantData['rapports'] = $apprenant->rapports->map(function ($rapport) {
+            return [
+                'id' => $rapport->id,
+                'nom_rapport' => $rapport->nom_rapport,
+                'type_utilisateur' => $rapport->type_utilisateur,
+                'commentaire_apprenant' => $rapport->commentaire_apprenant,
+                'commentaire_enseignant' => $rapport->commentaire_enseignant,
+                'apprenant_id' => $rapport->apprenant_id,
+                'enseignant_id' => $rapport->enseignant_id,
+                'date_commentaire' => $rapport->date_commentaire,
+            ];
+        });
+
+        $apprenantData['classe'] = $apprenant->classe ? [
+            'id' => $apprenant->classe->id,
+            'nom' => $apprenant->classe->nom,
+            'niveau_classe' => $apprenant->classe->niveau_classe,
+            'niveau_education' => $apprenant->classe->niveau_education,
+            'salle' => $apprenant->classe->salle ? [
+                'id' => $apprenant->classe->salle->id,
+                'nom' => $apprenant->classe->salle->nom,
+                'capacity' => $apprenant->classe->salle->capacity,
+                'type' => $apprenant->classe->salle->type,
+            ] : null,
+        ] : null;
+
         $apprenantData['classes_associées'] = $apprenant->classeAssociations->map(function ($association) {
             return [
                 'classe_id' => $association->classe_id,
@@ -4629,25 +4753,9 @@ public function archiverDirecteur(Directeur $directeur) {
     }
 }
 //modifier password tuteur
-public function updatePasswordTuteur(Request $request, $tuteurId)
+public function updatePasswordTuteur( UpdatePasswordRequest $request, $tuteurId)
 {
-    // Valider les données de la requête
-    $validator = Validator::make($request->all(), [
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status_code' => 422,
-            'status_message' => 'Erreur de validation.',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Vérifier si l'utilisateur existe
     $tuteur = Tuteur::find($tuteurId);
 
     if (!$tuteur) {
@@ -4671,25 +4779,9 @@ public function updatePasswordTuteur(Request $request, $tuteurId)
 
 
 
-public function updatePasswordApprenant(Request $request, $apprenantId)
+public function updatePasswordApprenant(UpdatePasswordRequest $request, $apprenantId)
 {
-    // Valider les données de la requête
-    $validator = Validator::make($request->all(), [
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status_code' => 422,
-            'status_message' => 'Erreur de validation.',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Vérifier si l'apprenant existe
     $apprenant = Apprenant::find($apprenantId);
 
     if (!$apprenant) {
@@ -4712,25 +4804,9 @@ public function updatePasswordApprenant(Request $request, $apprenantId)
 }
 
 
-public function updatePasswordEnseignant(Request $request, $enseignantId)
+public function updatePasswordEnseignant(UpdatePasswordRequest $request, $enseignantId)
 {
-    // Valider les données de la requête
-    $validator = Validator::make($request->all(), [
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status_code' => 422,
-            'status_message' => 'Erreur de validation.',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Vérifier si l'apprenant existe
     $enseignant = Enseignant::find($enseignantId);
 
     if (!$enseignant) {
@@ -4752,23 +4828,9 @@ public function updatePasswordEnseignant(Request $request, $enseignantId)
     ]);
 }
 
-public function updatePasswordDirecteur(Request $request, $directeurId)
+public function updatePasswordDirecteur(UpdatePasswordRequest $request, $directeurId)
 {
-    // Valider les données de la requête
-    $validator = Validator::make($request->all(), [
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status_code' => 422,
-            'status_message' => 'Erreur de validation.',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
 
     // Vérifier si l'apprenant existe
     $directeur = Directeur::find($directeurId);
@@ -4791,25 +4853,8 @@ public function updatePasswordDirecteur(Request $request, $directeurId)
         'data' => $user,
     ]);
 }
-public function updatePasswordPersonnelAdministratif(Request $request, $personnelId)
+public function updatePasswordPersonnelAdministratif(UpdatePasswordRequest $request, $personnelId)
 {
-    // Valider les données de la requête
-    $validator = Validator::make($request->all(), [
-        'password' => 'required|min:8',
-    ], [
-        'password.required' => 'Le champ mot de passe est requis.',
-        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status_code' => 422,
-            'status_message' => 'Erreur de validation.',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Vérifier si l'apprenant existe
     $personnel = PersonnelAdministratif::find($personnelId);
 
     if (!$personnel) {

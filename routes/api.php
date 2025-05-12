@@ -77,10 +77,8 @@ Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
 Route::get('tuteurs', [AuthController::class, 'indexTuteurs']);
 //----afficher tuteur
 Route::get('/tuteur/{id}',[AuthController::class,'showTuteur']);
-//modifier tuteur via user
-Route::put('/modifierusertuteur/{user}',[AuthController::class,'updateUserTuteur']);
-//modifier tuteur via sa table
-Route::put('/modifiertuteur/{id}',[AuthController::class,'updateTuteur']);
+
+
 //lister tous les tuteurs dans sa table
 Route::get('/liste/tuteur',[AuthController::class,'ListerTuteur']);
 //afficher un tuteur dans la table user
@@ -227,8 +225,7 @@ Route::get('employe/detail/{id}', [EmployeController::class, 'show']);
 
 //gestion cours-----------------------------------------------
 Route::post('cours/create', [CoursController::class, 'store']);
-//modifier cours
-Route::put('cours/edit/{id}', [CoursController::class, 'update']);
+
 //supprimer  cours
 Route::delete('cours/supprimer/{id}', [CoursController::class, 'destroy']);
 //lister cours
@@ -246,6 +243,7 @@ Route::delete('enseignantclasse/supprimer/{id}', [EnseignantClasseController::cl
 Route::get('enseignantclasse/lister', [EnseignantClasseController::class, 'index']);
 //afficher cours
 Route::get('enseignantclasse/detail/{id}', [EnseignantClasseController::class, 'show']);
+
 //gestion planifiercour------------------------------------
 Route::post('planifiercour/create', [PlanifiercourController::class, 'store']);
 //modifier cours
@@ -268,7 +266,7 @@ Route::get('classeassocier/lister', [ClasseAssociationController::class, 'index'
 //afficher cours
 Route::get('classeassocier/detail/{id}', [ClasseAssociationController::class, 'show']);
 
-//gestion EnseignantClasse-----------------
+//gestion EnseignantClasse------------------------------------------------------
 Route::post('enseignantclasse/create', [EnseignantClasseController::class, 'store']);
 //modifier enseignantclasse
 Route::put('enseignantclasse/edit/{id}', [EnseignantClasseController::class, 'update']);
@@ -278,7 +276,8 @@ Route::delete('enseignantclasse/supprimer/{id}', [EnseignantClasseController::cl
 Route::get('enseignantclasse/lister', [EnseignantClasseController::class, 'index']);
 //afficher enseignantclasse
 Route::get('enseignantclasse/detail/{id}', [EnseignantClasseController::class, 'show']);
-//gestion Evaluation-----------------
+
+//gestion Evaluation---------------------------------------------------------
 Route::post('evaluation/create', [EvaluationController::class, 'store']);
 //modifier evaluation
 Route::put('evaluation/edit/{id}', [EvaluationController::class, 'update']);
@@ -314,6 +313,7 @@ Route::delete('parcours/supprimer/{id}', [ParcoursController::class, 'destroy'])
 Route::get('parcours/lister', [ParcoursController::class, 'index']);
 //afficher parcours
 Route::get('parcours/detail/{id}', [ParcoursController::class, 'show']);
+
 //gestion evenement
 Route::post('evenement/create', [EvenementController::class, 'store']);
 Route::put('evenement/modifier/{id}', [EvenementController::class, 'update']);
@@ -322,11 +322,11 @@ Route::get('evenement/lister', [EvenementController::class, 'index']);
 Route::delete('evenement/supprimer/{id}', [EvenementController::class, 'destroy']);
 
 //gestion programme-----------------------------------------------------
-Route::post('programmeclasse/create', [ProgrammeController::class, 'store']);
+//Route::post('programmeclasse/create', [ProgrammeController::class, 'store']);
 //modifier programmeclasse
-Route::put('programmeclasse/edit/{id}', [ProgrammeController::class, 'update']);
+//Route::put('programmeclasse/edit/{id}', [ProgrammeController::class, 'update']);
 //supprimer  programmeclasse
-Route::delete('programmeclasse/supprimer/{id}', [ProgrammeController::class, 'destroy']);
+//Route::delete('programmeclasse/supprimer/{id}', [ProgrammeController::class, 'destroy']);
 //lister les programmes
 Route::get('programmeclasse/lister', [ProgrammeController::class, 'index']);
 //lister programme excel
@@ -362,15 +362,15 @@ Route::get('absent/lister', [PresenceController::class, 'indexAbsent']);
 Route::get('present/lister', [PresenceController::class, 'indexPresent']);
 
 //gestion ApprenantClasse-----------------
-Route::post('apprenantclasse/create', [ApprenantClasseController::class, 'store']);
+//Route::post('apprenantclasse/create', [ApprenantClasseController::class, 'store']);
 //modifier apprenantclasse
-Route::put('apprenantclasse/edit/{id}', [ApprenantClasseController::class, 'update']);
+//Route::put('apprenantclasse/edit/{id}', [ApprenantClasseController::class, 'update']);
 //supprimer  apprenantclasse
-Route::delete('apprenantclasse/supprimer/{id}', [ApprenantClasseController::class, 'destroy']);
+//Route::delete('apprenantclasse/supprimer/{id}', [ApprenantClasseController::class, 'destroy']);
 //lister apprenantclasse
-Route::get('apprenantclasse/lister', [ApprenantClasseController::class, 'index']);
+//Route::get('apprenantclasse/lister', [ApprenantClasseController::class, 'index']);
 //afficher apprenantclasse
-Route::get('apprenantclasse/detail/{id}', [ApprenantClasseController::class, 'show']);
+//Route::get('apprenantclasse/detail/{id}', [ApprenantClasseController::class, 'show']);
 
 //gestion Ecole-----------------
 Route::post('ecole/create', [EcoleController::class, 'store']);
@@ -440,6 +440,7 @@ Route::delete('compte/supprimer/{id}', [CompteComptableController::class, 'destr
 Route::get('compte/detail/{id}', [CompteComptableController::class, 'show']);
 //afficher toutes les compte
 Route::get('compte/lister', [CompteComptableController::class, 'index']);
+
 /// ajouter maintenance
 Route::post('maintenance/create', [DemandeMaintenanceController::class, 'store']);
 //modifier  maintenance
@@ -452,6 +453,7 @@ Route::get('maintenance/detail/{id}', [DemandeMaintenanceController::class, 'sho
 Route::get('maintenance/lister', [DemandeMaintenanceController::class, 'index']);
 //faire le suivi de maintenance
 Route::put('maintenance/suivi/{id}', [DemandeMaintenanceController::class, 'suivi']);
+
 /// ajouter bulletin
 Route::post('bulletin/create', [BulletinNoteController::class, 'store']);
 //modifier  bulletin
@@ -462,8 +464,9 @@ Route::delete('bulletin/supprimer/{id}', [BulletinNoteController::class, 'destro
 Route::get('bulletin/detail/{id}', [BulletinNoteController::class, 'show']);
 //afficher toutes les bulletin
 Route::get('bulletin/lister', [BulletinNoteController::class, 'index']);
+//recuperer la note et creer le bulletins
 Route::get('get/bulletins/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'getNotesForSemestreAndCreateBulletin']);
-//modifier le bulletinnotes
+//modifier le bulletinnotes avec apprenant_id et semestre_id
 Route::put('bulletins/modifier/{apprenantId}/{semestreId}', [BulletinNoteController::class, 'updateBulletinNotes']);
 //modifier un bulletinnote avec id_bulletin
 Route::put('bulletins/modifier/{bulletinId}', [BulletinNoteController::class, 'updateBulletinNote']);
@@ -475,6 +478,7 @@ Route::get('bulletins/{bulletinId}',[BulletinNoteController::class, 'showBulleti
 Route::get('bulletins/{classeId}/{semestreId}', [BulletinNoteController::class,  'indexBulletins']);
 //gerer le passage en classe superieur
 Route::post('classesupperieure/{apprenantId}/{classeId}', [BulletinNoteController::class, 'isEligibleForNextClass']);
+
 //ajouter un rapport
 Route::post('rapport/create', [RapportController::class, 'storeRapport']);
 //modifier  rapport
@@ -530,3 +534,7 @@ Route::middleware(['auth:api','role_apprenant'])->group(function() {});
 
 
 
+
+Route::get('documentation', function () {
+    return view('api-docs.index');
+});

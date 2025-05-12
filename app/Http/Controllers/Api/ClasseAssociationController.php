@@ -42,6 +42,39 @@ public function store(CreateClasseAssociationRequest $request)
 }
 
 
+public function update(CreateClasseAssociationRequest $request, $id)
+{
+    try {
+        // Rechercher l'association à mettre à jour
+        $classeAssociation = ClasseAssociation::find($id);
+
+        if (!$classeAssociation) {
+            return response()->json([
+                'message' => 'Association non trouvée.',
+            ], 404);
+        }
+
+        // Mise à jour de l'association avec les données validées
+        $classeAssociation->update([
+            'classe_id' => $request->classe_id ?? null,
+            'apprenant_id' => $request->apprenant_id ?? null,
+            'enseignant_id' => $request->enseignant_id ?? null,
+            'cours_id' => $request->cours_id ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Association mise à jour avec succès.',
+            'classeAssociation' => $classeAssociation,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Une erreur est survenue lors de la mise à jour de l\'association.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
 public function show($id)
 {
     try {
