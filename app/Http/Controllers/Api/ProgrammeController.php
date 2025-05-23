@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -379,7 +379,7 @@ public function index()
 }
 
 
-public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
+public function storesProgrammeCours(CreateProgrammeClasseCoursRequest $request)
 {
     try {
         DB::beginTransaction();
@@ -433,6 +433,168 @@ public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
             $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
             $cours->programme_id = $programme->id; // Associer le cours au programme
             $cours->save();
+            Historique::create([
+                'action' => 'create',
+                'message' => 'Cours ajoutée : ' . $cours->nom,
+                'user_id' => auth()->id(),
+                'cours_id' => $cours->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                'created_at' => Carbon::now(),
+            ]);
+            // Validation et ajout des catégories (compétences) à ce cours
+            if (isset($coursData['categories'])) {
+                foreach ($coursData['categories'] as $categorieData) {
+                    // Validation du barème pour chaque niveau d'éducation
+                    $bareme = $categorieData['bareme'] ?? null;
+                    $this->validateBareme($coursData['niveau_education'], $bareme);
+
+                    // Création de la catégorie de cours et lien avec le cours
+                    $categorie = new CategorieCours();
+                    $categorie->nom = $categorieData['nom'];
+                    $categorie->cours_id = $cours->id; // Associer la catégorie au cours
+                    $categorie->volume_horaire = $categorieData['volume_horaire'] ?? null;
+                    $categorie->type_exercices = $categorieData['type_exercices'] ?? null;
+                    $categorie->leçons = $categorieData['leçons'] ?? null;
+                    $categorie->duree_seance = $categorieData['duree_seance'] ?? null;
+                    $categorie->mode_evaluation = $categorieData['mode_evaluation'] ?? null;
+                    $categorie->heure_debut = $categorieData['heure_debut'] ?? null;
+                    $categorie->heure_fin = $categorieData['heure_fin'] ?? null;
+                    $categorie->frequence_evaluation = $categorieData['frequence_evaluation'] ?? null;
+                    $categorie->bareme = $bareme; // Associer le barème à la catégorie
+                    $categorie->save();
+                    Historique::create([
+                        'action' => 'create',
+                        'message' => 'Categorie ajoutée : ' . $categorie->nom,
+                        'user_id' => auth()->id(),
+                        'categorie_id' => $categorie->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                        'created_at' => Carbon::now(),
+                    ]);
+                    // Ajouter les compétences spécifiques pour cette catégorie
+                    if (isset($categorieData['competences'])) {
+                        foreach ($categorieData['competences'] as $competenceData) {
+                            $competence = new Competence();
+                            $competence->nom = $competenceData['nom'];
+                            $competence->description = $competenceData['description'] ?? null;
+                            $competence->categorie_cours_id = $categorie->id; // Associer la compétence à la catégorie
+                            $competence->save();
+                            Historique::create([
+                                'action' => 'create',
+                                'message' => 'Competence ajoutée : ' . $competence->nom,
+                                'user_id' => auth()->id(),
+                                'competence_id' => $competence->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+                                'created_at' => Carbon::now(),
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Validation de la transaction
+        DB::commit();
+
+        // Chargement des relations pour le retour de réponse
+        $programme = Programme::with(['cours.categories.competences'])->find($programme->id);
+        return response()->json([
+            'status_code' => 200,
+            'status_message' => 'Programme, cours et compétences ont été ajoutés avec succès',
+            'data' => [
+                'programme' => $programme,
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status_code' => 500,
+            'status_message' => 'Une erreur s\'est produite lors de l\'enregistrement du programme, des cours et des compétences',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+// Fonction de validation des barèmes
+private function validateBaremes($niveauEducation, $bareme)
+{
+    if ($niveauEducation === 'maternelle' && !in_array($bareme, ['Acquis', 'En Progression'])) {
+        return response()->json([
+            'status_code' => 400,
+            'status_message' => 'Pour le niveau "maternelle", le barème doit être "Acquis" ou "En Progression".',
+        ], 400);
+    }
+
+    if ($niveauEducation === 'primaire' && !preg_match('/^(10|[0-9])\/10$/', $bareme)) {
+        return response()->json([
+            'status_code' => 400,
+            'status_message' => 'Pour le niveau "primaire", le barème doit être au format "X/10".',
+        ], 400);
+    }
+
+    if ($niveauEducation === 'secondaire' && !preg_match('/^(20|[1-9]?[0-9])\/20$/', $bareme)) {
+        return response()->json([
+            'status_code' => 400,
+            'status_message' => 'Pour le niveau "secondaire", le barème doit être au format "X/20".',
+        ], 400);
+    }
+}
+
+
+public function storeProgrammeCours(CreateProgrammeClasseCoursRequest $request)
+{
+    try {
+        DB::beginTransaction();
+
+        // Création du Programme
+        $programme = new Programme();
+        $programme->nom = $request->nom ?? null;
+        $programme->niveau_education = $request->niveau_education ?? null;
+        $programme->niveau_classe = $request->niveau_classe ?? null;
+        $programme->cycle = $request->cycle ?? null;
+        $programme->annee_scolaire = $request->annee_scolaire ?? null;
+        $programme->langue_enseignee = $request->langue_enseignee ?? null;
+        $programme->classe_id = $request->classe_id ?? null;
+        $programme->save();
+        Historique::create([
+            'action' => 'create',
+            'message' => 'Programme ajoutée : ' . $programme->nom,
+            'user_id' => auth()->id(),
+            'programme_id' => $programme->id,  // Remplacer par l'ID de l'utilisateur si nécessaire
+            'created_at' => Carbon::now(),
+        ]);
+        // Boucle pour ajouter chaque cours et ses compétences
+        foreach ($request->cours as $coursData) {
+            // Vérification du niveau d'éducation et du niveau de classe
+            if (isset($coursData['niveau_education']) && $coursData['niveau_education'] !== $programme->niveau_education) {
+                return response()->json([
+                    'status_code' => 400,
+                    'status_message' => 'Le niveau d\'éducation du cours ne correspond pas au niveau d\'éducation du programme.',
+                ], 400);
+            }
+
+            if (isset($coursData['niveau_classe']) && $coursData['niveau_classe'] !== $programme->niveau_classe) {
+                return response()->json([
+                    'status_code' => 400,
+                    'status_message' => 'Le niveau de classe du cours ne correspond pas au niveau de classe du programme.',
+                ], 400);
+            }
+
+            // Création du cours
+            $cours = new Cours();
+            $cours->nom = $coursData['nom'];
+            $cours->description = $coursData['description'] ?? null;
+            $cours->niveau_education = $programme->niveau_education;
+            $cours->niveau_classe = $programme->niveau_classe;
+            $cours->heure_allouee = $coursData['heure_allouee'];
+            $cours->etat = $coursData['etat'] ?? 'encours';
+            $cours->credits = $coursData['credits'] ?? null;
+            $cours->coefficient = $coursData['coefficient'] ?? null;
+            $cours->semestre = $coursData['semestre'] ?? null;
+            $cours->enseignant_id = $coursData['enseignant_id'] ?? null;
+            $cours->objectif_generaux = $coursData['objectif_generaux'] ?? null;
+            $cours->objectif_specifiques = $coursData['objectif_specifiques'] ?? null;
+            $cours->programme_id = $programme->id;
+            $cours->save();
+
             Historique::create([
                 'action' => 'create',
                 'message' => 'Cours ajoutée : ' . $cours->nom,

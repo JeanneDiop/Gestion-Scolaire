@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -45,7 +45,7 @@ class PlanifiercourController extends Controller
     public function update(UpdatePlanifiercourRequest $request, $id)
 {
     try {
-       
+
         $planifiercour = Planifiercour::findOrFail($id);
 
 

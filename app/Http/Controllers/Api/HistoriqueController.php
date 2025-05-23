@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -15,14 +15,14 @@ class HistoriqueController extends Controller
     {
         // Obtenir la date d'aujourd'hui
         $today = Carbon::today();
-    
+
         // Construire la requête pour récupérer les historiques avec comptage des occurrences
         $historiquesQuery = Historique::whereDate('created_at', $today)
             ->whereIn('action', ['create', 'update']) // Limiter aux actions "create" et "update"
             ->select('message', DB::raw('count(*) as occurrences'))
             ->groupBy('message')
             ->orderBy('occurrences', 'desc'); // Trier par nombre d'occurrences, du plus élevé au plus bas
-    
+
         // Récupérer les historiques (comptés et groupés par message)
         $historiques = $historiquesQuery->get();
         if ($historiques->isEmpty()) {

@@ -1,0 +1,569 @@
+{
+"_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-05-15T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2025.5.15",
+  "resources": [
+    {
+      "_id": "wrk_1",
+      "name": "Gestion Scolaire",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_1",
+      "parentId": "wrk_1",
+      "_type": "environment",
+      "name": "gestionscolaire",
+      "data": {
+        "base_url": "http://127.0.0.1:8000/api"
+      }
+    },  
+    {
+      "_id": "req_login",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ base_url }}/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}"
+      }
+    },
+    {
+      "_id": "req_logout",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Logout",
+      "method": "POST",
+      "url": "{{ base_url }}/logout",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_refresh",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Refresh Token",
+      "method": "POST",
+      "url": "{{ base_url }}/refresh",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_list_users",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Lister Utilisateurs",
+      "method": "GET",
+      "url": "{{ base_url }}/ListeUtilisateur",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_archiver_user",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Archiver un Utilisateur",
+      "method": "POST",
+      "url": "{{ base_url }}/archiveruser/1",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_add_role",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Ajouter un Rôle",
+      "method": "POST",
+      "url": "{{ base_url }}/ajouter/role",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nom\": \"Admin\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_edit_role",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Modifier un Rôle",
+      "method": "PUT",
+      "url": "{{ base_url }}/role/edit/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nom\": \"SuperAdmin\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_delete_role",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Supprimer un Rôle",
+      "method": "DELETE",
+      "url": "{{ base_url }}/role/1",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_list_roles",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Lister les Rôles",
+      "method": "GET",
+      "url": "{{ base_url }}/role/lister",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_show_role",
+      "parentId": "wrk_1",
+      "_type": "request",
+      "name": "Afficher un Rôle",
+      "method": "GET",
+      "url": "{{ base_url }}/role/1",
+      "authentication": {
+        "type": "bearer",
+        "token": ""
+      }
+    },
+
+  {
+      "_id": "req_post__ajouter_tuteur",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "POST /ajouter/tuteur",
+      "method": "POST",
+      "url": "http://127.0.0.1:8000/api/ajouter/tuteur",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -10,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__tuteurs",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /tuteurs",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/tuteurs",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -11,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__tuteur_id",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /tuteur/{id}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/tuteur/{id}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -12,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__liste_tuteur",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /liste/tuteur",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/liste/tuteur",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -13,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__tuteur_user_id",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /tuteur/user/{id}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/tuteur/user/{id}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -14,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_delete__supprimertuteur_tuteur",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "DELETE /supprimertuteur/{tuteur}",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8000/api/supprimertuteur/{tuteur}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -15,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_delete__supprimerusertuteur_user",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "DELETE /supprimerusertuteur/{user}",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8000/api/supprimerusertuteur/{user}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -16,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_post__archivertuteur_tuteur",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "POST /archivertuteur/{tuteur}",
+      "method": "POST",
+      "url": "http://127.0.0.1:8000/api/archivertuteur/{tuteur}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -17,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_put__modifierpassword_tuteurId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "PUT /modifierpassword/{tuteurId}",
+      "method": "PUT",
+      "url": "http://127.0.0.1:8000/api/modifierpassword/{tuteurId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -18,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_put__modifierPassword_apprenantId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "PUT /modifierPassword/{apprenantId}",
+      "method": "PUT",
+      "url": "http://127.0.0.1:8000/api/modifierPassword/{apprenantId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -19,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_put__modifierPassword_enseignantId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "PUT /modifierPassword/{enseignantId}",
+      "method": "PUT",
+      "url": "http://127.0.0.1:8000/api/modifierPassword/{enseignantId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -20,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_put__modifierPassword_directeurId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "PUT /modifierPassword/{directeurId}",
+      "method": "PUT",
+      "url": "http://127.0.0.1:8000/api/modifierPassword/{directeurId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -21,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_put__modifierPassword_personnelId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "PUT /modifierPassword/{personnelId}",
+      "method": "PUT",
+      "url": "http://127.0.0.1:8000/api/modifierPassword/{personnelId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -22,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__enseignants",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /enseignants",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/enseignants",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -23,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__enseignant_id",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /enseignant/{id}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/enseignant/{id}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -24,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__enseignant_user_id",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /enseignant/user/{id}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/enseignant/user/{id}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -25,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__liste_enseignant",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /liste/enseignant",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/liste/enseignant",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -26,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__enseignant_niveauecole_niveauEcole",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /enseignant/niveauecole/{niveauEcole}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/enseignant/niveauecole/{niveauEcole}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -27,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_delete__supprimerenseignant_enseignant",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "DELETE /supprimerenseignant/{enseignant}",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8000/api/supprimerenseignant/{enseignant}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -28,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_delete__supprimeruserenseignant_user",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "DELETE /supprimeruserenseignant/{user}",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8000/api/supprimeruserenseignant/{user}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -29,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_post__archiverenseignant_enseignant",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "POST /archiverenseignant/{enseignant}",
+      "method": "POST",
+      "url": "http://127.0.0.1:8000/api/archiverenseignant/{enseignant}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -30,
+      "isPrivate": false
+    },
+    {
+      "_id": "req_get__enseignants_presences_enseignantId",
+      "parentId": "__WORKSPACE_ID__",
+      "_type": "request",
+      "name": "GET /enseignants/presences/{enseignantId}",
+      "method": "GET",
+      "url": "http://127.0.0.1:8000/api/enseignants/presences/{enseignantId}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -31,
+      "isPrivate": false
+    }
+  ]
+}

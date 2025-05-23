@@ -1,0 +1,792 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-05-19T11:49:39.000Z",
+  "__export_source": "insomnia.desktop.app:v2025.5.15",
+  "resources": [
+    {
+      "_id": "wrk_1",
+      "name": "Gestion Scolaire",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_1",
+      "parentId": "wrk_1",
+      "_type": "environment",
+      "name": "gestionscolaire",
+      "data": {
+        "base_url": "http://127.0.0.1:8000/api"
+      }
+    },
+    {
+      "_id": "fld_67ffc077335b4a10b8edef20f13cb93c",
+      "parentId": "wrk_1",
+      "name": "Gestion Scolaire",
+      "_type": "request_group",
+      "created": 1725825135400,
+      "modified": 1746448659556
+    },
+    {
+      "_id": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+      "parentId": "fld_67ffc077335b4a10b8edef20f13cb93c",
+      "name": "Gestion USER",
+      "_type": "request_group",
+      "created": 1725825527495,
+      "modified": 1725825527495
+    },
+    {
+      "_id": "req_2b2eaefff4e547c6a0fc36a52764b382",
+      "parentId": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+      "name": "ajouter user",
+      "_type": "request",
+      "method": "POST",
+      "url": "http://localhost:8000/api/ajouter/tuteur",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"nom\":\"Diop\",\n\t\"prenom\":\"marie\",\n\t\"telephone\":\"+221760729882\",\n\t\"email\":\"codou@gmail.com\",\n\t\"password\":\"passe515\",\n\t\"adresse\":\"sicap\",\n\t\"role_nom\":\"tuteur\",\n\t\"genre\":\"homme\",\n\t\"profession\":\"logistique\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/9.3.3"
+        }
+      ],
+      "created": 1725825533641,
+      "modified": 1726407879237
+    },
+    {
+      "_id": "req_c094c99cd0504b7eb769c52e3caa4921",
+      "parentId": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+      "name": "modifier user",
+      "_type": "request",
+      "method": "PUT",
+      "url": "",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/9.3.3"
+        }
+      ],
+      "created": 1725825570247,
+      "modified": 1725825646934
+    },
+    {
+      "_id": "req_0a4ec03b7fc645d5b344d4473ddab839",
+      "parentId": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+      "name": "Supprimer user",
+      "_type": "request",
+      "method": "DELETE",
+      "url": "",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/9.3.3"
+        }
+      ],
+      "created": 1725825601075,
+      "modified": 1725825627633
+    },
+    {
+      "_id": "req_a87cffdaf6004595aa6937e41ef66a12",
+      "parentId": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+      "name": "afficher un user",
+      "_type": "request",
+      "method": "GET",
+      "url": "",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/9.3.3"
+        }
+      ],
+      "created": 1725825676383,
+      "modified": 1725825694259
+    },
+  {
+  "_id": "req_e612d206263f41368c39530933f812d2",
+  "parentId": "fld_4d5e058c5f8e4afc8866b61206c5b06e",
+  "name": "afficher tous les user",
+  "description": "",
+  "method": "GET",
+  "url": "http://localhost:8000/api/ListeUtilisateur",
+  "body": {
+    "mimeType": "application/json"
+  },
+  "parameters": [],
+  "headers": [
+    {
+      "name": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "name": "User-Agent",
+      "value": "insomnia/9.3.3"
+    }
+  ],
+  "authentication": {},
+  "metaSortKey": -1725825702089,
+  "isPrivate": false,
+  "_type": "request"
+},
+    {
+      "url": "http://localhost:8000/api/login",
+      "name": "loginuser",
+      "meta": {
+        "id": "req_72fee3cad00e41fcaa2d69e3d2d54c78",
+        "created": 1726008429639,
+        "modified": 1740055998890,
+        "isPrivate": false,
+        "sortKey": -1726008429640
+      },
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"email\":\"Simona@example.com\",\n\t\"password\":\"passer123\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "authentication": {
+        "type": "bearer"
+      },
+      "settings": {
+        "renderRequestBody": true,
+        "encodeUrl": true,
+        "followRedirects": "global",
+        "cookies": {
+          "send": true,
+          "store": true
+        },
+        "rebuildPath": true
+      }
+    },
+    {
+      "url": "http://localhost:8000/api/logout",
+      "name": "logoutuser",
+      "meta": {
+        "id": "req_60b1c7ec806c4933854f2c8d56c09683",
+        "created": 1726060633534,
+        "modified": 1726568998564,
+        "isPrivate": false,
+        "sortKey": -1726060633534
+      },
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"email\":\"dioufgermainedaba@gmail.com\",\n\t\"password\":\"Password1@\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+      },
+      "settings": {
+        "renderRequestBody": true,
+        "encodeUrl": true,
+        "followRedirects": "global",
+        "cookies": {
+          "send": true,
+          "store": true
+        },
+        "rebuildPath": true
+      }
+    },
+    {
+      "url": "http://localhost:8000/api/refresh",
+      "name": "refreshuser",
+      "meta": {
+        "id": "req_3cf1f4d78aff486d8055d9603ce083fe",
+        "created": 1726060643475,
+        "modified": 1726138015020,
+        "isPrivate": false,
+        "sortKey": -1726060643475
+      },
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+      },
+      "settings": {
+        "renderRequestBody": true,
+        "encodeUrl": true,
+        "followRedirects": "global",
+        "cookies": {
+          "send": true,
+          "store": true
+        },
+        "rebuildPath": true
+      }
+    },
+    {
+      "url": "http://localhost:8000/api/archiveruser/{user}",
+      "name": "archiveruser",
+      "meta": {
+        "id": "req_53e0ac0071a842219ec05d1e03c18646",
+        "created": 1727094744754,
+        "modified": 1746461957083,
+        "isPrivate": false,
+        "sortKey": -1725825689236
+      },
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"etat\":\"inactif\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "settings": {
+        "renderRequestBody": true,
+        "encodeUrl": true,
+        "followRedirects": "global",
+        "cookies": {
+          "send": true,
+          "store": true
+        },
+        "rebuildPath": true
+      }
+    },
+
+  {
+    "_id": "req_8c868a9d36e745c6ba08f224f66de1c5",
+    "parentId": "fld_xxx_tuteur",
+    "name": "lister tuteurs dans user",
+    "method": "GET",
+    "url": "http://localhost:8000/api/tuteurs",
+    "headers": [
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {},
+    "authentication": {},
+    "metaSortKey": -1726239779993,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_1761ac3c4a9d48d1a32d29cd017aba61",
+    "parentId": "fld_xxx_tuteur",
+    "name": "afficher un tuteur",
+    "method": "GET",
+    "url": "http://localhost:8000/api/tuteur/{id}",
+    "headers": [
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {},
+    "authentication": {},
+    "metaSortKey": -1726754184972,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_f1c395bef987429cb7e0718801500fc5",
+    "parentId": "fld_xxx_tuteur",
+    "name": "afficher tous les tuteurs dans tuteur",
+    "method": "GET",
+    "url": "http://localhost:8000/api/liste/tuteur",
+    "headers": [
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {},
+    "authentication": {},
+    "metaSortKey": -1726763099905,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_ca0410cd644e4d9c91651d89dc21a004",
+    "parentId": "fld_xxx_tuteur",
+    "name": "modifiertuteurvia la table user",
+    "method": "PUT",
+    "url": "http://localhost:8000/api/modifierusertuteur/22",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      },
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {
+      "mimeType": "application/json",
+      "text": "{\n\t\"nom\":\"laure\",\n\t\"prenom\":\"Dié\",\n\t\"telephone\":\"+221776086714\",\n\t\"email\":\"diou68@gmail.com\",\n\t\"password\":\"passe615\",\n\t\"adresse\":\"sicap\",\n\t\"genre\":\"homme\",\n\t\"role_nom\":\"tuteur\",\n\t\"profession\":\"logisticien\",\n\t\"statut_marital\":\"celibataire\",\n\t\"numero_CNI\":\"50003 6058 254\"\n}"
+    },
+    "authentication": {},
+    "metaSortKey": -1726903955002.5,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_70174b9cf08540a3ad14b34b85769a02",
+    "parentId": "fld_xxx_tuteur",
+    "name": "modifiertuteurvia sa table",
+    "method": "PUT",
+    "url": "http://localhost:8000/api/modifiertuteur/4",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      },
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {
+      "mimeType": "application/json",
+      "text": "{\n\t\"nom\":\"laure\",\n\t\"prenom\":\"marie\",\n\t\"telephone\":\"+221776086714\",\n\t\"email\":\"diou08@gmail.com\",\n\t\"password\":\"passe615\",\n\t\"adresse\":\"sicap\",\n\t\"genre\":\"homme\",\n\t\"role_nom\":\"tuteur\",\n\t\"profession\":\"logisticien\",\n\t\"statut_marital\":\"celibataire\",\n\t\"numero_CNI\":\"50003 6058 254\"\n}"
+    },
+    "authentication": {},
+    "metaSortKey": -1726851913003,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_942ac5acbfe74d339fb59cd6d5fa9c97",
+    "parentId": "fld_xxx_tuteur",
+    "name": "supprimer tuteur dans sa table",
+    "method": "DELETE",
+    "url": "http://localhost:8000/api/supprimertuteur/{tuteur}",
+    "headers": [
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {},
+    "authentication": {},
+    "metaSortKey": -1726955997002,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+    "_id": "req_24d62196a7704c18ae63cdc2cfacbff7",
+    "parentId": "fld_xxx_tuteur",
+    "name": "supprimer tuteur dans user",
+    "method": "DELETE",
+    "url": "http://localhost:8000/api/supprimerusertuteur/{user}",
+    "headers": [
+      {
+        "name": "User-Agent",
+        "value": "insomnia/10.0.0"
+      }
+    ],
+    "body": {},
+    "authentication": {},
+    "metaSortKey": -1726956006219,
+    "isPrivate": false,
+    "_type": "request"
+  },
+  {
+      "_id": "req_1",
+      "parentId": "fld_1",
+      "modified": 1727096683058,
+      "created": 1727096556569,
+      "url": "http://localhost:8000/api/archivertuteur/4",
+      "name": "archivertuteur dans sa table",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"etat\":\"actif\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_2",
+      "parentId": "fld_1",
+      "modified": 1746459366663,
+      "created": 1727366433954,
+      "url": "http://localhost:8000/api/tuteur/user/{id}",
+      "name": "afficher tuteur dans user",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_3",
+      "parentId": "fld_1",
+      "modified": 1746459943104,
+      "created": 1746459478889,
+      "url": "http://localhost:8000/api/archivertuteur/{tuteur}",
+      "name": "archiver tuteur",
+      "method": "POST",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/11.0.2" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_4",
+      "parentId": "fld_1",
+      "modified": 1746459920981,
+      "created": 1746459791112,
+      "url": "http://localhost:8000/api/modifierpassword/{tuteurId}",
+      "name": "modifier mot de passe tuteur",
+      "method": "PUT",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/11.0.2" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "fld_2",
+      "parentId": null,
+      "modified": 1744893834352,
+      "created": 1726574656620,
+      "name": "gestion Enseignant",
+      "description": "",
+      "environment": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_5",
+      "parentId": "fld_2",
+      "modified": 1747050692032,
+      "created": 1726574677338,
+      "url": "http://localhost:8000/api/ajouter/enseignant",
+      "name": "ajouter enseignant",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n    \"nom\": \"Doe\",\n    \"prenom\": \"John\",\n    \"email\": \"doe23@example.com\",\n    \"password\": \"password123\",\n    \"telephone\": \"+221773234567\",\n    \"adresse\": \"123 Rue Exemple, Dakar\",\n    \"etat\": \"actif\",\n    \"genre\": \"Homme\",\n    \"date_naissance\": \"1990-01-01\",\n    \"lieu_naissance\": \"Dakar\",\n    \"nationalité\": \"Sénégalaise\",\n    \"numero_CNI\": \"CNI103456789\",\n    \"role_nom\":\"enseignant\",\n    \"numero_identification_enseignant\": \"lp123456\",\n    \"matiere_enseignée\": \"Mathématiques\",\n    \"niveau_enseignant\": \"Secondaire\",\n    \"statut_enseignant\": \"Permanent\",\n    \"heure_travail_hebdomadaire\": \"2h\",\n    \"date_debut_service\": \"2024-01-01\",\n    \"type_contrat\": \"CDI\",\n    \"salaire_base\":\"300000\",\n    \"type_salaire\": \"Mensuel\",\n    \"mode_paiement\": \"Virement\",\n    \"prime_indemnités\": \"50000\",\n    \"cotisation_sociales\":\"10000\",\n    \"part_employeur\":\"20000\",\n    \"retenue_salaire\":\"5000\",\n    \"banque_domiciliation\":\"ecobank\",\n    \"numero_RIB\":\"pl0315\",\n    \"ancienneté\":\"2ans\",\n    \"evaluation_performance\":\"10\",\n    \"commentaires_notes\":\"gdfghjkll\",\n    \"type_visibilite\": \"globale\",\n    \"academies\": true,\n    \"ressources\": true,\n    \"rapports\": false\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" },
+        { "name": "Authorization", "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_6",
+      "parentId": "fld_2",
+      "modified": 1726574744827,
+      "created": 1726574682573,
+      "url": "http://localhost:8000/api/modifierenseignant/{id}",
+      "name": "modifier enseignant",
+      "method": "PUT",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_7",
+      "parentId": "fld_2",
+      "modified": 1726840761161,
+      "created": 1726574685333,
+      "url": "http://localhost:8000/api/enseignants",
+      "name": "lister enseignants dans user",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_8",
+      "parentId": "fld_2",
+      "modified": 1746449359977,
+      "created": 1726754048440,
+      "url": "http://localhost:8000/api/enseignant/{id}",
+      "name": "afficher enseignant",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_9",
+      "parentId": "fld_2",
+      "modified": 1726763444647,
+      "created": 1726763162919,
+      "url": "http://localhost:8000/api/liste/enseignant",
+      "name": "afficher tous enseignant dans enseignant",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+     {
+      "_id": "req_modifier_enseignant_user",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449239987,
+      "created": 1726955355899,
+      "url": "http://localhost:8000/api/modifieruserenseignant/{user}",
+      "name": "modifier enseignant dans user",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nom\": \"Doe\",\n  \"prenom\": \"John\",\n  \"email\": \"doe3@example.com\",\n  \"password\": \"password123\",\n  \"telephone\": \"+221773234567\",\n  \"adresse\": \"123 Rue Exemple, Dakar\",\n  \"etat\": \"actif\",\n  \"genre\": \"Homme\",\n  \"date_naissance\": \"1990-01-01\",\n  \"lieu_naissance\": \"Dakar\",\n  \"nationalité\": \"Sénégalaise\",\n  \"numero_CNI\": \"CNI103456789\",\n  \"role_nom\": \"enseignant\",\n  \"numero_identification_enseignant\": \"lp123456\",\n  \"matiere_enseignée\": \"Mathématiques\",\n  \"niveau_enseignant\": \"Secondaire\",\n  \"statut_enseignant\": \"Permanent\",\n  \"heure_travail_hebdomadaire\": \"2h\",\n  \"date_debut_service\": \"2024-01-01\",\n  \"type_contrat\": \"CDI\",\n  \"salaire_base\": \"300000\",\n  \"type_salaire\": \"Mensuel\",\n  \"mode_paiement\": \"Virement\",\n  \"prime_indemnités\": \"50000\",\n  \"cotisation_sociales\": \"10000\",\n  \"part_employeur\": \"20000\",\n  \"retenue_salaire\": \"5000\",\n  \"banque_domiciliation\": \"ecobank\",\n  \"numero_RIB\": \"pl0315\",\n  \"ancienneté\": \"2ans\",\n  \"evaluation_performance\": \"10\",\n  \"commentaires_notes\": \"gdfghjkll\",\n  \"type_visibilite\": \"limité\",\n  \"academies\": true,\n  \"ressources\": true,\n  \"rapports\": false\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_supprimer_enseignant_user",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449148613,
+      "created": 1726955362897,
+      "url": "http://localhost:8000/api/supprimeruserenseignant/{user}",
+      "name": "supprimer enseignant dans user",
+      "method": "DELETE",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_archiver_enseignant",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449111299,
+      "created": 1726955369960,
+      "url": "http://localhost:8000/api/archiverenseignant/{enseignant}",
+      "name": "archiver enseignant dans sa table",
+      "method": "POST",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_supprimer_enseignant_table",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449171761,
+      "created": 1726955462942,
+      "url": "http://localhost:8000/api/supprimerenseignant/{enseignant}",
+      "name": "supprimer enseignant dans sa table",
+      "method": "DELETE",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_afficher_enseignant_user",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449064143,
+      "created": 1727353557110,
+      "url": "http://localhost:8000/api/enseignant/user/{id}",
+      "name": "afficher un enseignant dans la table user",
+      "method": "GET",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_presence_enseignant",
+      "parentId": "wrk_enseignant_api",
+      "modified": 1746449003395,
+      "created": 1732881905861,
+      "url": "http://localhost:8000/api/enseignants/presences/{enseignantId}",
+      "name": "afficher tous les details de presence enseignant",
+      "method": "GET",
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.0.0"
+        }
+      ],
+      "_type": "request"
+    },
+
+     {
+      "_id": "fld_gestion_classe",
+      "parentId": "wrk_123",
+      "name": "gestion Classe",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_ajouter_classe",
+      "parentId": "fld_gestion_classe",
+      "name": "ajouter classe",
+      "url": "http://localhost:8000/api/ajouter/classe",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n    \"nom\": \"Classe A\",\n    \"niveau_classe\": \"3eme\",\n    \"niveau_education\": \"secondaire\",\n    \"salle_id\": 1\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_afficher_classe",
+      "parentId": "fld_gestion_classe",
+      "name": "afficher classe",
+      "url": "http://localhost:8000/api/classe/detail/{id}",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_lister_classes",
+      "parentId": "fld_gestion_classe",
+      "name": "afficher toutes les classes",
+      "url": "http://localhost:8000/api/classe/lister",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_modifier_classe",
+      "parentId": "fld_gestion_classe",
+      "name": "modifier classe",
+      "url": "http://localhost:8000/api/classe/edit/{id}",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n    \"nom\":\"clavrt\",\n    \"niveau_classe\":\"CM1\",\n    \"enseignant_id\":\"2\",\n    \"salle_id\":\"1\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_supprimer_classe",
+      "parentId": "fld_gestion_classe",
+      "name": "supprimer classe",
+      "url": "http://localhost:8000/api/classe/supprimer/{id}",
+      "method": "DELETE",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_ajouter_classeprogramme",
+      "parentId": "fld_gestion_classe",
+      "name": "ajouterclasseprogrammedefaut",
+      "url": "http://localhost:8000/api/ajouter/classeprogramme",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nom\": \"Classegilbert\",\n  \"niveau_classe\": \"cm1\",\n  \"niveau_education\": \"primaire\",\n  \"salle_id\": 3,\n  \"source\": \"manuel\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_modifier_classeprogramme",
+      "parentId": "fld_gestion_classe",
+      "name": "modifierclasseprogrammedefaut",
+      "url": "http://localhost:8000/api/classeprogramme/edit/{id}",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nom\": \"Classe B\",\n  \"niveau_classe\": \"4e\",\n  \"niveau_education\": \"secondaire\",\n  \"salle_id\": 1,\n  \"source\": \"import_excel\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/10.0.0" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_afficher_enseignant_niveau",
+      "parentId": "wrk_123",
+      "name": "afficher enseignant par niveauecole",
+      "url": "http://localhost:8000/api/enseignant/niveauecole/{niveauEcoel}",
+      "method": "GET",
+      "headers": [
+        { "name": "User-Agent", "value": "insomnia/11.0.2" }
+      ],
+      "_type": "request"
+    }
+  ]
+}

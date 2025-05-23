@@ -1,14 +1,14 @@
 <?php
 
-    namespace App\Http\Controllers\Api;
-    
+    namespace App\Http\Controllers\API;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
     use App\Http\Controllers\Controller;
     use App\Http\Requests\Role\CreateRoleRequest;
     use Illuminate\Http\Request;
     use Exception;
     use App\Models\Role;
     use Illuminate\Support\Facades\Cache;
-    
+
     class RoleController extends Controller
     {
         public function store(CreateRoleRequest $request)
@@ -16,7 +16,7 @@
             try {
                 // Création du rôle avec le nom validé
                 $role = Role::create($request->validated());
-        
+
                 return response()->json([
                     "message" => "Le rôle a bien été créé",
                     "role" => $role
@@ -36,7 +36,7 @@
             try {
                 // Récupérer la liste des rôles
                 $roles = Role::all();
-        
+
                 return response()->json([
                     "message" => "La liste des rôles est disponible",
                     "roles" => $roles
@@ -125,7 +125,7 @@ public function destroy(Role $role)
     }
 }
 
-        
+
 }
 
-    
+

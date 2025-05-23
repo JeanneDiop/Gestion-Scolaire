@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -43,7 +43,7 @@ class ProgrammeController extends Controller
     public function update(UpdateProgrammeRequest $request, $id)
 {
     try {
-      
+
         $programme = Programme::findOrFail($id);
         $programme->nom = $request->nom;
         $programme->description = $request->description;

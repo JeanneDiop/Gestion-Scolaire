@@ -24,39 +24,29 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
     public function rules()
 {
     return [
-        'nom' => 'nullable|string|max:255',
-        'niveau_education' => 'nullable|string',
-        'annee_scolaire' => 'nullable|string',
-        'niveau_classe' => 'nullable|string|max:255',
-        'cycle' => 'nullable|string',
-        'langue_enseignee' => 'nullable|string|max:255',
-        'classe_id' => 'nullable|exists:classes,id',
+       'cours' => ['nullable', 'array'],
+'cours.*.nom' => ['nullable', 'string', 'max:255'],
+'cours.*.description' => ['nullable', 'string'],
+'cours.*.niveau_education' => ['nullable', 'in:Maternelle,Primaire,Secondaire,Supérieur'],
+'cours.*.niveau_classe' => ['nullable', 'string', 'max:255'],
+'cours.*.heure_allouee' => ['nullable', 'regex:/^([0-9]+h)?([0-9]+min)?$/'],
+'cours.*.etat' => ['nullable', 'string', 'in:encours,terminé,annulé'],
+'cours.*.credits' => ['nullable', 'integer', 'min:0'],
+'cours.*.coefficient' => ['nullable', 'integer', 'min:0'],
+'cours.*.objectif_generaux' => ['nullable', 'string', 'max:255'],
+'cours.*.objectif_specifiques' => ['nullable', 'string', 'max:255'],
+'cours.*.semestre' => ['nullable', 'integer', 'min:1', 'max:2'],
+'cours.*.enseignant_id' => ['nullable', 'exists:enseignants,id'],
 
-        // Cours validations
-        'cours.*.nom' => 'nullable|string|max:255',
-        'cours.*.description' => 'nullable|string',
-        'cours.*.niveau_education' => 'nullable|in:Maternelle,Primaire,Secondaire,Supérieur',
-        'cours.*.niveau_classe' => 'nullable|string|max:255',
-        'cours.*.heure_allouee' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
-        'cours.*.etat' => 'nullable|string|in:encours,terminé,annulé',
-        'cours.*.credits' => 'nullable|integer|min:0',
-        'cours.*.coefficient' => 'nullable|integer|min:0',
-        'cours.*.objectif_generaux' => 'nullable|string|max:255',
-        'cours.*.objectif_specifiques' => 'nullable|string|max:255',
-        'cours.*.semestre' => 'nullable|integer|min:1|max:2',
-        'cours.*.enseignant_id' => 'nullable|exists:enseignants,id',
-
-        // CategorieCours validations
-
-
-
-        'cours.*.categorie_cours.*.type_exercices' => 'nullable|string|max:255',
-        'cours.*.categorie_cours.*.leçons' => 'nullable|string|max:255',
-        'cours.*.categorie_cours.*.bareme' => [
-            'nullable',
-            'string',
-            'max:255',
-            function ($attribute, $value, $fail) {
+// CategorieCours validations
+'cours.*.categorie_cours' => ['nullable', 'array'],
+'cours.*.categorie_cours.*.type_exercices' => ['nullable', 'string', 'max:255'],
+'cours.*.categorie_cours.*.leçons' => ['nullable', 'string', 'max:255'],
+'cours.*.categorie_cours.*.bareme' => [
+    'nullable',
+    'string',
+    'max:255',
+     function ($attribute, $value, $fail) {
                 $index = explode('.', $attribute)[1];  // Gets the index of the course
                 $niveauEducation = request()->input("cours.$index.niveau_education");
 
@@ -73,19 +63,17 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
                     $fail('Pour le niveau "Secondaire", le barème doit être au format "X/20".');
                 }
             }
-        ],
+],
+'cours.*.categorie_cours.*.frequence_evaluation' => ['nullable', 'in:Hebdomadaire,Mensuel,Semestre,Trimestriel'],
+'cours.*.categorie_cours.*.mode_evaluation' => ['nullable', 'in:Formative,Sommative'],
+'cours.*.categorie_cours.*.heure_debut' => ['nullable', 'regex:/^([0-9]+h)?([0-9]+min)?$/'],
+'cours.*.categorie_cours.*.duree_seance' => ['nullable', 'regex:/^([0-9]+h)?([0-9]+min)?$/'],
+'cours.*.categorie_cours.*.heure_fin' => ['nullable', 'regex:/^([0-9]+h)?([0-9]+min)?$/'],
 
-        'cours.*.categorie_cours.*.frequence_evaluation' => 'nullable|in:Hebdomadaire,Mensuel,Semestre,Trimestriel',
-        'cours.*.categorie_cours.*.mode_evaluation' => 'nullable|in:Formative,Sommative',
-
-    'cours.*.categorie_cours.*.heure_debut' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
-'cours.*.categorie_cours.*.duree_seance' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
-'cours.*.categorie_cours.*.heure_fin' => 'nullable|regex:/^([0-9]+h)?([0-9]+min)?$/',
-
-        // Competences validations
-        'cours.*.competences' => 'nullable|array',
-        'cours.*.competences.*.nom' => 'required|string|max:255',
-        'cours.*.competences.*.description' => 'nullable|string',
+// Compétences validations
+'cours.*.competences' => ['nullable', 'array'],
+'cours.*.competences.*.nom' => ['required', 'string', 'max:255'],
+'cours.*.competences.*.description' => ['nullable', 'string'],
     ];
 }
 
@@ -152,21 +140,16 @@ class UpdateProgrammeClasseCoursRequest extends FormRequest
 
             'cours.*.enseignant_id.exists' => 'L\'enseignant sélectionné n\'existe pas.',
 
-            'cours.*.categorie_cours.*.type_exercices.string' => 'Le type d\'exercice doit être une chaîne de caractères.',
+             'cours.*.categorie_cours.*.type_exercices.string' => 'Le type d\'exercice doit être une chaîne de caractères.',
             'cours.*.categorie_cours.*.type_exercices.max' => 'Le type d\'exercice ne peut pas dépasser 255 caractères.',
-
             'cours.*.categorie_cours.*.bareme.string' => 'Le barème doit être une chaîne de caractères.',
             'cours.*.categorie_cours.*.bareme.max' => 'Le barème ne peut pas dépasser 255 caractères.',
-
             'cours.*.categorie_cours.*.frequence_evaluation.in' => 'La fréquence d\'évaluation doit être Hebdomadaire, Mensuel, Semestre ou Trimestriel.',
-
-            'cours.*.categorie_cours.*.type_evaluation.in' => 'Le type d\'évaluation doit être Formative ou Sommative.',
-
-            'cours.*.categorie_cours.*.duree_recommander_sceance.regex' => 'La durée recommandée pour la séance doit être au format "Xh" ou "Xmin".',
-
-            'cours.*.categorie_cours.string' => 'Le champ catégorie du cours doit être une chaîne de caractères.',
-            'cours.*.categorie_cours.max' => 'Le champ catégorie du cours ne peut pas dépasser 255 caractères.',
-
+            'cours.*.categorie_cours.*.mode_evaluation.in' => 'Le mode d\'évaluation doit être Formative ou Sommative.',
+            'cours.*.categorie_cours.*.duree_sceance.regex' => 'La durée  pour la séance doit être au format "Xh" ou "Xmin".',
+           'cours.*.categorie_cours.*.bareme' => 'Le barème du cours est invalide ou incohérent avec le niveau d\'éducation.',
+'cours.*.categorie_cours.*.leçons.string' => 'La leçon doit être une chaîne de caractères.',
+'cours.*.categorie_cours.*.leçons.max' => 'La leçon ne peut pas dépasser 255 caractères.',
             'cours.*.competences.array' => 'Le champ compétences doit être un tableau.',
 
             'cours.*.competences.*.nom.required' => 'Le nom de la compétence est obligatoire.',

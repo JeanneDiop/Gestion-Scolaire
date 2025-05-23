@@ -74,7 +74,7 @@ Route::get('role/{id}', [RoleController::class, 'show']);
 //-----------gestion Utilisateur tuteur----------------
 Route::post('ajouter/tuteur', [AuthController::class, 'registerTuteur']);
 //lister tuteur user
-Route::get('tuteurs', [AuthController::class, 'indexTuteurs']);
+Route::get('/tuteurs', [AuthController::class, 'indexTuteurs']);
 //----afficher tuteur
 Route::get('/tuteur/{id}',[AuthController::class,'showTuteur']);
 
@@ -535,6 +535,4 @@ Route::middleware(['auth:api','role_apprenant'])->group(function() {});
 
 
 
-Route::get('documentation', function () {
-    return view('api-docs.index');
-});
+
